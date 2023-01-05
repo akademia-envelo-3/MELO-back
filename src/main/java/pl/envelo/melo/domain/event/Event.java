@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.envelo.melo.domain.unit.Unit;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
