@@ -18,5 +18,5 @@ public class CategoryRequest {
     @ManyToOne
     @JoinColumn(name = "employee_id")
     private Employee employee;
-    private boolean resolved;
+    private boolean isResolved;
 }
