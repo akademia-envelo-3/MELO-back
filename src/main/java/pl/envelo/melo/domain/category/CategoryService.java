@@ -12,7 +12,7 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    public Category changeStatusCategory(int id) {
+    public CategoryDto changeStatusCategory(int id) {
         return null;
     }
 
