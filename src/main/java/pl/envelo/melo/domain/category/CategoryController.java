@@ -28,7 +28,7 @@ public class CategoryController {
         return null;
     }
 
-    List<Category> showAllCategory() {
+    List<CategoryDto> showAllCategory() {
         return null;
     }
 }
