@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.attachment.Attachment;
 
 import java.time.LocalDateTime;

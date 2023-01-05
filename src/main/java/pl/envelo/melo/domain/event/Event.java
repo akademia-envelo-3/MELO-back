@@ -6,6 +6,14 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.envelo.melo.authorization.employee.Employee;
+import pl.envelo.melo.authorization.person.Person;
+import pl.envelo.melo.domain.attachment.Attachment;
+import pl.envelo.melo.domain.category.Category;
+import pl.envelo.melo.domain.comment.Comment;
+import pl.envelo.melo.domain.hashtag.Hashtag;
+import pl.envelo.melo.domain.location.Location;
+import pl.envelo.melo.domain.poll.Poll;
 import pl.envelo.melo.domain.unit.Unit;
 
 import java.time.LocalDate;
@@ -47,14 +55,13 @@ public class Event {
     @ManyToOne
     private Category category;
     @OneToMany
-    private Set<Attachments> attachments;
+    private Set<Attachment> attachments;
     @OneToMany
     private List<Comment> comments;
     @OneToMany
     private Set<Poll> polls;
     @ManyToOne
     private Location location;
-    @ManyToMany
     private Theme theme;
 
 }

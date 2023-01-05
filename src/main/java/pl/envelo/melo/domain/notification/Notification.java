@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.envelo.melo.domain.event.Event;
+import pl.envelo.melo.domain.unit.Unit;
 
 import java.time.LocalDateTime;
 
