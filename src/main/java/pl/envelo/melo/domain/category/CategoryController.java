@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.category;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -12,23 +13,23 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    CategoryDto addNewCategory(CategoryDto categoryDto) {
+    public ResponseEntity<CategoryDto> addNewCategory(CategoryDto categoryDto) {
         return null;
     }
 
-    CategoryDto getCategory(int id) {
+    public ResponseEntity<CategoryDto> getCategory(int id) {
         return null;
     }
 
-    CategoryDto hideCategory(int id) {
+    public ResponseEntity<CategoryDto> hideCategory(int id) {
         return null;
     }
 
-    CategoryDto activateCategory(int id) {
+    public ResponseEntity<CategoryDto> activateCategory(int id) {
         return null;
     }
 
-    List<CategoryDto> showAllCategory() {
+    public ResponseEntity<List<CategoryDto>> showAllCategory() {
         return null;
     }
 }
