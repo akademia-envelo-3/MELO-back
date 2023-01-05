@@ -17,41 +17,41 @@ import java.util.Set;
 @NoArgsConstructor
 public class Event {
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
-    int id;
+    private int id;
     @NotNull
-    String name;
+    private String name;
     @NotNull
-    String description;
+    private String description;
     @NotNull
-    LocalDateTime startTime;
+    private LocalDateTime startTime;
     @NotNull
-    LocalDateTime endTime;
+    private LocalDateTime endTime;
     @NotNull @ManyToOne
-    Employee organizer;
+    private Employee organizer;
     @NotNull @ManyToOne
-    EventType type;
+    private EventType type;
     @ManyToMany
-    Set<Person> members;
+    private Set<Person> members;
     @ManyToOne
-    PeriodicType periodicType;
+    private PeriodicType periodicType;
     @ManyToMany
-    Set<Employee> invited;
+    private Set<Employee> invited;
     @ManyToMany
-    Set<Unit> units;
+    private Set<Unit> units;
     @ManyToMany
-    Set<Hashtag> hashtags;
-    int memberLimit;
+    private Set<Hashtag> hashtags;
+    private int memberLimit;
     @ManyToOne
-    Category category;
+    private Category category;
     @OneToMany
-    Set<Attachments> attachments;
+    private Set<Attachments> attachments;
     @OneToMany
-    List<Comment> comments;
+    private List<Comment> comments;
     @OneToMany
-    Set<Poll> polls;
+    private Set<Poll> polls;
     @ManyToOne
-    Location location;
+    private Location location;
     @ManyToMany
-    Theme theme;
+    private Theme theme;
 
 }
