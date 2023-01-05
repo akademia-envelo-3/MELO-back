@@ -1,6 +1,8 @@
 package pl.envelo.melo.authorization.admin;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +25,7 @@ public class Admin {
     @ManyToMany
     private Set<CategoryRequest> adminInbox;
     @OneToOne
+    @NotBlank
     private User user;
 
 }

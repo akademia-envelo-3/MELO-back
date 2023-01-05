@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.event;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,23 +18,24 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 public class Event {
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-    @NotNull
+    @NotBlank
     private String name;
-    @NotNull
+    @NotBlank
     private String description;
-    @NotNull
+    @NotBlank
     private LocalDateTime startTime;
-    @NotNull
+    @NotBlank
     private LocalDateTime endTime;
-    @NotNull @ManyToOne
+    @NotBlank
+    @ManyToOne
     private Employee organizer;
-    @NotNull @ManyToOne
+    @NotBlank
     private EventType type;
     @ManyToMany
     private Set<Person> members;
-    @ManyToOne
     private PeriodicType periodicType;
     @ManyToMany
     private Set<Employee> invited;

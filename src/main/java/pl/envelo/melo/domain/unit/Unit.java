@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.unit;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,13 +18,13 @@ import java.util.Set;
 public class Unit {
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-    @NotNull
+    @NotBlank
     private String name;
     private String description;
     @ManyToMany
     private List<Event> eventList;
     @ManyToMany
     private Set<Employee> members;
-    @NotNull @ManyToMany
+    @NotBlank @ManyToMany
     private Employee owner;
 }

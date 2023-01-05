@@ -3,6 +3,8 @@ package pl.envelo.melo.authorization.employee;
 
 import com.sun.jdi.PrimitiveValue;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,6 +34,7 @@ public class Employee {
     @OneToMany
     private Set<Unit> ownedUnits;
     @OneToOne
+    @NotBlank
     private User user;
     @OneToMany
     private Set<Notification> notificationsBox;
