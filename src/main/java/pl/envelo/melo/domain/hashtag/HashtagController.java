@@ -1,18 +1,16 @@
 package pl.envelo.melo.domain.hashtag;
 
 
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
+@AllArgsConstructor
 public class HashtagController {
     private final HashtagService hashtagService;
-
-    public HashtagController(HashtagService hashtagService) {
-        this.hashtagService = hashtagService;
-    }
 
     public ResponseEntity<List<HashtagDto>> showAllHashtags() {
         return null;

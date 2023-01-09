@@ -1,16 +1,14 @@
 package pl.envelo.melo.domain.hashtag;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
-
-    public HashtagService(HashtagRepository hashtagRepository) {
-        this.hashtagRepository = hashtagRepository;
-    }
 
     public HashtagDto insertNewHashtag(HashtagDto hashtagDto) {
         return null;
