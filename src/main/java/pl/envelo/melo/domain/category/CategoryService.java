@@ -1,16 +1,15 @@
 package pl.envelo.melo.domain.category;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
 
-    public CategoryService(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
 
     public CategoryDto changeStatusCategory(int id) {
         return null;
