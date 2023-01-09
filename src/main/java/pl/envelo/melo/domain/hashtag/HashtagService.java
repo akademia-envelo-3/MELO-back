@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.hashtag;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,22 +11,23 @@ import java.util.List;
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
 
-    public HashtagDto insertNewHashtag(HashtagDto hashtagDto) {
+    public ResponseEntity<HashtagDto> insertNewHashtag(HashtagDto hashtagDto) {
         return null;
     }
 
-    public Hashtag incrementHashtagGlobalCount(int id) {
+    public ResponseEntity<Hashtag> incrementHashtagGlobalCount(int id) {
         return null;
     }
 
-    public Hashtag decrementHashtagGlobalCount(int id) {
+    public ResponseEntity<Hashtag> decrementHashtagGlobalCount(int id) {
         return null;
     }
 
-    public void setHashtagHiddenFlag(int id, boolean hide) {
+    public ResponseEntity<?> setHashtagHiddenFlag(int id, boolean hide) {
+        return null;
     }
 
-    public List<HashtagDto> listAllHashtag() {
+    public ResponseEntity<List<HashtagDto>> listAllHashtag() {
         return null;
     }
 }
