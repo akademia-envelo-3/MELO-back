@@ -1,17 +1,15 @@
 package pl.envelo.melo.domain.category;
 
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
+@AllArgsConstructor
 public class CategoryController {
     private final CategoryService categoryService;
-
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
 
     public ResponseEntity<CategoryDto> addNewCategory(CategoryDto categoryDto) {
         return null;
