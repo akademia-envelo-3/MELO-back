@@ -1,5 +1,5 @@
 package pl.envelo.melo.domain.event;
 
 public enum PeriodicType {
-    NONE, ONE_WEEK, TWO_WEEKS, ONE_MONTH, SIX_MONTHS, ONE_YEAR
+    NONE, ONE_WEEK, TWO_WEEKS, ONE_MONTH
 }
