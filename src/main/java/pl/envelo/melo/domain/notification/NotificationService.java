@@ -2,6 +2,7 @@ package pl.envelo.melo.domain.notification;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
 import pl.envelo.melo.domain.notification.dto.NotificationDto;
 import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
@@ -10,6 +11,7 @@ import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 @AllArgsConstructor
 public class NotificationService {
     private NotificationRepository notificationRepository;

@@ -16,4 +16,5 @@ public class EmployeeNameDto {
     private String firstName;
     @NotBlank(message = "last name shouldn't be blank")
     private String lastName;
+
 }
