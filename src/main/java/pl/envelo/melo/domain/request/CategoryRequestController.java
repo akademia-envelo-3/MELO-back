@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.request;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
 
@@ -14,23 +15,23 @@ public class CategoryRequestController {
     private final NotificationService notificationService;
     private final CategoryService categoryService;
 
-    public CategoryRequest addNewCategoryRequest(CategoryRequestDto categoryRequestDto) {
+    public ResponseEntity<CategoryRequest> addNewCategoryRequest(CategoryRequestDto categoryRequestDto) {
         return categoryRequestService.insertNewCategoryRequest(categoryRequestDto);
     }
 
-    public List<CategoryRequest> showAllCategoryRequests() {
+    public ResponseEntity<List<CategoryRequest>> showAllCategoryRequests() {
         return categoryRequestService.listAllCategoryRequest();
     }
 
-    public boolean checkIfCategoryRequestIsResolved(int categoryRequestId) {
+    public ResponseEntity<?> checkIfCategoryRequestIsResolved(int categoryRequestId) {
         return categoryRequestService.isResolved(categoryRequestId);
     }
 
-    public boolean acceptCategoryRequest(int categoryRequestId) {
+    public ResponseEntity<?> acceptCategoryRequest(int categoryRequestId) {
         return categoryRequestService.setCategoryRequestAsAccepted(categoryRequestId);
     }
 
-    public boolean declineCategoryRequest(int categoryRequestId) {
+    public ResponseEntity<?> declineCategoryRequest(int categoryRequestId) {
         return categoryRequestService.setCategoryRequestAsDeclined(categoryRequestId);
     }
 

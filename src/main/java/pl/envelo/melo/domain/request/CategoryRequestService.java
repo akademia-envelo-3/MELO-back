@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.request;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
 
@@ -12,24 +13,24 @@ public class CategoryRequestService {
 
     private final CategoryRequestRepository categoryRequestRepository;
 
-    public CategoryRequest insertNewCategoryRequest(CategoryRequestDto categoryRequestDto) {
+    public ResponseEntity<CategoryRequest> insertNewCategoryRequest(CategoryRequestDto categoryRequestDto) {
         return null;
     }
 
-    public List<CategoryRequest> listAllCategoryRequest() {
+    public ResponseEntity<List<CategoryRequest>> listAllCategoryRequest() {
         return null;
     }
 
-    public boolean isResolved(int categoryRequestId) {
-        return false;
+    public ResponseEntity<?> isResolved(int categoryRequestId) {
+        return null;
     }
 
-    public boolean setCategoryRequestAsAccepted(int categoryRequestId) {
-        return false;
+    public ResponseEntity<?> setCategoryRequestAsAccepted(int categoryRequestId) {
+        return null;
     }
 
-    public boolean setCategoryRequestAsDeclined(int categoryRequestId) {
-        return false;
+    public ResponseEntity<?> setCategoryRequestAsDeclined(int categoryRequestId) {
+        return null;
     }
 
 
