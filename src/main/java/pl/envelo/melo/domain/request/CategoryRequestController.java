@@ -1,7 +1,6 @@
 package pl.envelo.melo.domain.request;
 
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
 
@@ -11,9 +10,9 @@ import java.util.List;
 @AllArgsConstructor
 public class CategoryRequestController {
 
-    private CategoryRequestService categoryRequestService;
-    private NotificationService notificationService;
-    private CategoryService categoryService;
+    private final CategoryRequestService categoryRequestService;
+    private final NotificationService notificationService;
+    private final CategoryService categoryService;
 
     public CategoryRequest addNewCategoryRequest(CategoryRequestDto categoryRequestDto) {
         return categoryRequestService.insertNewCategoryRequest(categoryRequestDto);
