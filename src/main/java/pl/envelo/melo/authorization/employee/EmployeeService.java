@@ -1,5 +1,6 @@
 package pl.envelo.melo.authorization.employee;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.person.Person;
@@ -20,22 +21,22 @@ public class EmployeeService {
         this.personRepository = personRepository;
     }
 
-    public Optional<EmployeeDto> getEmployee(int id){
+    public ResponseEntity<EmployeeDto> getEmployee(int id){
 //        return employeeRepository.findById(id);
         return null;
     }
 
-    public Optional<Person> getPerson(int employeeId){
+    public ResponseEntity<Person> getPerson(int employeeId){
 //        return personRepository.findById(employeeId);
         return null;
     }
 
-    public List<EmployeeDto> getEmployees(){
+    public ResponseEntity<List<EmployeeDto>> getEmployees(){
 //        return employeeRepository.findAll();
         return null;
     }
 
-    public Set<EventDto> getSetOfOwnedEvents(){
+    public ResponseEntity<Set<EventDto>> getSetOfOwnedEvents(){
         return null;
     }
 }

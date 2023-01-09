@@ -1,5 +1,6 @@
 package pl.envelo.melo.authorization.employee;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
@@ -20,17 +21,17 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public List<EmployeeDto> getEmployees(){
-        return employeeService.getEmployees();
+    public ResponseEntity<List<EmployeeDto>> getEmployees(){
+        return null;
     }
 
     @GetMapping
-    public Optional<EmployeeDto> getEmployee(int id){
-        return employeeService.getEmployee(id);
+    public ResponseEntity<EmployeeDto> getEmployee(int id){
+        return null;
     }
 
     @GetMapping
-    public Set<EventDto> getOwnedEvents(){
-        return employeeService.getSetOfOwnedEvents();
+    public ResponseEntity<Set<EventDto>> getOwnedEvents(){
+        return null;
     }
 }
