@@ -10,7 +10,6 @@ import org.hibernate.validator.constraints.Range;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class UnitDto {
     @NotNull
