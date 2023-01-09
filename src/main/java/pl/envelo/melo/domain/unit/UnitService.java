@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.unit;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.unit.dto.UnitDto;
@@ -16,35 +17,35 @@ public class UnitService {
     private final EmployeeRepository employeeRepository;
 
 
-    public Optional<UnitDto> getUnit(int id) {
+    public ResponseEntity<UnitDto> getUnit(int id) {
         return null;
     }
 
-    public List<UnitDto> getUnits() {
+    public ResponseEntity<List<UnitDto>> getUnits() {
         return null;
     }
 
-    public List<Employee> getUnitEmployees() {
+    public ResponseEntity<List<Employee>> getUnitEmployees() {
         return null;
     }
 
-    public Optional<Unit> changeOwnership(int newEmployeeId) {
+    public ResponseEntity<Unit> changeOwnership(int newEmployeeId) {
         return null;
     }
 
-    public boolean addEmployee(Employee employee, int unitId) {
-        return false;
-    }
-
-    public boolean quitUnit(Employee employee, int unitId) {
-        return false;
-    }
-
-    public Optional<Unit> insertNewUnit(UnitDto unitDto) {
+    public ResponseEntity<?> addEmployee(Employee employee, int unitId) {
         return null;
     }
 
-    public Optional<Unit> updateUnit(UnitDto unitDto) {
+    public ResponseEntity<?> quitUnit(Employee employee, int unitId) {
+        return null;
+    }
+
+    public ResponseEntity<Unit> insertNewUnit(UnitDto unitDto) {
+        return null;
+    }
+
+    public ResponseEntity<Unit> updateUnit(UnitDto unitDto) {
         return null;
     }
 }
