@@ -15,6 +15,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class Comment {
+    
     @Id
     @GeneratedValue
     private int id;
@@ -25,4 +26,5 @@ public class Comment {
     private List<Attachment> attachments;
     private String content;
     private LocalDateTime timestamp;
+
 }
