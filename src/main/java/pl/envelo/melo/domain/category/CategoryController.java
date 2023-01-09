@@ -15,19 +15,19 @@ public class CategoryController {
         return null;
     }
 
-    public ResponseEntity<CategoryDto> getCategory(int id) {
+    public ResponseEntity<Category> getCategory(int id) {
         return null;
     }
 
-    public ResponseEntity<CategoryDto> hideCategory(int id) {
+    public ResponseEntity<?> hideCategory(int id) {
         return null;
     }
 
-    public ResponseEntity<CategoryDto> activateCategory(int id) {
+    public ResponseEntity<?> activateCategory(int id) {
         return null;
     }
 
-    public ResponseEntity<List<CategoryDto>> showAllCategory() {
+    public ResponseEntity<List<Category>> showAllCategory() {
         return null;
     }
 }
