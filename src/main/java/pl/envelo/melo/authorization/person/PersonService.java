@@ -2,6 +2,7 @@ package pl.envelo.melo.authorization.person;
 
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
+import pl.envelo.melo.domain.event.EventRepository;
 
 @Service
 public class PersonService {

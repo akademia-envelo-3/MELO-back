@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.comment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.domain.attachment.Attachment;
+import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.comment.dto.CommentDto;
 
 @Service

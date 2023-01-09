@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
+import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -4,9 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
+import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 import pl.envelo.melo.domain.event.EventType;
 import pl.envelo.melo.domain.event.PeriodicType;
 import pl.envelo.melo.domain.event.Theme;
+import pl.envelo.melo.domain.location.dto.LocationDto;
+import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
+import pl.envelo.melo.domain.poll.dto.PollTemplateToDisplayOnListDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,7 +39,7 @@ public class EventDetailsDto {
     private AttachmentDto mainPhoto;
     private String category;
     private Theme theme;
-    private List<PollQuestionDto> pollQuestion;
+    private List<PollTemplateToDisplayOnListDto> pollQuestion;
 
     public EventDetailsDto(String name, String description, LocalDateTime startTime, LocalDateTime endTime,
                        EventType eventType, EmployeeNameDto organizer, PeriodicType periodicType){

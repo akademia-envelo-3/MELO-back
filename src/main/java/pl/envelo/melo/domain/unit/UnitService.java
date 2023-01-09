@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
+import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.domain.unit.dto.UnitDto;
 
 import java.util.List;

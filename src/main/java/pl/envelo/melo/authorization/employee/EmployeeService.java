@@ -5,9 +5,11 @@ import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
+import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 @Service
@@ -36,7 +38,8 @@ public class EmployeeService {
         return null;
     }
 
-    public ResponseEntity<Set<EventDto>> getSetOfOwnedEvents(){
+    public ResponseEntity<Set<EventToDisplayOnListDto>> getSetOfOwnedEvents(){
+
         return null;
     }
 }
