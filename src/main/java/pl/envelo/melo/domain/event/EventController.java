@@ -43,7 +43,7 @@ public class EventController {
 
 //    @GetMapping()
     public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
-        return null;
+        return eventService.listAllEvents();
     }
 
 //    @GetMapping()
