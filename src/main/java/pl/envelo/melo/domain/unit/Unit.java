@@ -17,7 +17,8 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 public class Unit {
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     @NotBlank
     private String name;
