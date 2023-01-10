@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.domain.event.Event;
+import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,18 +21,18 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    @GetMapping
+
     public ResponseEntity<List<EmployeeDto>> getEmployees(){
         return null;
     }
 
-    @GetMapping
+
     public ResponseEntity<EmployeeDto> getEmployee(int id){
         return null;
     }
 
-    @GetMapping
-    public ResponseEntity<Set<EventDto>> getOwnedEvents(){
+
+    public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(){
         return null;
     }
 }
