@@ -2,6 +2,7 @@ package pl.envelo.melo.authorization.employee;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.domain.event.Event;
@@ -32,7 +33,8 @@ public class EmployeeController {
     }
 
 
-    public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(){
-        return null;
+    @GetMapping("user/{id}/owned-events")
+    public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(@PathVariable int id){
+        return employeeService.getSetOfOwnedEvents(id);
     }
 }
