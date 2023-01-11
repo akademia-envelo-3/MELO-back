@@ -46,9 +46,13 @@ public class EmployeeService {
     }
 
 
-    public ResponseEntity<Set<EventToDisplayOnListDto>> getSetOfOwnedEvents(int id){
-        Set<Event> events = employeeRepository.findById(id).get().getOwnedEvents();
-        Set<EventToDisplayOnListDto> eventToDisplayOnListDtoSet = events.stream().map(eventMapper::convert).collect(Collectors.toSet());
-    return  new ResponseEntity<Set<EventToDisplayOnListDto>>(eventToDisplayOnListDtoSet, HttpStatus.OK);
+    public ResponseEntity<?> getSetOfOwnedEvents(int id){
+        if(employeeRepository.existsById(id)) {
+            Set<Event> events = employeeRepository.findById(id).get().getOwnedEvents();
+            return ResponseEntity.ok(events.stream().map(eventMapper::convert).collect(Collectors.toSet()));
+        } else{
+            return ResponseEntity.status(404).body("Employee with this ID do not exist");
+        }
+
     }
 }
