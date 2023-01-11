@@ -16,6 +16,6 @@ public class Hashtag {
     @GeneratedValue
     private int id;
     private String content;
-    private long globalUsageCount;
+    private int globalUsageCount;
     private boolean hidden;
 }
