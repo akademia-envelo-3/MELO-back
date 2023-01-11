@@ -64,7 +64,6 @@ public class Event {
     private Set<Poll> polls;
     @ManyToOne
     private Location location;
-    @ManyToMany
     private Theme theme;
 
 }
