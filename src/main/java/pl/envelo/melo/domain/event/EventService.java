@@ -49,6 +49,7 @@ public class EventService {
         return null;
     }
 
+
     public ResponseEntity<Event> insertNewEvent(NewEventDto newEventDto) {  //void?
         return null;
     }
