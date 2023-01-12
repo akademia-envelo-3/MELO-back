@@ -4,7 +4,7 @@ import org.mapstruct.*;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.*;
 
-@Mapper(componentModel = "spring", uses = {AttachmentMapper.class})
+@Mapper(componentModel = "spring")
 public interface EventMapper {
     @Mapping(source = "id", target = "eventId")
     public EventToDisplayOnListDto convert(Event event);

@@ -20,6 +20,7 @@ import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollTemplateRepository;
 import pl.envelo.melo.mappers.EventMapper;
+import pl.envelo.melo.validators.EventValidator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -70,7 +71,9 @@ public class EventService {
     public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto) { //void?
         try{
             Event event = eventRepository.getReferenceById(id);
-            
+            if(EventValidator.validateToEdit(event, newEventDto).size()==0){
+
+            }
         }catch (Exception e){
 
         }
