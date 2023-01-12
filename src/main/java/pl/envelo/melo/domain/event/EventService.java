@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.event;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -24,6 +25,7 @@ import pl.envelo.melo.validators.EventValidator;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -71,8 +73,24 @@ public class EventService {
     public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto) { //void?
         try{
             Event event = eventRepository.getReferenceById(id);
-            if(EventValidator.validateToEdit(event, newEventDto).size()==0){
-
+            Map<String , String> validationResult = EventValidator.validateToEdit(event, newEventDto);
+            if(validationResult.size()==0){
+                newEventDto.getHashtags().forEach(e->{
+                     event.getHashtags().forEach(f -> {
+                         if(e.equals(f.getContent())) {
+                             f.setGlobalUsageCount(f.getGlobalUsageCount() + 1);
+                             hashtagRepository.save(f);
+                         }
+                    });
+                });
+                event.getHashtags().forEach(e->{
+                    if(!newEventDto.getHashtags().contains(e.getContent())){
+                        e.setGlobalUsageCount(e.getGlobalUsageCount()-1);
+                        hashtagRepository.save(e);
+                    }
+                });
+            }else{
+                return ResponseEntity.status(HttpStatusCode.valueOf(403)).body(validationResult);
             }
         }catch (Exception e){
 

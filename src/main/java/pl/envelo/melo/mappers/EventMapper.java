@@ -4,7 +4,7 @@ import org.mapstruct.*;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.*;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {HashtagMapper.class})
 public interface EventMapper {
     @Mapping(source = "id", target = "eventId")
     public EventToDisplayOnListDto convert(Event event);
@@ -14,5 +14,10 @@ public interface EventMapper {
         if(event.getMembers() != null)
             members = event.getMembers().size();
         eventToDisplayOnListDto.setInvitedMembersNumber(members);
+    }
+    public Event convert(NewEventDto newEventDto);
+    @AfterMapping
+    default void updateResult(NewEventDto newEventDto, @MappingTarget Event event){
+
     }
 }
