@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.event;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,19 +35,19 @@ public class Event {
     private String name;
     @NotBlank
     private String description;
-    @NotBlank
+    @NotNull
     private LocalDateTime startTime;
-    @NotBlank
+    @NotNull
     private LocalDateTime endTime;
-    @NotBlank
+    @NotNull
     @ManyToOne
     private Employee organizer;
-    @NotBlank
+    @NotNull
     private EventType type;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Person> members;
     private PeriodicType periodicType;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Employee> invited;
     @ManyToMany
     private Set<Unit> units;
@@ -57,6 +58,8 @@ public class Event {
     private Category category;
     @OneToMany
     private Set<Attachment> attachments;
+    @OneToOne
+    private Attachment mainPhoto;
     @OneToMany
     private List<Comment> comments;
     @OneToMany
