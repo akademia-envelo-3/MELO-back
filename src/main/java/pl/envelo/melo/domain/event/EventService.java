@@ -67,7 +67,13 @@ public class EventService {
         return null;
     }
 
-    public ResponseEntity<Event> updateEvent(int id, NewEventDto newEventDto) { //void?
+    public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto) { //void?
+        try{
+            Event event = eventRepository.getReferenceById(id);
+            
+        }catch (Exception e){
+
+        }
         return null;
     }
 
