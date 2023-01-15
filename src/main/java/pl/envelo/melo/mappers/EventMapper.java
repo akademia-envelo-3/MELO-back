@@ -7,17 +7,12 @@ import pl.envelo.melo.domain.event.dto.*;
 @Mapper(componentModel = "spring", uses = {HashtagMapper.class})
 public interface EventMapper {
     @Mapping(source = "id", target = "eventId")
-    public EventToDisplayOnListDto convert(Event event);
+    EventToDisplayOnListDto convert(Event event);
     @AfterMapping
     default void updateResult(Event event, @MappingTarget EventToDisplayOnListDto eventToDisplayOnListDto){
         int members = 0;
         if(event.getMembers() != null)
             members = event.getMembers().size();
         eventToDisplayOnListDto.setInvitedMembersNumber(members);
-    }
-    public Event convert(NewEventDto newEventDto);
-    @AfterMapping
-    default void updateResult(NewEventDto newEventDto, @MappingTarget Event event){
-
     }
 }

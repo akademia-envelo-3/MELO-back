@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.event;
 
 import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -44,10 +45,10 @@ public class Event {
     private Employee organizer;
     @NotNull
     private EventType type;
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     private Set<Person> members;
     private PeriodicType periodicType;
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     private Set<Employee> invited;
     @ManyToMany
     private Set<Unit> units;

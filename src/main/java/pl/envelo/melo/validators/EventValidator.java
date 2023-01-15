@@ -21,6 +21,10 @@ public class EventValidator {
                     errors.put("memberLimit" + " error", "You cannot set memberLimit to less than number of accepted members. You need to remove members if you wish to proceed");
                 }
             }}
+
+        if(eventDto.getAttachments()!=null && eventDto.getAttachments().size()>10){
+            errors.put("attachments error","You cannot add more than 10 attachments");
+        }
         return errors;
     }
 }

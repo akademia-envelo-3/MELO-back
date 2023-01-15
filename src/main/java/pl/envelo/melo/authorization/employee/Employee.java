@@ -13,6 +13,7 @@ import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.notification.Notification;
 import pl.envelo.melo.domain.unit.Unit;
 
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -29,7 +30,7 @@ public class Employee {
     private Set<Comment> ownedComments;
     @ManyToMany
     private Set<Event> joinedEvents;
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private Set<Event> ownedEvents;
     @ManyToMany
     private Set<Unit> joinedUnits;
@@ -41,4 +42,15 @@ public class Employee {
     @OneToMany
     private Set<Notification> notificationsBox;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Employee employee)) return false;
+        return getUser().equals(employee.getUser());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getUser());
+    }
 }

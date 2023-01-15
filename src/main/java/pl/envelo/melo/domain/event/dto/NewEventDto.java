@@ -52,7 +52,7 @@ public class NewEventDto {
     private LocationDto location;
     private Set<AttachmentDto> attachments;
     private AttachmentDto mainPhoto;
-    private List<Integer> categoryId;
+    private Integer categoryId;
     private Theme theme;
 
     public NewEventDto(String name, String description, LocalDateTime startTime, LocalDateTime endTime,

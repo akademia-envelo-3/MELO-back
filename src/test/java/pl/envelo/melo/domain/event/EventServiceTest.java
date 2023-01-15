@@ -1,13 +1,16 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.user.UserRepository;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
+import pl.envelo.melo.domain.event.dto.NewEventDto;
 
 import java.time.LocalDateTime;
 
@@ -44,5 +47,22 @@ class EventServiceTest {
         assertEquals(presentEvent.getId(), eventToDisplayOnListDto.getEventId());
         assertEquals(1, eventService.listAllEvents().getBody().size());
         assertNull(eventToDisplayOnListDto.getMainPhoto());
+    }
+
+    @Transactional
+    @Test
+    void updateEvent() {
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
+        eventRepository.save(event);
+        Employee employee = simpleEventMocker.mockEmployee("owwneer");
+        NewEventDto newEventDto = new NewEventDto();
+        newEventDto.setEventType(EventType.LIMITED_PUBLIC_INTERNAL);
+        newEventDto.setOrganizerId(employee.getId());
+        newEventDto.setName("Ddds");
+        newEventDto.setDescription("dsadsa");
+        newEventDto.setPeriodicType(PeriodicType.NONE);
+        eventService.updateEvent(event.getId(), newEventDto);
+        System.out.println(eventRepository.getReferenceById(event.getId()).getOrganizer().getUser().getPerson().getFirstName());
+        //eventService.updateEvent(event.getId(), );
     }
 }

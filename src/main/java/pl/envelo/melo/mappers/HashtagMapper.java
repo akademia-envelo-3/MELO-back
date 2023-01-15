@@ -8,5 +8,7 @@ import pl.envelo.melo.domain.hashtag.Hashtag;
 @Mapper(componentModel = "spring")
 public interface HashtagMapper {
     @Mapping(target = "content")
-    public Hashtag convert(String content);
+    Hashtag convert(String content);
+    @InheritInverseConfiguration
+    String convert(Hashtag hashtag);
 }
