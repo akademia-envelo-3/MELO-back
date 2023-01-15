@@ -2,6 +2,8 @@ package pl.envelo.melo.domain.event;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeService;
@@ -27,6 +29,7 @@ import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
 
 import java.util.List;
 
+@RequestMapping("/v1/")
 @RestController
 @AllArgsConstructor
 public class EventController {
@@ -46,9 +49,9 @@ public class EventController {
         return null;
     }
 
-//    @GetMapping()
+    @GetMapping("/event/{id}")
     public  ResponseEntity<EventDetailsDto> getEvent(int id) {
-        return null;
+        return (ResponseEntity<EventDetailsDto>) eventService.getEvent(id);
     }
 
 //    @GetMapping()

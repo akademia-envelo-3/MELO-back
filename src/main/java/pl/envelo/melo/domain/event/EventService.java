@@ -1,8 +1,13 @@
 package pl.envelo.melo.domain.event;
 
 import lombok.AllArgsConstructor;
+import org.apache.el.stream.Stream;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
@@ -19,6 +24,8 @@ import pl.envelo.melo.domain.location.LocationRepository;
 import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollTemplateRepository;
+import pl.envelo.melo.mappers.EventDetailsMapper;
+import pl.envelo.melo.mappers.EventMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +34,8 @@ import java.util.Optional;
 @AllArgsConstructor
 public class EventService {
 
+    @Autowired
+    private EventDetailsMapper eventDetailsMapper;
     private final EventRepository eventRepository;
     private final EmployeeRepository employeeRepository;
     private final HashtagRepository hashtagRepository;
@@ -39,10 +48,14 @@ public class EventService {
     private final CommentRepository commentRepository;
     private final PersonRepository personRepository;
 
+    public ResponseEntity<?> getEvent(int id) {
+        if (eventRepository.existsById(id)) {
+            Event event = eventRepository.findById(id).get();
+            return ResponseEntity.ok(eventDetailsMapper.convert(event));
+        } else {
+            return ResponseEntity.status(404).body("Event with this ID do not exist");
+        }
 
-    public ResponseEntity<EventDetailsDto> getEvent(int id) {
-//        return eventRepository.findById(id); Mapper dodać
-        return null;
     }
 
     public ResponseEntity<List<EventToDisplayOnListDto>> listAllEvents() {

@@ -33,7 +33,7 @@ public class EventDetailsDto {
     private List<PollTemplateDto> polls;
     private Set<String> hashtags;
     private int memberLimit;
-    private Set<EmployeeNameDto> invitedMembers;
+    private List<EmployeeNameDto> confirmedMembers;
     private LocationDto location;
     private Set<AttachmentDto> attachments;
     private AttachmentDto mainPhoto;
@@ -41,14 +41,4 @@ public class EventDetailsDto {
     private Theme theme;
     private List<PollTemplateToDisplayOnListDto> pollQuestion;
 
-    public EventDetailsDto(String name, String description, LocalDateTime startTime, LocalDateTime endTime,
-                       EventType eventType, EmployeeNameDto organizer, PeriodicType periodicType){
-        this.name = name;
-        this.description = description;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.eventType = eventType;
-        this.organizer = organizer;
-        this.periodicType = periodicType;
-    }
 }

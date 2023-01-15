@@ -19,4 +19,5 @@ public class Attachment {
     private String name;
     private String attachmentUrl;
     private AttachmentType attachmentType;
+
 }

@@ -19,4 +19,7 @@ public class Poll {
     private PollTemplate pollTemplate;
     @OneToMany
     private Set<PollAnswer> pollAnswers;
+
 }
+
+
