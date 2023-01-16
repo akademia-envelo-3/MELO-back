@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.event;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeService;
@@ -30,7 +31,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("events")
+@RequestMapping("/events")
 public class EventController {
 
     private final EventService eventService;
@@ -43,9 +44,10 @@ public class EventController {
     private final CommentService commentService;
     private final PersonService personService;
 
-    //    @GetMapping()
+
+    @GetMapping()
     public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
-        return null;
+        return eventService.listAllEvents();
     }
 
     //    @GetMapping()

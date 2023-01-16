@@ -19,7 +19,7 @@ public class User {
     private int id;
     @NotBlank
     private String password;
-    @NotBlank
+    @NotNull
     @OneToOne
     private Person person;
 
