@@ -54,7 +54,7 @@ public class EventService {
     private final EventMapper eventMapper;
     private final AttachmentMapper attachmentMapper;
     private final EmployeeService employeeService;
-    private final  EmployeeMapper employeeMapper;
+    private final EmployeeMapper employeeMapper;
 
 
     public ResponseEntity<EventDetailsDto> getEvent(int id) {
@@ -66,38 +66,48 @@ public class EventService {
         return null;
     }
 
-//    @Transactional
+    //    @Transactional
     public ResponseEntity<Event> insertNewEvent(NewEventDto newEventDto) {  //void?
-
+//members i comments +17
         Event event = eventMapper.newEvent(newEventDto);
-        locationRepository.save(event.getLocation());
-        attachmentRepository.save(event.getMainPhoto());
-//        event.setOrganizer(employeeMapper.toEntity(employeeService.getEmployee(newEventDto.getOrganizerId()).getBody()));
-        event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get());
 
-        if(!(newEventDto.getAttachments()==null)) {
+        locationRepository.save(event.getLocation()); //todo swap with locationService method when present
+
+        event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get()); //todo walidacja
+
+        if (!(event.getMainPhoto() == null)) {
+            attachmentRepository.save(event.getMainPhoto());
+        }
+
+        if (!(newEventDto.getCategoryId() == null)) {
+            event.setCategory(categoryRepository.getReferenceById(newEventDto.getOrganizerId()));
+            categoryRepository.save(event.getCategory()); // todo check if category already exists in database
+        }
+
+        if (!(newEventDto.getAttachments() == null)) {
             for (Attachment attachment : event.getAttachments()) {
                 attachmentRepository.save(attachment);
             }
         }
-        if(!(newEventDto.getHashtags()==null)) {
+        if (!(newEventDto.getHashtags() == null)) {
             for (Hashtag hashtag : event.getHashtags()) {
                 hashtagRepository.save(hashtag);
+                //todo swap with hashtagService method when present
             }
         }
 
-        if(!(newEventDto.getPolls()==null)) {
+        if (!(newEventDto.getPolls() == null)) {
             for (Poll poll : event.getPolls()) {
                 pollRepository.save(poll);
             }
         }
 
-        if(!(newEventDto.getUnitIds()==null)) {
+        if (!(newEventDto.getUnitIds() == null) || (newEventDto.getUnitIds().size() > 0)) {
             for (Unit unit : event.getUnits()) {
                 unitRepository.save(unit);
-            }
+            }//fixme
         }
-
+        System.out.println("test");
         return new ResponseEntity(eventRepository.save(event), HttpStatus.CREATED);
 
     }

@@ -26,27 +26,26 @@ public abstract class NewEventMapper {
 
     @AfterMapping
     public void updateResult(NewEventDto newEventDto, @MappingTarget Event event) {
-        event.setType(newEventDto.getEventType());
-        event.setOrganizer(employeeRepository.getReferenceById(newEventDto.getOrganizerId()));
-        System.out.println("organizer: "+event.getOrganizer());
-//        event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()));
-//        System.out.println("organizer: "+event.getOrganizer());
+//        event.setType(newEventDto.getEventType());
+//        event.setOrganizer(employeeRepository.getReferenceById(newEventDto.getOrganizerId()));
+//
+//        if (newEventDto.getInvitedMembers() != null) {
+//            for (Integer i : newEventDto.getInvitedMembers()) {
+//                event.getInvited().add(employeeRepository.getReferenceById(i));
+//            }
+//        }
+//
+//        if (newEventDto.getUnitIds() != null) {
+//            for (Integer i : newEventDto.getUnitIds()) {
+//                event.getUnits().add(unitRepository.getReferenceById(i));
+//            }
+//            for (Unit unit : event.getUnits()) {
+//                for (Employee employee : unit.getMembers()) {
+//                    event.getInvited().add(employee);
+//                }
+//            }
+//        }
+//        event.setCategory(categoryRepository.getReferenceById(newEventDto.getCategoryId()));
 
-        if (newEventDto.getInvitedMembers() != null) {
-            for (Integer i : newEventDto.getInvitedMembers()) {
-                event.getInvited().add(employeeRepository.getReferenceById(i));
-            }
-        }
-        if (newEventDto.getUnitIds() != null) {
-            for (Integer i : newEventDto.getUnitIds()) {
-                event.getUnits().add(unitRepository.getReferenceById(i));
-            }
-            for(Unit unit : event.getUnits()){
-                for(Employee employee: unit.getMembers()){
-                    event.getInvited().add(employee);
-                }
-            }
-        }
-        event.setCategory(categoryRepository.getReferenceById(newEventDto.getCategoryId()));
     }
 }
