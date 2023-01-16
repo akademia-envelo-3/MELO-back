@@ -33,14 +33,14 @@ public class Event {
     private String name;
     @NotBlank
     private String description;
-    @NotBlank
+    @NotNull
     private LocalDateTime startTime;
-    @NotBlank
+    @NotNull
     private LocalDateTime endTime;
-    @NotBlank
+    @NotNull
     @ManyToOne
     private Employee organizer;
-    @NotBlank
+    @NotNull
     private EventType type;
     @ManyToMany
     private Set<Person> members;
@@ -64,7 +64,6 @@ public class Event {
     private Set<Poll> polls;
     @ManyToOne
     private Location location;
-    @ManyToMany
     private Theme theme;
 
 }

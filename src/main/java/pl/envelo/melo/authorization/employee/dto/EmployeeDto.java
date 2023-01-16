@@ -2,10 +2,15 @@ package pl.envelo.melo.authorization.employee.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.*;
 import pl.envelo.melo.domain.event.Event;
 
 import java.util.Set;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class EmployeeDto {
 
     @NotBlank(message = "first name shouldn't be blank")

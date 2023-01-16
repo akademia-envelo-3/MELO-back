@@ -20,7 +20,7 @@ public class Unit {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-    @NotBlank
+//    @NotBlank
     private String name;
     private String description;
     @ManyToMany

@@ -12,6 +12,7 @@ import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 import pl.envelo.melo.domain.event.EventType;
 import pl.envelo.melo.domain.event.PeriodicType;
 import pl.envelo.melo.domain.event.Theme;
+import pl.envelo.melo.domain.hashtag.HashtagDto;
 import pl.envelo.melo.domain.location.Location;
 import pl.envelo.melo.domain.location.dto.LocationDto;
 import pl.envelo.melo.domain.poll.PollTemplate;
@@ -45,14 +46,14 @@ public class NewEventDto {
     private PeriodicType periodicType;
     private List<PollTemplateDto> polls;
     @Size(max = 100)
-    private Set<String> hashtags;
+    private Set<HashtagDto> hashtags;
     private int memberLimit;
     private Set<Integer> invitedMembers;
     private Set<Integer> unitIds;
     private LocationDto location;
     private Set<AttachmentDto> attachments;
     private AttachmentDto mainPhoto;
-    private List<Integer> categoryId;
+    private Integer categoryId;
     private Theme theme;
 
     public NewEventDto(String name, String description, LocalDateTime startTime, LocalDateTime endTime,

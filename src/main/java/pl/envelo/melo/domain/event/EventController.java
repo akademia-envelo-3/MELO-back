@@ -1,8 +1,10 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
@@ -46,9 +48,9 @@ public class EventController {
         return null;
     }
 
-//    @GetMapping()
+//    @GetMapping("event")
     public  ResponseEntity<EventDetailsDto> getEvent(int id) {
-        return null;
+        return eventService.getEvent(id);
     }
 
 //    @GetMapping()
@@ -66,9 +68,9 @@ public class EventController {
         return false;
     }
 
-//    @PostMapping()
-    public  ResponseEntity<Event> addEvent(NewEventDto newEventDto) {  //void?
-        return null;
+    @PostMapping("event")
+    public  ResponseEntity<Event> addEvent(@RequestBody @Valid NewEventDto newEventDto) {  //void?
+        return eventService.insertNewEvent(newEventDto);
     }
 
 //    @PostMapping()

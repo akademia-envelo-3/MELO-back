@@ -38,7 +38,7 @@ public class Employee {
     @OneToMany
     private Set<Unit> ownedUnits;
     @OneToOne
-    @NotBlank
+    @NotNull
     private User user;
     @OneToMany
     private Set<Notification> notificationsBox;
