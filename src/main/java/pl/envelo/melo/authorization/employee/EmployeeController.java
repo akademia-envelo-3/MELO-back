@@ -33,7 +33,7 @@ public class EmployeeController {
     }
 
 
-    @GetMapping("user/{id}/owned-events")
+    @GetMapping("/user/{id}/owned-events")
     public ResponseEntity<?> getOwnedEvents(@PathVariable int id){
         return employeeService.getSetOfOwnedEvents(id);
     }
