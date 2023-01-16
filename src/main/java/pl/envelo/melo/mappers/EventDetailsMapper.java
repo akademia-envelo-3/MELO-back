@@ -6,16 +6,13 @@ import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.poll.Poll;
-import pl.envelo.melo.domain.poll.PollTemplate;
+import pl.envelo.melo.domain.poll.dto.PollQuestionDto;
 import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
-import pl.envelo.melo.domain.poll.dto.PollTemplateToDisplayOnListDto;
-
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {HashtagMapper.class, AttachmentMapper.class, EmployeeMapper.class,
-                                            LocationMapper.class, CategoryMapper.class, PollTemplateMapper.class})
+                                            LocationMapper.class, CategoryMapper.class})
 public interface EventDetailsMapper {
 
    EventDetailsDto convert(Event event);
@@ -37,21 +34,18 @@ public interface EventDetailsMapper {
         eventDetailsDto.setConfirmedMembers(confirmedMembers);
 
        List<PollTemplateDto> pollTemplateDtoList = new ArrayList<>();
-       List<PollTemplateToDisplayOnListDto> pollQuestionList = new ArrayList<>();
+       List<PollQuestionDto> pollQuestionList = new ArrayList<>();
        Set<Poll> pollSet = event.getPolls();
         for (Poll poll : pollSet) {
 
             PollTemplateDto pollTemplateDto = new PollTemplateDto();
-            PollTemplateToDisplayOnListDto pollQuestion = new PollTemplateToDisplayOnListDto();
+            PollQuestionDto pollQuestion = new PollQuestionDto();
 
             pollTemplateDto.setPollQuestion(poll.getPollTemplate().getPollQuestion());
             pollQuestion.setPollQuestion(poll.getPollTemplate().getPollQuestion());
 
             pollTemplateDto.setPollOption(new ArrayList<>(poll.getPollTemplate().getPollOptions()));
-            pollQuestion.setPollOption(new ArrayList<>(poll.getPollTemplate().getPollOptions()));
-
             pollTemplateDto.setMultiChoice(poll.getPollTemplate().isMultiChoice());
-            pollQuestion.setMultiChoice(poll.getPollTemplate().isMultiChoice());
 
             pollTemplateDto.setEventId(event.getId());
             pollQuestion.setPollId(poll.getId());

@@ -14,16 +14,7 @@ import java.util.ArrayList;
 @Mapper(componentModel = "spring")
 public interface PollTemplateToDisplayOnListDtoMapper {
 
-//    PollTemplate convert(PollTemplateToDisplayOnListDto pollTemplateToDisplayOnListDto);
     @InheritInverseConfiguration
     PollTemplateToDisplayOnListDto convert(PollTemplate pollTemplate);
 
-//    default PollTemplateToDisplayOnListDto convert(PollTemplate pollTemplate, Poll poll){
-//        PollTemplateToDisplayOnListDto pollTemplateToDisplayOnListDto = new PollTemplateToDisplayOnListDto();
-//        pollTemplateDto.setPollQuestion(pollTemplate.getPollQuestion());
-//        pollTemplateDto.setPollOption(new ArrayList<>(pollTemplate.getPollOptions()));
-//        pollTemplateDto.setMultiChoice(pollTemplate.isMultiChoice());
-//        pollTemplateDto.setPollId(poll.getId());
-//        return  pollTemplateDto;
-//    }
 }

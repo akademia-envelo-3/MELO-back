@@ -13,15 +13,7 @@ import java.util.*;
 @Mapper(componentModel = "spring")
 public interface PollTemplateMapper {
 
-//    PollTemplate convert(PollTemplateDto pollTemplateDto);
     @InheritInverseConfiguration
     PollTemplateDto convert(PollTemplate pollTemplate);
-//    default PollTemplateDto convert(PollTemplate pollTemplate, Event event){
-//        PollTemplateDto pollTemplateDto = new PollTemplateDto();
-//        pollTemplateDto.setPollQuestion(pollTemplate.getPollQuestion());
-//        pollTemplateDto.setPollOption(new ArrayList<>(pollTemplate.getPollOptions()));
-//        pollTemplateDto.setMultiChoice(pollTemplate.isMultiChoice());
-//        pollTemplateDto.setEventId(event.getId());
-//        return  pollTemplateDto;
-//    }
+
 }

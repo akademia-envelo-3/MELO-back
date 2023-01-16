@@ -10,6 +10,7 @@ import pl.envelo.melo.domain.event.EventType;
 import pl.envelo.melo.domain.event.PeriodicType;
 import pl.envelo.melo.domain.event.Theme;
 import pl.envelo.melo.domain.location.dto.LocationDto;
+import pl.envelo.melo.domain.poll.dto.PollQuestionDto;
 import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
 import pl.envelo.melo.domain.poll.dto.PollTemplateToDisplayOnListDto;
 
@@ -39,6 +40,6 @@ public class EventDetailsDto {
     private AttachmentDto mainPhoto;
     private String category;
     private Theme theme;
-    private List<PollTemplateToDisplayOnListDto> pollQuestion;
+    private List<PollQuestionDto> pollQuestion;
 
 }

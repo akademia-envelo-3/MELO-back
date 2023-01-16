@@ -10,7 +10,6 @@ import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 @Mapper(componentModel = "spring")
 public interface EmployeeMapper {
 
-
     default EmployeeNameDto convert(Employee employee) {
        EmployeeNameDto employeeNameDto = new EmployeeNameDto();
 
