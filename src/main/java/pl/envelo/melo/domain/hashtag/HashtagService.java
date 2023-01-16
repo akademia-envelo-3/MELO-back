@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.hashtag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import pl.envelo.melo.mappers.HashtagMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,9 +12,18 @@ import java.util.Optional;
 @AllArgsConstructor
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
+    private final HashtagMapper hashtagMapper;
 
     public ResponseEntity<HashtagDto> insertNewHashtag(HashtagDto hashtagDto) {
-        return null;
+        Hashtag hashtag = hashtagMapper.convert(hashtagDto);
+        if(hashtagRepository.existsByContent(hashtag.getContent())){
+            hashtag = hashtagRepository.findByContent(hashtag.getContent());
+            incrementHashtagGlobalCount(hashtag.getId());
+        }
+        else{
+            hashtagRepository.save(hashtag);
+        }
+        return ResponseEntity.ok(hashtagMapper.convert(hashtag));
     }
 
     public ResponseEntity<?> incrementHashtagGlobalCount(int id) {

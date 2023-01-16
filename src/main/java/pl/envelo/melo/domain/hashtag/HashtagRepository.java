@@ -6,4 +6,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface HashtagRepository extends JpaRepository<Hashtag, Integer> {
     Hashtag getById(Integer id);
+
+    boolean existsByContent(String content);
+
+    Hashtag findByContent(String content);
 }

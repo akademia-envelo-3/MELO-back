@@ -1,12 +1,12 @@
 package pl.envelo.melo.domain.hashtag;
 
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import pl.envelo.melo.mappers.HashtagMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,6 +17,8 @@ class HashtagServiceTest {
     HashtagRepository hashtagRepository;
     @Autowired
     HashtagService hashtagService;
+    @Autowired
+    HashtagMapper hashtagMapper;
     @Test
     @Transactional
     void incrementHashtagGlobalCount() {
@@ -34,5 +36,25 @@ class HashtagServiceTest {
         assertEquals(2,hashtag1.getGlobalUsageCount());
         //Incorrect request
         assertEquals(HttpStatus.valueOf(404), hashtagService.incrementHashtagGlobalCount(200).getStatusCode());
+    }
+
+    @Test
+    @Transactional
+    void insertNewHashtag() {
+        Hashtag hashtag = new Hashtag();
+        hashtag.setId(1);
+        hashtag.setContent("Coffe");
+        hashtag.setGlobalUsageCount(1);
+        hashtagRepository.save(hashtag);
+        ResponseEntity<HashtagDto> responseHashtag = hashtagService.insertNewHashtag(hashtagMapper.convert(hashtag));
+        assertEquals(HttpStatus.OK, responseHashtag.getStatusCode());
+        Hashtag hashtag1 = hashtagMapper.convert(responseHashtag.getBody());
+        assertEquals(2,hashtagRepository.findByContent(responseHashtag.getBody().getContent()).getGlobalUsageCount());
+        HashtagDto hashtagDto = new HashtagDto();
+        hashtagDto.setContent("Game");
+        responseHashtag = hashtagService.insertNewHashtag(hashtagDto);
+        assertEquals(HttpStatus.OK, responseHashtag.getStatusCode());
+        assertTrue(hashtagRepository.existsByContent("Game"));
+
     }
 }
