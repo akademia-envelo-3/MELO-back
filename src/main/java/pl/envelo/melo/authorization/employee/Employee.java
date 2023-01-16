@@ -1,7 +1,6 @@
 package pl.envelo.melo.authorization.employee;
 
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -38,7 +37,7 @@ public class Employee {
     @OneToMany
     private Set<Unit> ownedUnits;
     @OneToOne
-    @NotBlank
+    @NotNull
     private User user;
     @OneToMany
     private Set<Notification> notificationsBox;
