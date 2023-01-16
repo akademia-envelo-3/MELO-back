@@ -3,9 +3,7 @@ package pl.envelo.melo.domain.event;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
@@ -75,9 +73,9 @@ public class EventController {
         return null;
     }
 
-    @PostMapping("/comments")
-    public ResponseEntity<Comment> addCommentToEvent(CommentDto commentDto) {
-        return commentService.insertNewComment(commentDto);
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<Comment> addCommentToEvent(@PathVariable int id, @RequestBody CommentDto commentDto) {
+        return commentService.insertNewComment(id, commentDto);
     }
 
     //    @PostMapping()
