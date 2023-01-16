@@ -55,6 +55,7 @@ public class EventService {
         return ResponseEntity.ok(result.stream().map(eventMapper::convert).toList());
     }
 
+
     public ResponseEntity<Event> insertNewEvent(NewEventDto newEventDto) {  //void?
         return null;
     }

@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.event;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import pl.envelo.melo.domain.comment.Comment;
 
 import java.time.LocalDateTime;
 import java.util.List;

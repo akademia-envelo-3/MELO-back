@@ -26,8 +26,6 @@ public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-    @OneToMany
-    private Set<Comment> ownedComments;
     @ManyToMany
     private Set<Event> joinedEvents;
     @OneToMany
@@ -41,5 +39,4 @@ public class Employee {
     private User user;
     @OneToMany
     private Set<Notification> notificationsBox;
-
 }
