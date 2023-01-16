@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
+import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.user.UserRepository;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Transactional
 @SpringBootTest
 class EventServiceTest {
     @Autowired
@@ -48,8 +50,6 @@ class EventServiceTest {
         assertEquals(1, eventService.listAllEvents().getBody().size());
         assertNull(eventToDisplayOnListDto.getMainPhoto());
     }
-
-    @Transactional
     @Test
     void updateEvent() {
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
@@ -62,7 +62,9 @@ class EventServiceTest {
         newEventDto.setDescription("dsadsa");
         newEventDto.setPeriodicType(PeriodicType.NONE);
         eventService.updateEvent(event.getId(), newEventDto);
-        System.out.println(eventRepository.getReferenceById(event.getId()).getOrganizer().getUser().getPerson().getFirstName());
+        event = eventRepository.getReferenceById(event.getId());
+        System.out.println(event.getOrganizer().getUser().getPerson().getFirstName());
+        System.out.println(event.getMembers().stream().filter(e-> employee.getUser().getPerson().getId() == e.getId()).findFirst().get().getFirstName());
         //eventService.updateEvent(event.getId(), );
     }
 }
