@@ -65,5 +65,4 @@ public class NewEventDto {
         this.organizerId = organizerId;
         this.periodicType = periodicType;
     }
-
 }

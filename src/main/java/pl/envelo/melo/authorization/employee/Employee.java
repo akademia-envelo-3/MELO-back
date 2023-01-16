@@ -30,7 +30,7 @@ public class Employee {
     private Set<Comment> ownedComments;
     @ManyToMany
     private Set<Event> joinedEvents;
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany
     private Set<Event> ownedEvents;
     @ManyToMany
     private Set<Unit> joinedUnits;

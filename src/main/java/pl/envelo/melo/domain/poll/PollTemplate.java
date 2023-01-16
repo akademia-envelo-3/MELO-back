@@ -1,8 +1,6 @@
 package pl.envelo.melo.domain.poll;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,6 +16,7 @@ public class PollTemplate {
     @GeneratedValue
     private int id;
     private String pollQuestion;
-    private Set<String> pollOptions;
+    @OneToMany
+    private Set<PollQuestion> pollOptions;
     private boolean multiChoice;
 }

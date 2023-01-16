@@ -9,6 +9,7 @@ import pl.envelo.melo.domain.hashtag.Hashtag;
 public interface HashtagMapper {
     @Mapping(target = "content")
     Hashtag convert(String content);
-    @InheritInverseConfiguration
-    String convert(Hashtag hashtag);
+    default String convert(Hashtag hashtag){
+        return hashtag.getContent();
+    };
 }

@@ -1,9 +1,6 @@
 package pl.envelo.melo.domain.event;
 
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -26,6 +23,9 @@ import pl.envelo.melo.domain.location.LocationRepository;
 import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollTemplateRepository;
+import pl.envelo.melo.domain.unit.Unit;
+import pl.envelo.melo.domain.unit.UnitRepository;
+import pl.envelo.melo.mappers.AttachmentMapper;
 import pl.envelo.melo.mappers.EventEditMapper;
 import pl.envelo.melo.mappers.EventMapper;
 import pl.envelo.melo.mappers.HashtagMapper;
@@ -54,9 +54,11 @@ public class EventService {
     private final PollAnswerRepository pollAnswerRepository;
     private final CommentRepository commentRepository;
     private final PersonRepository personRepository;
+    private final UnitRepository unitRepository;
     private EventMapper eventMapper;
     private HashtagMapper hashtagMapper;
     private EventEditMapper eventEditMapper;
+    private AttachmentMapper attachmentMapper;
 
     public ResponseEntity<EventDetailsDto> getEvent(int id) {
 //        return eventRepository.findById(id); Mapper dodać
@@ -81,12 +83,11 @@ public class EventService {
     public ResponseEntity<Employee> changeEventOrganizer(int id, Employee employee) { //void?
         return null;
     }
-    @Transactional
     public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto) { //void?
         try{
-            Event event = eventRepository.getReferenceById(id);
+            Optional<Event> optionalEvent = eventRepository.findById(id);
+            Event event = optionalEvent.get();
             Map<String , String> validationResult = EventValidator.validateToEdit(event, newEventDto);
-                event.setOrganizer(employeeRepository.getReferenceById(newEventDto.getOrganizerId()));
                 if(newEventDto.getHashtags() != null) {
                     Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convert).collect(Collectors.toSet());
                     newEventDto.getHashtags().forEach(e -> {
@@ -107,9 +108,36 @@ public class EventService {
                         }
                     });
                 }
-                //if(event.getAttachments() != null)
-                //    Set<String> attachmentUrl = event.getAttachments().stream().map(Attachment::getAttachmentUrl).collect(Collectors.toSet());
-                eventRepository.save(event);
+                Employee organizer = employeeRepository.getReferenceById(newEventDto.getOrganizerId());
+            event.setOrganizer(organizer);
+            event.getMembers().add(organizer.getUser().getPerson());
+            //System.out.println(event.getOrganizer().getId());
+            if (newEventDto.getInvitedMembers() != null) {
+                for (Integer i : newEventDto.getInvitedMembers()) {
+                    event.getInvited().add(employeeRepository.getReferenceById(i));
+                }
+            }
+            if (newEventDto.getUnitIds() != null) {
+                for (Integer i : newEventDto.getUnitIds()) {
+                    event.getUnits().add(unitRepository.getReferenceById(i));
+                }
+                for (Unit unit : event.getUnits()) {
+                    for (Employee employee : unit.getMembers()) {
+                        event.getInvited().add(employee);
+                    }
+                }
+            }
+            Set<String> attachmentUrl = event.getAttachments().stream().map(Attachment::getAttachmentUrl).collect(Collectors.toSet());
+            newEventDto.getAttachments().forEach(e->{
+
+            });
+            newEventDto.getAttachments().forEach(e->{
+                if(!attachmentUrl.contains(e.getAttachmentUrl())){
+                    Attachment attachment = attachmentMapper.convert(e);
+                    event.getAttachments().add(attachment);
+                }
+            });
+            eventRepository.save(event);
             //}else{
             //    return ResponseEntity.status(HttpStatusCode.valueOf(403)).body(validationResult);
             //}

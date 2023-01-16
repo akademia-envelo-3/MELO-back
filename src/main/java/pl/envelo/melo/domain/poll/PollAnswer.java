@@ -19,5 +19,6 @@ public class PollAnswer {
     @ManyToOne
     @JoinColumn(name = "employee_id")
     private Employee employee;
-    private Set<String> pollResult;
+    @OneToMany
+    private Set<PollQuestion> pollResult;
 }

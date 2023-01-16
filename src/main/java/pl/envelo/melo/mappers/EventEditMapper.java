@@ -26,7 +26,7 @@ public abstract class EventEditMapper {
     @AfterMapping
     public void updateResult(NewEventDto newEventDto, @MappingTarget Event event) {
         event.setOrganizer(employeeRepository.getReferenceById(newEventDto.getOrganizerId()));
-        System.out.println(event.getOrganizer().getId());
+        //System.out.println(event.getOrganizer().getId());
         if (newEventDto.getInvitedMembers() != null) {
             for (Integer i : newEventDto.getInvitedMembers()) {
                 event.getInvited().add(employeeRepository.getReferenceById(i));
