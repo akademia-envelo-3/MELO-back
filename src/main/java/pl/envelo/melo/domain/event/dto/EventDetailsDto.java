@@ -10,6 +10,7 @@ import pl.envelo.melo.domain.event.EventType;
 import pl.envelo.melo.domain.event.PeriodicType;
 import pl.envelo.melo.domain.event.Theme;
 import pl.envelo.melo.domain.location.dto.LocationDto;
+import pl.envelo.melo.domain.poll.dto.PollQuestionDto;
 import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
 import pl.envelo.melo.domain.poll.dto.PollTemplateToDisplayOnListDto;
 
@@ -33,22 +34,12 @@ public class EventDetailsDto {
     private List<PollTemplateDto> polls;
     private Set<String> hashtags;
     private int memberLimit;
-    private Set<EmployeeNameDto> invitedMembers;
+    private List<EmployeeNameDto> confirmedMembers;
     private LocationDto location;
     private Set<AttachmentDto> attachments;
     private AttachmentDto mainPhoto;
     private String category;
     private Theme theme;
-    private List<PollTemplateToDisplayOnListDto> pollQuestion;
+    private List<PollQuestionDto> pollQuestion;
 
-    public EventDetailsDto(String name, String description, LocalDateTime startTime, LocalDateTime endTime,
-                       EventType eventType, EmployeeNameDto organizer, PeriodicType periodicType){
-        this.name = name;
-        this.description = description;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.eventType = eventType;
-        this.organizer = organizer;
-        this.periodicType = periodicType;
-    }
 }
