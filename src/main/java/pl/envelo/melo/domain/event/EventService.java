@@ -22,7 +22,9 @@ import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollTemplateRepository;
 import pl.envelo.melo.mappers.EventDetailsMapper;
+import pl.envelo.melo.mappers.EventMapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -42,6 +44,7 @@ public class EventService {
     private final PollAnswerRepository pollAnswerRepository;
     private final CommentRepository commentRepository;
     private final PersonRepository personRepository;
+    private EventMapper eventMapper;
 
     public ResponseEntity<?> getEvent(int id) {
         if (eventRepository.existsById(id)) {
@@ -55,8 +58,13 @@ public class EventService {
     }
 
     public ResponseEntity<List<EventToDisplayOnListDto>> listAllEvents() {
-        return null;
+        List<Event> result = eventRepository.findAllByStartTimeAfterAndType(LocalDateTime.now(), EventType.LIMITED_EXTERNAL);
+        result.addAll(eventRepository.findAllByStartTimeAfterAndType(LocalDateTime.now(), EventType.UNLIMITED_EXTERNAL));
+        result.addAll(eventRepository.findAllByStartTimeAfterAndType(LocalDateTime.now(), EventType.UNLIMITED_PUBLIC_INTERNAL));
+        result.addAll(eventRepository.findAllByStartTimeAfterAndType(LocalDateTime.now(), EventType.LIMITED_PUBLIC_INTERNAL));
+        return ResponseEntity.ok(result.stream().map(eventMapper::convert).toList());
     }
+
 
     public ResponseEntity<Event> insertNewEvent(NewEventDto newEventDto) {  //void?
         return null;

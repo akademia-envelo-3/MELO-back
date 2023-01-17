@@ -29,20 +29,20 @@ import java.util.Set;
 @AllArgsConstructor
 public class Event {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @NotBlank
     private String name;
     @NotBlank
     private String description;
-    @NotBlank
+    @NotNull
     private LocalDateTime startTime;
-    @NotBlank
+    @NotNull
     private LocalDateTime endTime;
-    @NotBlank
+    @NotNull
     @ManyToOne
     private Employee organizer;
-    @NotBlank
+    @NotNull
     private EventType type;
     @ManyToMany
     private Set<Person> members;
@@ -53,7 +53,7 @@ public class Event {
     private Set<Unit> units;
     @ManyToMany
     private Set<Hashtag> hashtags;
-    private int memberLimit;
+    private Long memberLimit;
     @ManyToOne
     private Category category;
     @OneToMany

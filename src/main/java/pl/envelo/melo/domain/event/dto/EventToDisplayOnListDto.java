@@ -1,9 +1,6 @@
 package pl.envelo.melo.domain.event.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 import pl.envelo.melo.domain.event.EventType;
