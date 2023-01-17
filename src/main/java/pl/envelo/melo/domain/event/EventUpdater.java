@@ -45,6 +45,7 @@ public class EventUpdater {
         updateDescription(event, newEventDto);
         updateDate(event, newEventDto);
         updateUnitsAndInvitedMembers(event, newEventDto);
+        updatePeriodic(event, newEventDto);
         updateHashtags(event, newEventDto);
         updateMemberLimit(event, newEventDto);
         updateOrganizer(event, newEventDto);
@@ -53,11 +54,18 @@ public class EventUpdater {
         updateLocation(event, newEventDto);
         updateMainPhoto(event, newEventDto);
     }
-    void updateDate(Event event, NewEventDto newEventDto){
+
+    void updateDate(Event event, NewEventDto newEventDto) {
         event.setStartTime(newEventDto.getStartTime());
         event.setEndTime(newEventDto.getEndTime());
     }
+
+    void updatePeriodic(Event event, NewEventDto newEventDto) {
+        event.setPeriodicType(newEventDto.getPeriodicType());
+    }
+
     void updateHashtags(Event event, NewEventDto newEventDto) {
+        if(event.getHashtags() == null){
         if (newEventDto.getHashtags() != null) {
             Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convertToString).collect(Collectors.toSet());
             newEventDto.getHashtags().forEach(e -> {
@@ -65,18 +73,36 @@ public class EventUpdater {
                     Optional<Hashtag> hashtag = hashtagRepository.findByContent(e);
                     if (hashtag.isPresent()) {
                         hashtagService.incrementHashtagGlobalCount(hashtag.get().getId());
+                        event.getHashtags().add(hashtag.get());
                     } else {
                         HashtagDto hashtagDto = new HashtagDto();
                         hashtagDto.setContent(e);
                         hashtagService.insertNewHashtag(hashtagDto);
+                        event.getHashtags().add(hashtagRepository.findByContent(e).get());
                     }
                 }
             });
             event.getHashtags().forEach(e -> {
                 if (!newEventDto.getHashtags().contains(e.getContent())) {
+                    event.getHashtags().remove(e);
                     hashtagService.decrementHashtagGlobalCount(e.getId());
                 }
             });
+        }}else{
+            if(newEventDto.getHashtags()!=null){
+                newEventDto.getHashtags().forEach(h ->{
+                    Optional<Hashtag> hashtag = hashtagRepository.findByContent(h);
+                    if (hashtag.isPresent()) {
+                        hashtagService.incrementHashtagGlobalCount(hashtag.get().getId());
+                        event.getHashtags().add(hashtag.get());
+                    } else {
+                        HashtagDto hashtagDto = new HashtagDto();
+                        hashtagDto.setContent(h);
+                        hashtagService.insertNewHashtag(hashtagDto);
+                        event.getHashtags().add(hashtagRepository.findByContent(h).get());
+                    }
+                });
+            }
         }
     }
 
@@ -105,12 +131,12 @@ public class EventUpdater {
     }
 
     void updateAttachments(Event event, NewEventDto newEventDto) {
-        if(newEventDto.getAttachments()==null){
-            if(event.getAttachments()!=null || event.getAttachments().size()!=0){
+        if (newEventDto.getAttachments() == null) {
+            if (event.getAttachments() != null || event.getAttachments().size() != 0) {
                 event.getAttachments().clear();
             }
         }
-        if (event.getAttachments() != null && newEventDto.getAttachments()!= null) {
+        if (event.getAttachments() != null && newEventDto.getAttachments() != null) {
             Set<String> attachmentUrl = event.getAttachments().stream().map(Attachment::getAttachmentUrl).collect(Collectors.toSet());
             newEventDto.getAttachments().forEach(e -> {
                 if (!attachmentUrl.contains(e.getAttachmentUrl())) {
@@ -133,28 +159,33 @@ public class EventUpdater {
     }
 
     void updateCategory(Event event, NewEventDto newEventDto) {
-        if(newEventDto.getCategoryId()!= null) {
+        if (newEventDto.getCategoryId() != null) {
             if (categoryRepository.existsById(newEventDto.getCategoryId()))
                 if (!categoryRepository.getReferenceById(newEventDto.getCategoryId()).isHidden())
                     event.setCategory(categoryRepository.getReferenceById(newEventDto.getCategoryId()));
                 else
                     event.setCategory(null);
-        }else
+        } else
             event.setCategory(null);
     }
-    void updateName(Event event, NewEventDto newEventDto){
+
+    void updateName(Event event, NewEventDto newEventDto) {
         event.setName(newEventDto.getName());
     }
-    void updateDescription(Event event, NewEventDto newEventDto){
+
+    void updateDescription(Event event, NewEventDto newEventDto) {
         event.setDescription(newEventDto.getDescription());
     }
-    void updateLocation(Event event, NewEventDto newEventDto){
+
+    void updateLocation(Event event, NewEventDto newEventDto) {
         event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
     }
-    void updateMemberLimit(Event event, NewEventDto newEventDto){
+
+    void updateMemberLimit(Event event, NewEventDto newEventDto) {
         event.setMemberLimit((long) newEventDto.getMemberLimit());
     }
-    void updateMainPhoto(Event event, NewEventDto newEventDto){
+
+    void updateMainPhoto(Event event, NewEventDto newEventDto) {
         event.setMainPhoto(attachmentService.insertOrGetAttachment(newEventDto.getMainPhoto()));
     }
 }

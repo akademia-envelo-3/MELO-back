@@ -51,12 +51,6 @@ class EventServiceTest {
 
     void setUpRepo() {
         simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
-        //employeeRepository.deleteAll();
-        //employeeRepository.flush();
-        //userRepository.deleteAll();
-        //userRepository.flush();
-        //personRepository.deleteAll();
-        //personRepository.flush();
     }
 
     @Test
@@ -84,7 +78,6 @@ class EventServiceTest {
         ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(3);
         assertEquals(HttpStatus.NOT_FOUND, eventDetailsDtoResponseEntity.getStatusCode());
     }
-
 
     void listAllEvents() {
         setUpRepo();

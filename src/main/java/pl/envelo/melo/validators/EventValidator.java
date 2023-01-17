@@ -34,6 +34,11 @@ public class EventValidator {
                 }
             }
         }
+        if (eventDto.getStartTime() != null && event.getStartTime() != null) {
+            if (eventDto.getStartTime().compareTo(event.getStartTime()) >= 0) {
+                errors.put("endTime error", "You must set endTime to be after startTime");
+            }
+        }
         if (eventDto.getStartTime() == null) {
             errors.put("startTime error", "You must set startTime");
         } else {

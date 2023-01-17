@@ -51,10 +51,13 @@ public class EventController {
 
 
     @PostMapping("/{id}")
-    public ResponseEntity<?> editEvent(@RequestParam int id, @RequestBody NewEventDto newEventDto) {
+    public ResponseEntity<?> editEvent(@RequestParam("id") int id, @RequestBody NewEventDto newEventDto) {
         return eventService.updateEvent(id, newEventDto);
     }
-
+    @GetMapping("/{id}/edit-form")
+    public ResponseEntity<?> editForm(@RequestParam("id") int id){
+        return eventService.editEventForm(id);
+    }
     //    @GetMapping()
 
     @GetMapping("/{id}")

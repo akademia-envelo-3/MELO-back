@@ -97,29 +97,25 @@ public class EventService {
 
     public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto) { //void?
         //TODO dostosować do funckjonalnosci wysyłania plików na serwer
-        try {
             Optional<Event> optionalEvent = eventRepository.findById(id);
             if (optionalEvent.isEmpty())
-                throw new RuntimeException();
+                return ResponseEntity.badRequest().body("Event with id " +id+" not found");
             Event event = optionalEvent.get();
 
             Map<String, String> validationResult = eventValidator.validateToEdit(event, newEventDto);
             validationResult.forEach((k, v) -> System.out.println(k + " " + v));
             if (validationResult.size() != 0) {
-                return ResponseEntity.status(HttpStatusCode.valueOf(500)).body(validationResult);
+                return ResponseEntity.badRequest().body(validationResult);
             }
             eventUpdater.update(event, newEventDto);
             eventNotificationHandler.editNotification(event, newEventDto).forEach(notificationService::insertEventNotification);
-            eventRepository.save(event);
-            //}else{
-            //    return ResponseEntity.status(HttpStatusCode.valueOf(403)).body(validationResult);
-            //}
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+            return ResponseEntity.ok(eventDetailsMapper.convert(eventRepository.save(event)));
     }
-
+    public ResponseEntity<?> editEventForm(int id){
+        if(!eventRepository.existsById(id))
+            return ResponseEntity.status(HttpStatusCode.valueOf(404)).body("Event with "+id+" does not exists");
+        return ResponseEntity.ok(eventEditMapper.convert(eventRepository.getReferenceById(id)));
+    }
     public ResponseEntity<Employee> addEmployeeToEvent(int EmployeeId, int EventId) { //void?
         return null;
     }
