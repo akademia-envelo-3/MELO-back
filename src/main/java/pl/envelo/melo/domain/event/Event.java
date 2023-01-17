@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.event;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,6 +26,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,7 +53,7 @@ public class Event {
     private Unit unit;
     @ManyToMany
     private Set<Hashtag> hashtags;
-    private int memberLimit;
+    private Long memberLimit;
     @ManyToOne
     private Category category;
     @OneToMany

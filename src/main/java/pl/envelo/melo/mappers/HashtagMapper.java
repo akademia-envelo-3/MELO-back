@@ -6,6 +6,11 @@ import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagDto;
 
 @Mapper(componentModel = "spring")
+
 public interface HashtagMapper extends EntityMapper<HashtagDto, Hashtag> {
 
+    
+    default String  convertToString(Hashtag hashtag){
+        return hashtag.getContent();
+    }
 }

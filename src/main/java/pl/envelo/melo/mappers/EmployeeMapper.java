@@ -1,5 +1,6 @@
 package pl.envelo.melo.mappers;
 
+import org.mapstruct.*;
 import org.mapstruct.Context;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
@@ -9,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
+import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
+import pl.envelo.melo.authorization.person.Person;
+import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 
@@ -26,6 +30,17 @@ public interface EmployeeMapper extends EntityMapper<EmployeeDto, Employee>{
     Employee toEntity(EmployeeDto employeeDto);
     @InheritInverseConfiguration
     EmployeeDto toDto(Employee employee);
+    
+    
+    default EmployeeNameDto convertEmployeeToEmployeeNameDto(Employee employee) {
+       EmployeeNameDto employeeNameDto = new EmployeeNameDto();
+
+       employeeNameDto.setFirstName(employee.getUser().getPerson().getFirstName());
+       employeeNameDto.setLastName(employee.getUser().getPerson().getLastName());
+
+       return employeeNameDto;
+    }
 
 
+}
 }

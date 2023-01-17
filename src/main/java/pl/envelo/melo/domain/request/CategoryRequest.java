@@ -19,4 +19,5 @@ public class CategoryRequest {
     @JoinColumn(name = "employee_id")
     private Employee employee;
     private boolean isResolved;
+
 }

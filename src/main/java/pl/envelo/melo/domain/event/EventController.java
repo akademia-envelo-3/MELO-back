@@ -2,6 +2,7 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -30,6 +31,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
+@RequestMapping("/event")
 public class EventController {
 
     private final EventService eventService;
@@ -42,83 +44,85 @@ public class EventController {
     private final CommentService commentService;
     private final PersonService personService;
 
-//    @GetMapping()
+
+    @GetMapping()
     public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
-        return null;
+        return eventService.listAllEvents();
     }
 
-//    @GetMapping("event")
+
+    @GetMapping("/{id}")
     public  ResponseEntity<EventDetailsDto> getEvent(int id) {
-        return eventService.getEvent(id);
+        return (ResponseEntity<EventDetailsDto>) eventService.getEvent(id);
     }
 
-//    @GetMapping()
-    public  ResponseEntity<List<Person>> getEventMembers() {
+    //    @GetMapping()
+    public ResponseEntity<List<Person>> getEventMembers() {
         return null;
     }
 
-//    @GetMapping()
-    public  ResponseEntity<EmployeeNameDto> getEventOrganizer(int id) {
+    //    @GetMapping()
+    public ResponseEntity<EmployeeNameDto> getEventOrganizer(int id) {
         return null;
     }
 
-//    @PostMapping()
+    //    @PostMapping()
     public boolean changeEventOrganizer(int id, Employee employee) {
         return false;
     }
 
-    @PostMapping("event")
+    @PostMapping("")
     public  ResponseEntity<?> addEvent(@RequestBody @Valid NewEventDto newEventDto) {  //Event?
         return eventService.insertNewEvent(newEventDto);
     }
 
-//    @PostMapping()
-    public  ResponseEntity<Comment> addCommentToEvent(CommentDto commentDto) {
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<Comment> addCommentToEvent(@PathVariable int id, @RequestBody CommentDto commentDto) {
+        return commentService.insertNewComment(id, commentDto);
+    }
+
+    //    @PostMapping()
+    public ResponseEntity<Poll> addPollToEvent(PollTemplateDto pollTemplateDto) {
         return null;
     }
 
-//    @PostMapping()
-    public  ResponseEntity<Poll> addPollToEvent(PollTemplateDto pollTemplateDto) {
+    //    @PostMapping()
+    public ResponseEntity<PollAnswer> addPollAnswer(PollAnswerDto pollAnswerDto) {
         return null;
     }
 
-//    @PostMapping()
-    public  ResponseEntity<PollAnswer> addPollAnswer(PollAnswerDto pollAnswerDto) {
-        return null;
-    }
-
-//    @PostMapping()
+    //    @PostMapping()
     public ResponseEntity<?> addGuestToEvent(AddGuestToEventDto addGuestToEventDto) {
         return null;
     }
 
-//    @PostMapping()
+    //    @PostMapping()
     public ResponseEntity<?> removeGuestFromEvent(int personId, int eventId) {
         return null;
     }
 
-//    @PostMapping()
+    //    @PostMapping()
     public ResponseEntity<?> joinEvent(int employeeId, int eventId) {
         return null;
     }
 
-//    @PostMapping()
+    //    @PostMapping()
     public ResponseEntity<?> acceptInvite(int employeeId, int eventId) {
         return null;
     }
 
-//    @PostMapping()
+    //    @PostMapping()
     public ResponseEntity<?> filterEvent(String stringFilter) {
         return null;
     }
 
-//    @GetMapping
-    public  ResponseEntity<List<Person>> getAllInvited(int eventId){
+    //    @GetMapping
+    public ResponseEntity<List<Person>> getAllInvited(int eventId) {
         return null;
     }
 
-//    @PostMapping()
-    public ResponseEntity<?> disjoinEvent(int employeeId, int eventId){
+    //    @PostMapping()
+    public ResponseEntity<?> disjoinEvent(int employeeId, int eventId) {
         return null;
     }
 }

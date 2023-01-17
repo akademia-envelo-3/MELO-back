@@ -34,7 +34,8 @@ public class EmployeeController {
     }
 
 
-    public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(){
-        return null;
+    @GetMapping("/user/{id}/owned-events")
+    public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(@PathVariable int id){
+        return (ResponseEntity<Set<EventToDisplayOnListDto>>) employeeService.getSetOfOwnedEvents(id);
     }
 }

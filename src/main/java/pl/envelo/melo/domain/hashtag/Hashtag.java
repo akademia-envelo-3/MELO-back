@@ -19,4 +19,5 @@ public class Hashtag {
     private String content;
     private int globalUsageCount;
     private boolean hidden;
+
 }

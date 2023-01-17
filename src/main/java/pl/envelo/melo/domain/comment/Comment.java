@@ -7,6 +7,7 @@ import lombok.Setter;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.attachment.Attachment;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,8 +15,8 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+
 public class Comment {
-    
     @Id
     @GeneratedValue
     private int id;
@@ -26,5 +27,4 @@ public class Comment {
     private List<Attachment> attachments;
     private String content;
     private LocalDateTime timestamp;
-
 }

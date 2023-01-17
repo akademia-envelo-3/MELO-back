@@ -3,9 +3,11 @@ package pl.envelo.melo.domain.location.dto;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 @NoArgsConstructor
@@ -25,8 +27,8 @@ public class LocationDto {
     private int apartmentNumber;
 
     @NotBlank(message = "postalCode field can't be blank")
-    @Digits(integer = 5, fraction = 0, message = "postalCode must have 5 digits")
-    private int postalCode;
+    @Size(min = 6, max = 6)
+    private String postalCode;
 
     @NotBlank(message = "city field can't be blank")
     @Max(value = 255, message = "the length of city must not be greater than 255")
