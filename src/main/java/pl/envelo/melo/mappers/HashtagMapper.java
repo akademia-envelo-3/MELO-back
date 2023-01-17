@@ -11,7 +11,12 @@ import pl.envelo.melo.domain.hashtag.HashtagDto;
 @Mapper(componentModel = "spring")
 public interface HashtagMapper {
 
-    default String  convert(Hashtag hashtag){
+
+    Hashtag convert(HashtagDto hashtagDto);
+    @InheritInverseConfiguration
+    HashtagDto convert(Hashtag hashtag);
+    
+    default String  convertToString(Hashtag hashtag){
         return hashtag.getContent();
     }
 }
