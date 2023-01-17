@@ -19,7 +19,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class CommentDto {
-    @NotBlank(message = "comment cannot be empty")
     @Size(min = 1, max = 2000, message = "Commentary must contain from 1 to 2000 chars")
     private String content;
     @Max(10)
