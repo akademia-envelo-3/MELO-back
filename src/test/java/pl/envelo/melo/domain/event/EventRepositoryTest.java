@@ -30,6 +30,7 @@ class EventRepositoryTest {
     @BeforeEach
     void setUp() {
         eventRepository.deleteAll();
+        eventRepository.flush();
         simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
     }
 

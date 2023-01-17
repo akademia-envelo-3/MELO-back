@@ -16,4 +16,7 @@ public class AttachmentService {
     public ResponseEntity<AttachmentDto> insertNewAttachment(AttachmentDto attachmentDto) {
         return null;
     }
+    public Attachment insertOrGetAttachment(AttachmentDto attachmentDto) {
+        return null;
+    }
 }

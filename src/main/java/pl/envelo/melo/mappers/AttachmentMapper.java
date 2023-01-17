@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface AttachmentMapper {
     Attachment convert(AttachmentDto attachmentDto);
 }

@@ -43,7 +43,6 @@ public class NewEventDto {
     private int organizerId;
     @NotNull
     private PeriodicType periodicType;
-    private List<PollTemplateDto> polls;
     @Size(max = 100)
     private Set<String> hashtags;
     private int memberLimit;

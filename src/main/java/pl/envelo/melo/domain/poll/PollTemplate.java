@@ -16,7 +16,6 @@ public class PollTemplate {
     @GeneratedValue
     private int id;
     private String pollQuestion;
-    @OneToMany
-    private Set<PollQuestion> pollOptions;
+    private Set<String> pollOptions;
     private boolean multiChoice;
 }

@@ -20,27 +20,16 @@ public abstract class EventEditMapper {
     @Autowired
     UnitRepository unitRepository;
 
-    @Mapping(source = "eventType", target = "type")
-    public abstract Event convert(NewEventDto newEventDto);
+    @Mapping(source = "type", target = "eventType")
+    public abstract NewEventDto convert(Event event);
 
     @AfterMapping
-    public void updateResult(NewEventDto newEventDto, @MappingTarget Event event) {
+    public void updateResult(@MappingTarget  NewEventDto newEventDto, Event event) {
         event.setOrganizer(employeeRepository.getReferenceById(newEventDto.getOrganizerId()));
         //System.out.println(event.getOrganizer().getId());
-        if (newEventDto.getInvitedMembers() != null) {
-            for (Integer i : newEventDto.getInvitedMembers()) {
-                event.getInvited().add(employeeRepository.getReferenceById(i));
-            }
-        }
-        if (newEventDto.getUnitIds() != null) {
-            for (Integer i : newEventDto.getUnitIds()) {
-                event.getUnits().add(unitRepository.getReferenceById(i));
-            }
-            for (Unit unit : event.getUnits()) {
-                for (Employee employee : unit.getMembers()) {
-                    event.getInvited().add(employee);
-                }
-            }
-        }
+        newEventDto.setOrganizerId(event.getOrganizer().getId());
+        event.getInvited().forEach(e-> newEventDto.getInvitedMembers().add(e.getId()));
+        event.getUnits().forEach(e->newEventDto.getUnitIds().add(e.getId()));
+       // event.getMembers().forEach(e->newEventDto.getInvitedMembers().add());
     }
 }

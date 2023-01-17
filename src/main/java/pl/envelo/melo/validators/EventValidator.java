@@ -1,5 +1,8 @@
 package pl.envelo.melo.validators;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventType;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
@@ -8,26 +11,38 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
+@AllArgsConstructor
 public class EventValidator {
-    public static Map<String, String> validateToEdit(Event event, NewEventDto eventDto){
-        Map<String ,String> errors = new HashMap<>();
-        if(!event.getType().equals(eventDto.getEventType()))
-            errors.put(EventType.class.getName()+" error","You cannot edit eventType");
+    CategoryRepository categoryRepository;
+
+    public Map<String, String> validateToEdit(Event event, NewEventDto eventDto) {
+        Map<String, String> errors = new HashMap<>();
+        if (event.getStartTime().compareTo(LocalDateTime.now()) <= 0) {
+            errors.put("forbidden error", "You cannot edit archived event");
+            return errors;
+        }
+        if (!event.getType().equals(eventDto.getEventType()))
+            errors.put(EventType.class.getName() + " error", "You cannot edit eventType");
         else {
-            if(event.getType().name().contains("LIMITED")){
-                if(eventDto.getMemberLimit()<2){
-                    errors.put("memberLimit"+" error","You cannot set memberLimit to less than 2");
+            if (event.getType().name().contains("LIMITED")) {
+                if (eventDto.getMemberLimit() < 2) {
+                    errors.put("memberLimit" + " error", "You cannot set memberLimit to less than 2");
                 }
-                if(eventDto.getMemberLimit()<event.getMembers().size()){
+                if (eventDto.getMemberLimit() < event.getMembers().size()) {
                     errors.put("memberLimit" + " error", "You cannot set memberLimit to less than number of accepted members. You need to remove members if you wish to proceed");
                 }
-            }}
-        if(event.getStartTime().compareTo(LocalDateTime.now()) <= 0){
-            errors.put("startTime error", "You cannot set startTime to past time");
+            }
         }
-
-        if(eventDto.getAttachments()!=null && eventDto.getAttachments().size()>10){
-            errors.put("attachments error","You cannot add more than 10 attachments");
+        if (eventDto.getStartTime() == null) {
+            errors.put("startTime error", "You must set startTime");
+        } else {
+            if (eventDto.getStartTime().compareTo(LocalDateTime.now()) <= 0) {
+                errors.put("startTime error", "You cannot set startTime to past time");
+            }
+        }
+        if (eventDto.getEndTime() == null) {
+            errors.put("endTime error", "You must set endTime");
         }
         return errors;
     }

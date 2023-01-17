@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.event;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -10,6 +11,7 @@ import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
+import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
@@ -20,6 +22,7 @@ import pl.envelo.melo.domain.hashtag.HashtagDto;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
+import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollTemplateRepository;
@@ -43,6 +46,7 @@ import java.util.stream.Collectors;
 public class EventService {
 
     private final HashtagService hashtagService;
+    private final NotificationService notificationService;
     private final EventRepository eventRepository;
     private final EmployeeRepository employeeRepository;
     private final HashtagRepository hashtagRepository;
@@ -59,11 +63,15 @@ public class EventService {
     private HashtagMapper hashtagMapper;
     private EventEditMapper eventEditMapper;
     private AttachmentMapper attachmentMapper;
+    private EventUpdater eventUpdater;
+    private EventValidator eventValidator;
+    private EditEventNotificationHandler eventNotificationHandler;
 
     public ResponseEntity<EventDetailsDto> getEvent(int id) {
 //        return eventRepository.findById(id); Mapper dodać
         return null;
     }
+
     public ResponseEntity<List<EventToDisplayOnListDto>> listAllEvents() {
         List<Event> result = eventRepository.findAllByStartTimeAfterAndType(LocalDateTime.now(), EventType.LIMITED_EXTERNAL);
         result.addAll(eventRepository.findAllByStartTimeAfterAndType(LocalDateTime.now(), EventType.UNLIMITED_EXTERNAL));
@@ -83,65 +91,27 @@ public class EventService {
     public ResponseEntity<Employee> changeEventOrganizer(int id, Employee employee) { //void?
         return null;
     }
-    public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto) { //void?
-        try{
-            Optional<Event> optionalEvent = eventRepository.findById(id);
-            Event event = optionalEvent.get();
-            Map<String , String> validationResult = EventValidator.validateToEdit(event, newEventDto);
-                if(newEventDto.getHashtags() != null) {
-                    Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convert).collect(Collectors.toSet());
-                    newEventDto.getHashtags().forEach(e -> {
-                        if (!currHashtags.contains(e)) {
-                            Optional<Hashtag> hashtag = hashtagRepository.findByContent(e);
-                            if (hashtag.isPresent()) {
-                                hashtagService.incrementHashtagGlobalCount(hashtag.get().getId());
-                            } else {
-                                HashtagDto hashtagDto = new HashtagDto();
-                                hashtagDto.setContent(e);
-                                hashtagService.insertNewHashtag(hashtagDto);
-                            }
-                        }
-                    });
-                    event.getHashtags().forEach(e -> {
-                        if (!newEventDto.getHashtags().contains(e.getContent())) {
-                            hashtagService.decrementHashtagGlobalCount(e.getId());
-                        }
-                    });
-                }
-                Employee organizer = employeeRepository.getReferenceById(newEventDto.getOrganizerId());
-            event.setOrganizer(organizer);
-            event.getMembers().add(organizer.getUser().getPerson());
-            //System.out.println(event.getOrganizer().getId());
-            if (newEventDto.getInvitedMembers() != null) {
-                for (Integer i : newEventDto.getInvitedMembers()) {
-                    event.getInvited().add(employeeRepository.getReferenceById(i));
-                }
-            }
-            if (newEventDto.getUnitIds() != null) {
-                for (Integer i : newEventDto.getUnitIds()) {
-                    event.getUnits().add(unitRepository.getReferenceById(i));
-                }
-                for (Unit unit : event.getUnits()) {
-                    for (Employee employee : unit.getMembers()) {
-                        event.getInvited().add(employee);
-                    }
-                }
-            }
-            Set<String> attachmentUrl = event.getAttachments().stream().map(Attachment::getAttachmentUrl).collect(Collectors.toSet());
-            newEventDto.getAttachments().forEach(e->{
 
-            });
-            newEventDto.getAttachments().forEach(e->{
-                if(!attachmentUrl.contains(e.getAttachmentUrl())){
-                    Attachment attachment = attachmentMapper.convert(e);
-                    event.getAttachments().add(attachment);
-                }
-            });
+    public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto) { //void?
+        //TODO dostosować do funckjonalnosci wysyłania plików na serwer
+        try {
+            Optional<Event> optionalEvent = eventRepository.findById(id);
+            if (optionalEvent.isEmpty())
+                throw new RuntimeException();
+            Event event = optionalEvent.get();
+
+            Map<String, String> validationResult = eventValidator.validateToEdit(event, newEventDto);
+            validationResult.forEach((k, v) -> System.out.println(k + " " + v));
+            if(validationResult.size()!=0){
+                return ResponseEntity.status(HttpStatusCode.valueOf(500)).body(validationResult);
+            }
+            eventUpdater.update(event, newEventDto);
+            eventNotificationHandler.editNotification(event, newEventDto).forEach(notificationService::insertEventNotification);
             eventRepository.save(event);
             //}else{
             //    return ResponseEntity.status(HttpStatusCode.valueOf(403)).body(validationResult);
             //}
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;

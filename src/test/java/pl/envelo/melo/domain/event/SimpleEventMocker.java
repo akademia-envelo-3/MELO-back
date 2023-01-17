@@ -28,6 +28,7 @@ public class SimpleEventMocker {
         event.setType(eventType);
         event.setMembers(new HashSet<>());
         event.setInvited(new HashSet<>());
+        event.setAttachments(new HashSet<>());
         if (employees.length != 0)
             event.setOrganizer(employees[0]);
         else {

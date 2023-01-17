@@ -28,7 +28,7 @@ import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
 
 import java.util.List;
 
-@RequestMapping("/v1")
+@RequestMapping("/v1/events")
 @RestController
 @AllArgsConstructor
 public class EventController {
@@ -43,13 +43,14 @@ public class EventController {
     private final CommentService commentService;
     private final PersonService personService;
 
-    @GetMapping("/event")
+    @GetMapping
     public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
         return eventService.listAllEvents();
     }
-    @PostMapping("/event/{id}")
-    public ResponseEntity<?> editEvent(@RequestParam int id, @RequestBody NewEventDto newEventDto){
-            return eventService.updateEvent(id, newEventDto);
+
+    @PostMapping("/{id}")
+    public ResponseEntity<?> editEvent(@RequestParam int id, @RequestBody NewEventDto newEventDto) {
+        return eventService.updateEvent(id, newEventDto);
     }
 
     //    @GetMapping()
