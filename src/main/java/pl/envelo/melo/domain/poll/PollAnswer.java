@@ -20,4 +20,5 @@ public class PollAnswer {
     @JoinColumn(name = "employee_id")
     private Employee employee;
     private Set<String> pollResult;
+
 }
