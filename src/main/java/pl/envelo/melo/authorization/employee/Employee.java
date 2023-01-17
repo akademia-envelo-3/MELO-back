@@ -1,14 +1,12 @@
 package pl.envelo.melo.authorization.employee;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pl.envelo.melo.authorization.user.User;
-import pl.envelo.melo.domain.comment.Comment;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.notification.Notification;
 import pl.envelo.melo.domain.unit.Unit;
@@ -24,10 +22,8 @@ import java.util.Set;
 public class Employee {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     private int id;
-    @OneToMany
-    private Set<Comment> ownedComments;
     @ManyToMany
     private Set<Event> joinedEvents;
     @OneToMany

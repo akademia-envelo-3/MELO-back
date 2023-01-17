@@ -1,7 +1,6 @@
 package pl.envelo.melo.domain.event;
 
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -28,9 +27,9 @@ import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
 
 import java.util.List;
 
-@RequestMapping("/v1/events")
 @RestController
 @AllArgsConstructor
+@RequestMapping("/v1/events")
 public class EventController {
 
     private final EventService eventService;
@@ -44,9 +43,12 @@ public class EventController {
     private final PersonService personService;
 
     @GetMapping
+
+
     public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
         return eventService.listAllEvents();
     }
+
 
     @PostMapping("/{id}")
     public ResponseEntity<?> editEvent(@RequestParam int id, @RequestBody NewEventDto newEventDto) {
@@ -54,8 +56,10 @@ public class EventController {
     }
 
     //    @GetMapping()
+
+    @GetMapping("/{id}")
     public ResponseEntity<EventDetailsDto> getEvent(int id) {
-        return null;
+        return (ResponseEntity<EventDetailsDto>) eventService.getEvent(id);
     }
 
     //    @GetMapping()
@@ -64,6 +68,9 @@ public class EventController {
     }
 
     //    @GetMapping()
+
+    //    @GetMapping()
+
     public ResponseEntity<EmployeeNameDto> getEventOrganizer(int id) {
         return null;
     }
@@ -78,13 +85,15 @@ public class EventController {
         return null;
     }
 
-    //    @PostMapping()
-    public ResponseEntity<Comment> addCommentToEvent(CommentDto commentDto) {
-        return null;
+
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<Comment> addCommentToEvent(@PathVariable int id, @RequestBody CommentDto commentDto) {
+        return commentService.insertNewComment(id, commentDto);
     }
 
     //    @PostMapping()
     public ResponseEntity<Poll> addPollToEvent(PollTemplateDto pollTemplateDto) {
+
         return null;
     }
 

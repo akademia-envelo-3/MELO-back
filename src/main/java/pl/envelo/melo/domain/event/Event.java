@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,7 +18,7 @@ import pl.envelo.melo.domain.location.Location;
 import pl.envelo.melo.domain.poll.Poll;
 import pl.envelo.melo.domain.unit.Unit;
 
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -27,10 +27,10 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Event {
-    
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     private int id;
     @NotBlank
     private String name;
@@ -54,7 +54,7 @@ public class Event {
     private Set<Unit> units;
     @ManyToMany
     private Set<Hashtag> hashtags;
-    private int memberLimit;
+    private Long memberLimit;
     @ManyToOne
     private Category category;
     @OneToMany

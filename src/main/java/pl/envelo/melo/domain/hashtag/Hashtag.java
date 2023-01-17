@@ -18,9 +18,8 @@ public class Hashtag {
     @GeneratedValue
     private int id;
     private String content;
-    private long globalUsageCount;
+    private int globalUsageCount;
     private boolean hidden;
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

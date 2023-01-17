@@ -27,4 +27,17 @@ public class Notification {
     private NotificationType notificationType;
     private LocalDateTime timestamp;
     private boolean checked;
+
+    @Override
+    public String toString() {
+        return "Notification{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", event=" + event +
+                ", unit=" + unit +
+                ", notificationType=" + notificationType +
+                ", timestamp=" + timestamp +
+                ", checked=" + checked +
+                '}';
+    }
 }

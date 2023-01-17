@@ -59,7 +59,7 @@ public class EventUpdater {
     }
     void updateHashtags(Event event, NewEventDto newEventDto) {
         if (newEventDto.getHashtags() != null) {
-            Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convert).collect(Collectors.toSet());
+            Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convertToString).collect(Collectors.toSet());
             newEventDto.getHashtags().forEach(e -> {
                 if (!currHashtags.contains(e)) {
                     Optional<Hashtag> hashtag = hashtagRepository.findByContent(e);
@@ -152,7 +152,7 @@ public class EventUpdater {
         event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
     }
     void updateMemberLimit(Event event, NewEventDto newEventDto){
-        event.setMemberLimit(newEventDto.getMemberLimit());
+        event.setMemberLimit((long) newEventDto.getMemberLimit());
     }
     void updateMainPhoto(Event event, NewEventDto newEventDto){
         event.setMainPhoto(attachmentService.insertOrGetAttachment(newEventDto.getMainPhoto()));

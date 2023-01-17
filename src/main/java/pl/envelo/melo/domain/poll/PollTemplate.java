@@ -18,4 +18,5 @@ public class PollTemplate {
     private String pollQuestion;
     private Set<String> pollOptions;
     private boolean multiChoice;
+
 }

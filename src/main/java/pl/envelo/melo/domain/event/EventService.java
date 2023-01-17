@@ -26,20 +26,15 @@ import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollTemplateRepository;
-import pl.envelo.melo.domain.unit.Unit;
+
 import pl.envelo.melo.domain.unit.UnitRepository;
-import pl.envelo.melo.mappers.AttachmentMapper;
-import pl.envelo.melo.mappers.EventEditMapper;
-import pl.envelo.melo.mappers.EventMapper;
-import pl.envelo.melo.mappers.HashtagMapper;
+import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -47,6 +42,7 @@ public class EventService {
 
     private final HashtagService hashtagService;
     private final NotificationService notificationService;
+    private EventDetailsMapper eventDetailsMapper;
     private final EventRepository eventRepository;
     private final EmployeeRepository employeeRepository;
     private final HashtagRepository hashtagRepository;
@@ -67,9 +63,15 @@ public class EventService {
     private EventValidator eventValidator;
     private EditEventNotificationHandler eventNotificationHandler;
 
-    public ResponseEntity<EventDetailsDto> getEvent(int id) {
-//        return eventRepository.findById(id); Mapper dodać
-        return null;
+    public ResponseEntity<?> getEvent(int id) {
+        if (eventRepository.existsById(id)) {
+            Event event = eventRepository.findById(id).get();
+            return ResponseEntity.ok(eventDetailsMapper.convert(event));
+        } else {
+
+            return ResponseEntity.status(404).body("Event with this ID do not exist");
+        }
+
     }
 
     public ResponseEntity<List<EventToDisplayOnListDto>> listAllEvents() {
@@ -79,6 +81,7 @@ public class EventService {
         result.addAll(eventRepository.findAllByStartTimeAfterAndType(LocalDateTime.now(), EventType.LIMITED_PUBLIC_INTERNAL));
         return ResponseEntity.ok(result.stream().map(eventMapper::convert).toList());
     }
+
 
     public ResponseEntity<Event> insertNewEvent(NewEventDto newEventDto) {  //void?
         return null;
@@ -102,7 +105,7 @@ public class EventService {
 
             Map<String, String> validationResult = eventValidator.validateToEdit(event, newEventDto);
             validationResult.forEach((k, v) -> System.out.println(k + " " + v));
-            if(validationResult.size()!=0){
+            if (validationResult.size() != 0) {
                 return ResponseEntity.status(HttpStatusCode.valueOf(500)).body(validationResult);
             }
             eventUpdater.update(event, newEventDto);

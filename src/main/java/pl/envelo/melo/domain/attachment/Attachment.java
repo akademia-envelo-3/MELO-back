@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.attachment;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import org.hibernate.validator.constraints.URL;
 @Getter
 @Setter
 @NoArgsConstructor
+@Data
 public class Attachment {
     @Id
     @GeneratedValue
@@ -19,4 +21,5 @@ public class Attachment {
     private String name;
     private String attachmentUrl;
     private AttachmentType attachmentType;
+
 }
