@@ -2,6 +2,7 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.transaction.Transactional;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,7 +20,7 @@ import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.time.LocalDateTime; 
+import java.time.LocalDateTime;
 
 @Transactional
 @SpringBootTest
@@ -40,7 +41,6 @@ class EventServiceTest {
     SimpleEventMocker simpleEventMocker;
     
     void setUpRepo() {
-        eventRepository.deleteAll();
         simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
     }
     
