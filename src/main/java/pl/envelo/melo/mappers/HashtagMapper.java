@@ -8,7 +8,4 @@ import pl.envelo.melo.domain.hashtag.HashtagDto;
 @Mapper(componentModel = "spring")
 public interface HashtagMapper extends EntityMapper<HashtagDto, Hashtag> {
 
-//    HashtagDto convertHashtagToHashtagDto(Hashtag hashtag);
-//    @InheritInverseConfiguration
-//    Hashtag convertHashtagDtoToHashtag(HashtagDto hashtagDto);
 }

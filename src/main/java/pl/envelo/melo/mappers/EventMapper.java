@@ -18,31 +18,11 @@ import pl.envelo.melo.domain.event.dto.NewEventDto;
 public interface EventMapper {
     EventMapper INSTANCE = Mappers.getMapper(EventMapper.class);
 
-//    @Autowired
-//    EmployeeRepository employeeRepository;
-
-//    Event toEntity(NewEventDto newEventDto);
 
     @Mapping(source = "eventType", target = "type")
     @Mapping(source = "unitId", target = "unit")
 //    @Mapping(source = "organizerId", target = "organizer")
     Event newEvent(NewEventDto newEventDto);
 
-//    @PostMapping
-//    default Event convert(NewEventDto newEventDto, @MappingTarget Event event)  {
-//        event.setOrganizer(employeeRepository.getReferenceById(newEventDto.getOrganizerId()));
-//        event.setType(newEventDto.getEventType());
-//        return event;
-//    }
-
-
-
-//    @Mapping(source = "employeeId", target = "id")
-//    default Event convertNewEventDtoToEvent(NewEventDto newEventDto, @Context EmployeeService employeeService) {
-//
-//    }
-
-
-//    event.setOrganizer(employeeRepository.getReferenceById(newEventDto.getOrganizerId()));
 
 }

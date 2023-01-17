@@ -7,29 +7,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
-import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.person.Person;
-import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
-import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 import pl.envelo.melo.domain.category.CategoryRepository;
-import pl.envelo.melo.domain.comment.CommentRepository;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.location.LocationRepository;
-import pl.envelo.melo.domain.poll.Poll;
-import pl.envelo.melo.domain.poll.PollAnswerRepository;
-import pl.envelo.melo.domain.poll.PollRepository;
-import pl.envelo.melo.domain.poll.PollTemplateRepository;
-import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitRepository;
-import pl.envelo.melo.mappers.AttachmentMapper;
-import pl.envelo.melo.mappers.EmployeeMapper;
 import pl.envelo.melo.mappers.EventMapper;
 
 import java.util.List;
@@ -61,7 +50,7 @@ public class EventService {
 
     //    @Transactional
     public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto) {  //void?
-//members i comments +17
+
         Event event = eventMapper.newEvent(newEventDto);
         //validation
         if(event.getType().toString().startsWith("LIMITED")) {
@@ -89,7 +78,7 @@ public class EventService {
                 event.setCategory(categoryRepository.findById(newEventDto.getCategoryId()).get());
             }
             else {
-                event.setCategory(null);
+                event.setCategory(null); // todo set category
             }
         }
 
