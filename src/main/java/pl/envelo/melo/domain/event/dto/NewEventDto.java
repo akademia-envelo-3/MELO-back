@@ -44,12 +44,11 @@ public class NewEventDto {
     private int organizerId;
     @NotNull
     private PeriodicType periodicType;
-    private List<PollTemplateDto> polls;
     @Size(max = 100)
     private Set<HashtagDto> hashtags;
     private int memberLimit;
     private Set<Integer> invitedMembers;
-    private Set<Integer> unitIds;
+    private Integer unitId;
     private LocationDto location;
     private Set<AttachmentDto> attachments;
     private AttachmentDto mainPhoto;

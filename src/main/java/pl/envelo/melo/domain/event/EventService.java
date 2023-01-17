@@ -45,16 +45,9 @@ public class EventService {
     private final CategoryRepository categoryRepository;
     private final AttachmentRepository attachmentRepository;
     private final LocationRepository locationRepository;
-    private final PollTemplateRepository pollTemplateRepository;
-    private final PollRepository pollRepository;
-    private final PollAnswerRepository pollAnswerRepository;
-    private final CommentRepository commentRepository;
-    private final PersonRepository personRepository;
     private final UnitRepository unitRepository;
     private final EventMapper eventMapper;
-    private final AttachmentMapper attachmentMapper;
-    private final EmployeeService employeeService;
-    private final EmployeeMapper employeeMapper;
+
 
 
     public ResponseEntity<EventDetailsDto> getEvent(int id) {
@@ -67,21 +60,37 @@ public class EventService {
     }
 
     //    @Transactional
-    public ResponseEntity<Event> insertNewEvent(NewEventDto newEventDto) {  //void?
+    public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto) {  //void?
 //members i comments +17
         Event event = eventMapper.newEvent(newEventDto);
+        //validation
+        if(event.getType().toString().startsWith("LIMITED")) {
+            if(event.getMemberLimit()<1) {
+                return ResponseEntity.status(400).body("Event with limited eventType must have higher memberLimit than 0.");
+            }
+        }
 
-        locationRepository.save(event.getLocation()); //todo swap with locationService method when present
+        locationRepository.save(event.getLocation());
+        //todo swap with locationService method when present
 
-        event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get()); //todo walidacja
+        if(employeeRepository.existsById(newEventDto.getOrganizerId())) {
+            event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get());
+        }
 
         if (!(event.getMainPhoto() == null)) {
             attachmentRepository.save(event.getMainPhoto());
+        } else {
+            event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
         }
 
+
         if (!(newEventDto.getCategoryId() == null)) {
-            event.setCategory(categoryRepository.getReferenceById(newEventDto.getOrganizerId()));
-            categoryRepository.save(event.getCategory()); // todo check if category already exists in database
+            if(categoryRepository.findById(newEventDto.getCategoryId()).isPresent()) {
+                event.setCategory(categoryRepository.findById(newEventDto.getCategoryId()).get());
+            }
+            else {
+                event.setCategory(null);
+            }
         }
 
         if (!(newEventDto.getAttachments() == null)) {
@@ -89,6 +98,7 @@ public class EventService {
                 attachmentRepository.save(attachment);
             }
         }
+
         if (!(newEventDto.getHashtags() == null)) {
             for (Hashtag hashtag : event.getHashtags()) {
                 hashtagRepository.save(hashtag);
@@ -96,17 +106,16 @@ public class EventService {
             }
         }
 
-        if (!(newEventDto.getPolls() == null)) {
-            for (Poll poll : event.getPolls()) {
-                pollRepository.save(poll);
+        if (!(newEventDto.getUnitId() == null)) {
+            if(unitRepository.findById(newEventDto.getUnitId()).isPresent()) {
+                event.setUnit(unitRepository.findById(newEventDto.getUnitId()).get());
             }
-        }
+            else {
+                event.setUnit(null);
+            }
+        } //todo create UnitMapper and use UnitRepository to find unit in database
 
-        if (!(newEventDto.getUnitIds() == null) || (newEventDto.getUnitIds().size() > 0)) {
-            for (Unit unit : event.getUnits()) {
-                unitRepository.save(unit);
-            }//fixme
-        }
+
         System.out.println("test");
         return new ResponseEntity(eventRepository.save(event), HttpStatus.CREATED);
 

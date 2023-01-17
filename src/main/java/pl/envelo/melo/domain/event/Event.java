@@ -27,7 +27,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class Event {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @NotBlank
     private String name;
@@ -47,8 +47,8 @@ public class Event {
     private PeriodicType periodicType;
     @ManyToMany
     private Set<Employee> invited;
-    @ManyToMany
-    private Set<Unit> units;
+    @ManyToOne
+    private Unit unit;
     @ManyToMany
     private Set<Hashtag> hashtags;
     private int memberLimit;

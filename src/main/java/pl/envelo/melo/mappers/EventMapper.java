@@ -24,7 +24,7 @@ public interface EventMapper {
 //    Event toEntity(NewEventDto newEventDto);
 
     @Mapping(source = "eventType", target = "type")
-    @Mapping(source = "unitIds", target = "units")
+    @Mapping(source = "unitId", target = "unit")
 //    @Mapping(source = "organizerId", target = "organizer")
     Event newEvent(NewEventDto newEventDto);
 

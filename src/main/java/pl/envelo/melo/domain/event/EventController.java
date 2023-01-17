@@ -69,7 +69,7 @@ public class EventController {
     }
 
     @PostMapping("event")
-    public  ResponseEntity<Event> addEvent(@RequestBody @Valid NewEventDto newEventDto) {  //void?
+    public  ResponseEntity<?> addEvent(@RequestBody @Valid NewEventDto newEventDto) {  //Event?
         return eventService.insertNewEvent(newEventDto);
     }
 
