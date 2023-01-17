@@ -1,5 +1,7 @@
 package pl.envelo.melo.domain.comment;
 
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -15,7 +17,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
-
 public class CommentService {
 
 
@@ -37,6 +38,7 @@ public class CommentService {
         String userIdFromJWT = "1";   ////Zaciągnij mordo z UserDetailsDto
 
         Comment mappedComment = commentMapper.convert(commentToSave);
+
 
         // Sprawdzam czy komentarz nie jest całkiem pusty - bez załącznika i tekstu.
         if(mappedComment.getContent().isEmpty() && Objects.isNull(mappedComment.getAttachments())) {

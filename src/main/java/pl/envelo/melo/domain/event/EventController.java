@@ -3,7 +3,6 @@ package pl.envelo.melo.domain.event;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeService;
@@ -50,9 +49,9 @@ public class EventController {
         return eventService.listAllEvents();
     }
 
-    //    @GetMapping()
-    public ResponseEntity<EventDetailsDto> getEvent(int id) {
-        return null;
+    @GetMapping("/{id}")
+    public  ResponseEntity<EventDetailsDto> getEvent(int id) {
+        return (ResponseEntity<EventDetailsDto>) eventService.getEvent(id);
     }
 
     //    @GetMapping()
