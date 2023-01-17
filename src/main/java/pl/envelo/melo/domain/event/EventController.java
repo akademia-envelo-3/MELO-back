@@ -28,10 +28,9 @@ import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
 
 import java.util.List;
 
-@RequestMapping("/v1/")
 @RestController
 @AllArgsConstructor
-@RequestMapping("/events")
+@RequestMapping("/v1/events")
 public class EventController {
 
     private final EventService eventService;
@@ -50,7 +49,7 @@ public class EventController {
         return eventService.listAllEvents();
     }
 
-    @GetMapping("/event/{id}")
+    @GetMapping("/{id}")
     public  ResponseEntity<EventDetailsDto> getEvent(int id) {
         return (ResponseEntity<EventDetailsDto>) eventService.getEvent(id);
     }
