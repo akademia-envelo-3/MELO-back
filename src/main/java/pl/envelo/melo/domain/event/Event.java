@@ -49,8 +49,8 @@ public class Event {
     private PeriodicType periodicType;
     @ManyToMany
     private Set<Employee> invited;
-    @ManyToMany
-    private Set<Unit> units;
+    @ManyToOne
+    private Unit unit;
     @ManyToMany
     private Set<Hashtag> hashtags;
     private Long memberLimit;
@@ -66,7 +66,6 @@ public class Event {
     private Set<Poll> polls;
     @ManyToOne
     private Location location;
-
     private Theme theme;
 
 }
