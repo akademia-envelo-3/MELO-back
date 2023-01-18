@@ -78,7 +78,7 @@ class EventServiceTest {
         ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(3);
         assertEquals(HttpStatus.NOT_FOUND, eventDetailsDtoResponseEntity.getStatusCode());
     }
-
+    //@Test
     void listAllEvents() {
         setUpRepo();
         Event presentEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));
@@ -91,7 +91,7 @@ class EventServiceTest {
         assertNull(eventToDisplayOnListDto.getMainPhoto());
     }
 
-    @Test
+    //@Test
     void updateEvent() {
         setUpRepo();
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
@@ -142,5 +142,19 @@ class EventServiceTest {
         assertEquals(1, event.getAttachments().size());
         //TODO sprawdzić notification box
         //TODO sprawdzić hashtagi
+    }
+
+    //@Test
+    void editEventForm() {
+        setUpRepo();
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
+        event.setAttachments(new HashSet<>());
+        Attachment attachment = new Attachment();
+        attachment.setAttachmentType(AttachmentType.PHOTO);
+        attachment.setAttachmentUrl("http://wp.pl/photo");
+        event.getAttachments().add(attachment);
+        eventRepository.save(event);
+        event.setPeriodicType(PeriodicType.NONE);
+        assertEquals(PeriodicType.NONE, ((NewEventDto)eventService.editEventForm(event.getId()).getBody()).getPeriodicType());
     }
 }

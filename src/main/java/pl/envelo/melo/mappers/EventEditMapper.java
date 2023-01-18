@@ -28,5 +28,6 @@ public abstract class EventEditMapper {
         newEventDto.setOrganizerId(event.getOrganizer().getId());
         event.getInvited().forEach(e-> newEventDto.getInvitedMembers().add(e.getId()));
         event.getUnits().forEach(e->newEventDto.getUnitIds().add(e.getId()));
+        newEventDto.setCategoryId(event.getCategory().getId());
     }
 }
