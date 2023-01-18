@@ -7,18 +7,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
-import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 import pl.envelo.melo.domain.event.EventType;
 import pl.envelo.melo.domain.event.PeriodicType;
 import pl.envelo.melo.domain.event.Theme;
-import pl.envelo.melo.domain.location.Location;
+import pl.envelo.melo.domain.hashtag.HashtagDto;
 import pl.envelo.melo.domain.location.dto.LocationDto;
-import pl.envelo.melo.domain.poll.PollTemplate;
-import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -43,16 +39,15 @@ public class NewEventDto {
     private int organizerId;
     @NotNull
     private PeriodicType periodicType;
-    private List<PollTemplateDto> polls;
     @Size(max = 100)
-    private Set<String> hashtags;
+    private Set<HashtagDto> hashtags;
     private int memberLimit;
     private Set<Integer> invitedMembers;
-    private Set<Integer> unitIds;
+    private Integer unitId;
     private LocationDto location;
     private Set<AttachmentDto> attachments;
     private AttachmentDto mainPhoto;
-    private List<Integer> categoryId;
+    private Integer categoryId;
     private Theme theme;
 
     public NewEventDto(String name, String description, LocalDateTime startTime, LocalDateTime endTime,

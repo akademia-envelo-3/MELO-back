@@ -28,8 +28,9 @@ public class EmployeeController {
     }
 
 
-    public ResponseEntity<EmployeeDto> getEmployee(int id){
-        return null;
+    @GetMapping("employee/{id}")
+    public ResponseEntity<EmployeeDto> getEmployee(@PathVariable int id){
+        return employeeService.getEmployee(id);
     }
 
 

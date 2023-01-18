@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/v1/events")
+@RequestMapping("/event")
 public class EventController {
 
     private final EventService eventService;
@@ -48,6 +49,7 @@ public class EventController {
     public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
         return eventService.listAllEvents();
     }
+
 
     @GetMapping("/{id}")
     public  ResponseEntity<EventDetailsDto> getEvent(int id) {
@@ -69,9 +71,9 @@ public class EventController {
         return false;
     }
 
-    //    @PostMapping()
-    public ResponseEntity<Event> addEvent(NewEventDto newEventDto) {  //void?
-        return null;
+    @PostMapping("")
+    public  ResponseEntity<?> addEvent(@RequestBody @Valid NewEventDto newEventDto) {  //Event?
+        return eventService.insertNewEvent(newEventDto);
     }
 
     @PostMapping("/{id}/comments")
