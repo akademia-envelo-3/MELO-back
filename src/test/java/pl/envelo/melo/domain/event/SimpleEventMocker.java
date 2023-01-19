@@ -18,9 +18,11 @@ public class SimpleEventMocker {
     private EventRepository eventRepository;
     private PersonRepository personRepository;
     private UserRepository userRepository;
+    static int id = 1000;
 
     public Event mockEvent(LocalDateTime localDateTime, EventType eventType, Employee... employees) {
         Event event = new Event();
+        event.setId(id++);
         event.setDescription("testdesc");
         event.setName("test");
         event.setStartTime(localDateTime);
@@ -28,6 +30,7 @@ public class SimpleEventMocker {
         event.setType(eventType);
         event.setMembers(new HashSet<>());
         event.setInvited(new HashSet<>());
+        event.setAttachments(new HashSet<>());
         if (employees.length != 0)
             event.setOrganizer(employees[0]);
         else {
@@ -45,15 +48,18 @@ public class SimpleEventMocker {
 
     public Employee mockEmployee(String name) {
         Person person = new Person();
+        person.setId(id);
         person.setFirstName(name);
         person.setLastName(name);
         person.setEmail(String.format("%s@%s.pl", name, name));
 
         User user = new User();
+        user.setId(id);
         user.setPerson(personRepository.save(person));
         user.setPassword(name);
 
         Employee employee = new Employee();
+        employee.setId(id);
         employee.setUser(userRepository.save(user));
 
         return employeeRepository.save(employee);

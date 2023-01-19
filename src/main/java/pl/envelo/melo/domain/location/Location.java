@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 @Entity
 @Getter
 @Setter
@@ -22,4 +24,15 @@ public class Location {
     private String postalCode;
     private String city;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Location location)) return false;
+        return getStreetNumber() == location.getStreetNumber() && getApartmentNumber() == location.getApartmentNumber() && getPostalCode() == location.getPostalCode() && getStreetName().equals(location.getStreetName()) && getCity().equals(location.getCity());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getStreetName(), getStreetNumber(), getApartmentNumber(), getPostalCode(), getCity());
+    }
 }

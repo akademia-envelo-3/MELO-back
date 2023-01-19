@@ -15,9 +15,9 @@ public class HashtagService {
     private final HashtagMapper hashtagMapper;
 
     public ResponseEntity<HashtagDto> insertNewHashtag(HashtagDto hashtagDto) {
-        Hashtag hashtag = hashtagMapper.convert(hashtagDto);
+        Hashtag hashtag = hashtagMapper.toEntity(hashtagDto);
         if(hashtagRepository.existsByContent(hashtag.getContent())){
-            hashtag = hashtagRepository.findByContent(hashtag.getContent());
+            hashtag = hashtagRepository.findByContent(hashtag.getContent()).get();
             incrementHashtagGlobalCount(hashtag.getId());
         }
         else{

@@ -2,7 +2,6 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -31,7 +30,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/event")
+@RequestMapping("/v1/event")
 public class EventController {
 
     private final EventService eventService;
@@ -51,8 +50,18 @@ public class EventController {
     }
 
 
+    @PostMapping("/{id}")
+    public ResponseEntity<?> editEvent(@RequestParam("id") int id, @RequestBody NewEventDto newEventDto) {
+        return eventService.updateEvent(id, newEventDto);
+    }
+    @GetMapping("/{id}/edit-form")
+    public ResponseEntity<?> editForm(@RequestParam("id") int id){
+        return eventService.editEventForm(id);
+    }
+    //    @GetMapping()
+
     @GetMapping("/{id}")
-    public  ResponseEntity<EventDetailsDto> getEvent(int id) {
+    public ResponseEntity<EventDetailsDto> getEvent(@RequestParam("id") int id) {
         return (ResponseEntity<EventDetailsDto>) eventService.getEvent(id);
     }
 
