@@ -15,7 +15,9 @@ public class LocationService {
     public Location insertNewLocation(LocationDto locationDto) {
         return null;
     }
-
+    public Location insertOrGetLocation(LocationDto locationDto) {
+        return null;
+    }
     public LocationDto getLocation(long id) {
         return null;
     }

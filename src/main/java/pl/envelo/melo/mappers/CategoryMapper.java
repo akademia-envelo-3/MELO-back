@@ -10,8 +10,9 @@ import pl.envelo.melo.domain.category.CategoryDto;
 
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
-
-    default String convert(Category category){
-        return category.getName();
+    default String convert(Category category) {
+        if (category != null)
+            return category.getName();
+        return null;
     }
 }

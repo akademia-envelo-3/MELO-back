@@ -1,6 +1,7 @@
 package pl.envelo.melo.authorization.employee;
 
 
+import lombok.AllArgsConstructor;
 import org.mapstruct.Mapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,23 +17,22 @@ import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.mappers.EventMapper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 
 @Service
+@AllArgsConstructor
 public class EmployeeService {
 
 
     private EmployeeRepository employeeRepository;
     private final EventMapper eventMapper;
     private PersonRepository personRepository;
+    private final EmployeeMapper employeeMapper;
 
-    public EmployeeService(EmployeeRepository employeeRepository, EventMapper eventMapper, PersonRepository personRepository){
-        this.employeeRepository = employeeRepository;
-        this.eventMapper = eventMapper;
-        this.personRepository = personRepository;
-    }
+
 
     public ResponseEntity<EmployeeDto> getEmployee(int id) {
 

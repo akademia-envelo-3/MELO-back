@@ -36,4 +36,5 @@ public interface EventMapper {
             members = event.getMembers().size();
         eventToDisplayOnListDto.setInvitedMembersNumber(members);
     }
+
 }
