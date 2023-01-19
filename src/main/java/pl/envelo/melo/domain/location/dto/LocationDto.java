@@ -19,12 +19,12 @@ public class LocationDto {
     private String streetName;
 
     @NotBlank(message = "streetNumber field can't be blank")
-    @Max(value = 986039, message = "streetNumber is greater than world's highest street address number.")
-    private int streetNumber;
+    @Max(value = 100, message = "streetNumber is greater than world's highest street address number.")
+    private String streetNumber;
 
 //    @NotBlank(message = "apartmentNumber field can't be blank")
-    @Max(value = 2115, message = "apartmentNumber is bigger than 2115. Really? SBM Validation Error.")
-    private int apartmentNumber;
+    @Max(value = 100, message = "apartmentNumber is bigger than 2115. Really? SBM Validation Error.")
+    private String apartmentNumber;
 
     @NotBlank(message = "postalCode field can't be blank")
     @Size(min = 6, max = 6)

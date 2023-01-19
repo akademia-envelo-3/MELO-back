@@ -16,7 +16,21 @@ public class LocationService {
         return null;
     }
     public Location insertOrGetLocation(LocationDto locationDto) {
-        return null;
+        Location newLocation = new Location();
+        newLocation.setStreetName(locationDto.getStreetName());
+        newLocation.setStreetName(locationDto.getStreetNumber());
+        newLocation.setApartmentNumber(locationDto.getApartmentNumber());
+        newLocation.setPostalCode(locationDto.getPostalCode());
+        newLocation.setCity(locationDto.getCity());
+        if (locationRepository.findByStreetName(newLocation.getStreetName()).isPresent()){
+
+
+
+        } else {
+            locationRepository.save(newLocation);
+        }
+        return newLocation;
+
     }
     public LocationDto getLocation(long id) {
         return null;
