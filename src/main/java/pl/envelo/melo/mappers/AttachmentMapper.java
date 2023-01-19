@@ -7,7 +7,6 @@ import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 
 @Mapper(componentModel = "spring")
 public interface AttachmentMapper {
-
     Attachment convert(AttachmentDto attachmentDto);
     @InheritInverseConfiguration
     AttachmentDto convert(Attachment attachment);

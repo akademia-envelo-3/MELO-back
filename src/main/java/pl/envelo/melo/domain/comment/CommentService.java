@@ -1,12 +1,10 @@
 package pl.envelo.melo.domain.comment;
 
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
-import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.comment.dto.CommentDto;
 import pl.envelo.melo.domain.event.Event;

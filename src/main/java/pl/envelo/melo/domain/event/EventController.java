@@ -1,7 +1,6 @@
 package pl.envelo.melo.domain.event;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -43,14 +42,26 @@ public class EventController {
     private final CommentService commentService;
     private final PersonService personService;
 
+    @GetMapping
 
-    @GetMapping()
+
     public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
         return eventService.listAllEvents();
     }
 
+
+    @PostMapping("/{id}")
+    public ResponseEntity<?> editEvent(@RequestParam("id") int id, @RequestBody NewEventDto newEventDto) {
+        return eventService.updateEvent(id, newEventDto);
+    }
+    @GetMapping("/{id}/edit-form")
+    public ResponseEntity<?> editForm(@RequestParam("id") int id){
+        return eventService.editEventForm(id);
+    }
+    //    @GetMapping()
+
     @GetMapping("/{id}")
-    public  ResponseEntity<EventDetailsDto> getEvent(int id) {
+    public ResponseEntity<EventDetailsDto> getEvent(@RequestParam("id") int id) {
         return (ResponseEntity<EventDetailsDto>) eventService.getEvent(id);
     }
 
@@ -60,6 +71,9 @@ public class EventController {
     }
 
     //    @GetMapping()
+
+    //    @GetMapping()
+
     public ResponseEntity<EmployeeNameDto> getEventOrganizer(int id) {
         return null;
     }
@@ -74,6 +88,7 @@ public class EventController {
         return null;
     }
 
+
     @PostMapping("/{id}/comments")
     public ResponseEntity<Comment> addCommentToEvent(@PathVariable int id, @RequestBody CommentDto commentDto) {
         return commentService.insertNewComment(id, commentDto);
@@ -81,6 +96,7 @@ public class EventController {
 
     //    @PostMapping()
     public ResponseEntity<Poll> addPollToEvent(PollTemplateDto pollTemplateDto) {
+
         return null;
     }
 

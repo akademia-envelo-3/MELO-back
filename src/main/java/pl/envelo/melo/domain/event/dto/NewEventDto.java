@@ -43,7 +43,6 @@ public class NewEventDto {
     private int organizerId;
     @NotNull
     private PeriodicType periodicType;
-    private List<PollTemplateDto> polls;
     @Size(max = 100)
     private Set<String> hashtags;
     private int memberLimit;
@@ -52,7 +51,7 @@ public class NewEventDto {
     private LocationDto location;
     private Set<AttachmentDto> attachments;
     private AttachmentDto mainPhoto;
-    private List<Integer> categoryId;
+    private Integer categoryId;
     private Theme theme;
 
     public NewEventDto(String name, String description, LocalDateTime startTime, LocalDateTime endTime,
@@ -65,5 +64,4 @@ public class NewEventDto {
         this.organizerId = organizerId;
         this.periodicType = periodicType;
     }
-
 }
