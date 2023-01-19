@@ -77,8 +77,7 @@ class EventServiceTest {
     void checkNonExistentEvent() {
         ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(3);
         assertEquals(HttpStatus.NOT_FOUND, eventDetailsDtoResponseEntity.getStatusCode());
-    }
-    //@Test
+
     void listAllEvents() {
         setUpRepo();
         Event presentEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));
