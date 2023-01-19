@@ -27,13 +27,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.time.LocalDateTime;
-//>>>>>>> 3253e708e08e672e2c54c94d66e34ae5aac5e5f1
 
 @Transactional
 @SpringBootTest
 class EventServiceTest {
-//<<<<<<< HEAD
-//=======
 
     @Autowired
     UserRepository userRepository;
@@ -77,16 +74,22 @@ class EventServiceTest {
     void checkNonExistentEvent() {
         ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(3);
         assertEquals(HttpStatus.NOT_FOUND, eventDetailsDtoResponseEntity.getStatusCode());
+    }
 
+    //@Test
     void listAllEvents() {
         setUpRepo();
         Event presentEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));
+        Event presentBeforeEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(2), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"),simpleEventMocker.mockEmployee("test3"));
         Event presentPrivateEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PRIVATE_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));
         Event pastEvent = simpleEventMocker.mockEvent(LocalDateTime.now().minusDays(5), EventType.UNLIMITED_PUBLIC_INTERNAL);
-        EventToDisplayOnListDto eventToDisplayOnListDto = eventService.listAllEvents().getBody().get(0);
+        EventToDisplayOnListDto eventToDisplayOnListDto = Objects.requireNonNull(eventService.listAllEvents().getBody()).get(0);
+        assertEquals(3, eventToDisplayOnListDto.getInvitedMembersNumber());
+        eventToDisplayOnListDto = Objects.requireNonNull(eventService.listAllEvents().getBody()).get(1);
         assertEquals(2, eventToDisplayOnListDto.getInvitedMembersNumber());
         assertEquals(presentEvent.getId(), eventToDisplayOnListDto.getEventId());
-        assertEquals(1, eventService.listAllEvents().getBody().size());
+        assertEquals(2, Objects.requireNonNull(eventService.listAllEvents().getBody()).size());
+
         assertNull(eventToDisplayOnListDto.getMainPhoto());
     }
 
@@ -154,6 +157,6 @@ class EventServiceTest {
         event.getAttachments().add(attachment);
         eventRepository.save(event);
         event.setPeriodicType(PeriodicType.NONE);
-        assertEquals(PeriodicType.NONE, ((NewEventDto)eventService.editEventForm(event.getId()).getBody()).getPeriodicType());
+        assertEquals(PeriodicType.NONE, ((NewEventDto) Objects.requireNonNull(eventService.editEventForm(event.getId()).getBody())).getPeriodicType());
     }
 }
