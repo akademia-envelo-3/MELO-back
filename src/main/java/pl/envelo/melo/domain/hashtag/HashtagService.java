@@ -23,7 +23,7 @@ public class HashtagService {
         else{
             hashtagRepository.save(hashtag);
         }
-        return ResponseEntity.ok(hashtagMapper.convert(hashtag));
+        return ResponseEntity.ok(hashtagMapper.toDto(hashtag));
     }
 
     public ResponseEntity<?> incrementHashtagGlobalCount(int id) {

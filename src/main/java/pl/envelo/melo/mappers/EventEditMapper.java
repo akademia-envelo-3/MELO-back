@@ -26,8 +26,12 @@ public abstract class EventEditMapper {
     @AfterMapping
     public void updateResult(@MappingTarget  NewEventDto newEventDto, Event event) {
         newEventDto.setOrganizerId(event.getOrganizer().getId());
-        event.getInvited().forEach(e-> newEventDto.getInvitedMembers().add(e.getId()));
-        event.getUnits().forEach(e->newEventDto.getUnitIds().add(e.getId()));
+        if (event.getInvited() != null) {
+            event.getInvited().forEach(e -> newEventDto.getInvitedMembers().add(e.getId()));
+        }
+        if(event.getUnit()!=null) {
+            newEventDto.setUnitId(event.getUnit().getId());
+        }
         newEventDto.setCategoryId(event.getCategory().getId());
     }
 }

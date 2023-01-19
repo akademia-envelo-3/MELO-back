@@ -46,10 +46,10 @@ class HashtagServiceTest {
         hashtag.setContent("Coffe");
         hashtag.setGlobalUsageCount(1);
         hashtagRepository.save(hashtag);
-        ResponseEntity<HashtagDto> responseHashtag = hashtagService.insertNewHashtag(hashtagMapper.convert(hashtag));
+        ResponseEntity<HashtagDto> responseHashtag = hashtagService.insertNewHashtag(hashtagMapper.toDto(hashtag));
         assertEquals(HttpStatus.OK, responseHashtag.getStatusCode());
-        Hashtag hashtag1 = hashtagMapper.convert(responseHashtag.getBody());
-        assertEquals(2,hashtagRepository.findByContent(responseHashtag.getBody().getContent()).getGlobalUsageCount());
+        Hashtag hashtag1 = hashtagMapper.toEntity(responseHashtag.getBody());
+        assertEquals(2,hashtagRepository.findByContent(responseHashtag.getBody().getContent()).get().getGlobalUsageCount());
         HashtagDto hashtagDto = new HashtagDto();
         hashtagDto.setContent("Game");
         responseHashtag = hashtagService.insertNewHashtag(hashtagDto);

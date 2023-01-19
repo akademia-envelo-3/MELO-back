@@ -65,41 +65,42 @@ public class EventUpdater {
     }
 
     void updateHashtags(Event event, NewEventDto newEventDto) {
-        if(event.getHashtags() == null){
-        if (newEventDto.getHashtags() != null) {
-            Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convertToString).collect(Collectors.toSet());
-            newEventDto.getHashtags().forEach(e -> {
-                if (!currHashtags.contains(e)) {
-                    Optional<Hashtag> hashtag = hashtagRepository.findByContent(e);
-                    if (hashtag.isPresent()) {
-                        hashtagService.incrementHashtagGlobalCount(hashtag.get().getId());
-                        event.getHashtags().add(hashtag.get());
-                    } else {
-                        HashtagDto hashtagDto = new HashtagDto();
-                        hashtagDto.setContent(e);
-                        hashtagService.insertNewHashtag(hashtagDto);
-                        event.getHashtags().add(hashtagRepository.findByContent(e).get());
+        if (event.getHashtags() == null) {
+            if (newEventDto.getHashtags() != null) {
+                Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convertToString).collect(Collectors.toSet());
+                newEventDto.getHashtags().forEach(e -> {
+                    if (!currHashtags.contains(e)) {
+                        Optional<Hashtag> hashtag = hashtagRepository.findByContent(e.getContent());
+                        if (hashtag.isPresent()) {
+                            hashtagService.incrementHashtagGlobalCount(hashtag.get().getId());
+                            event.getHashtags().add(hashtag.get());
+                        } else {
+                            HashtagDto hashtagDto = new HashtagDto();
+                            hashtagDto.setContent(e.getContent());
+                            hashtagService.insertNewHashtag(hashtagDto);
+                            event.getHashtags().add(hashtagRepository.findByContent(e.getContent()).get());
+                        }
                     }
-                }
-            });
-            event.getHashtags().forEach(e -> {
-                if (!newEventDto.getHashtags().contains(e.getContent())) {
-                    event.getHashtags().remove(e);
-                    hashtagService.decrementHashtagGlobalCount(e.getId());
-                }
-            });
-        }}else{
-            if(newEventDto.getHashtags()!=null){
-                newEventDto.getHashtags().forEach(h ->{
-                    Optional<Hashtag> hashtag = hashtagRepository.findByContent(h);
+                });
+                event.getHashtags().forEach(e -> {
+                    if (!newEventDto.getHashtags().contains(e.getContent())) {
+                        event.getHashtags().remove(e);
+                        hashtagService.decrementHashtagGlobalCount(e.getId());
+                    }
+                });
+            }
+        } else {
+            if (newEventDto.getHashtags() != null) {
+                newEventDto.getHashtags().forEach(h -> {
+                    Optional<Hashtag> hashtag = hashtagRepository.findByContent(h.getContent());
                     if (hashtag.isPresent()) {
                         hashtagService.incrementHashtagGlobalCount(hashtag.get().getId());
                         event.getHashtags().add(hashtag.get());
                     } else {
                         HashtagDto hashtagDto = new HashtagDto();
-                        hashtagDto.setContent(h);
+                        hashtagDto.setContent(h.getContent());
                         hashtagService.insertNewHashtag(hashtagDto);
-                        event.getHashtags().add(hashtagRepository.findByContent(h).get());
+                        event.getHashtags().add(hashtagRepository.findByContent(h.getContent()).get());
                     }
                 });
             }
@@ -118,17 +119,15 @@ public class EventUpdater {
                 event.getInvited().add(employeeRepository.getReferenceById(i));
             }
         }
-        if (newEventDto.getUnitIds() != null) {
-            for (Integer i : newEventDto.getUnitIds()) {
-                event.getUnits().add(unitRepository.getReferenceById(i));
-            }
-            for (Unit unit : event.getUnits()) {
-                for (Employee employee : unit.getMembers()) {
-                    event.getInvited().add(employee);
-                }
+        if (newEventDto.getUnitId() != null) {
+            event.setUnit(unitRepository.getReferenceById(newEventDto.getUnitId()));
+
+            for (Employee employee : event.getUnit().getMembers()) {
+                event.getInvited().add(employee);
             }
         }
     }
+
 
     void updateAttachments(Event event, NewEventDto newEventDto) {
         if (newEventDto.getAttachments() == null) {
@@ -140,7 +139,7 @@ public class EventUpdater {
             Set<String> attachmentUrl = event.getAttachments().stream().map(Attachment::getAttachmentUrl).collect(Collectors.toSet());
             newEventDto.getAttachments().forEach(e -> {
                 if (!attachmentUrl.contains(e.getAttachmentUrl())) {
-                    Attachment attachment = attachmentMapper.convert(e);
+                    Attachment attachment = attachmentMapper.toEntity(e);
                     event.getAttachments().add(attachmentRepository.save(attachment));
                 }
             });
