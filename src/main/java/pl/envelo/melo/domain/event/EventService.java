@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
@@ -14,6 +16,7 @@ import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
+import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.category.CategoryRepository;
@@ -37,11 +40,9 @@ import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -66,6 +67,7 @@ public class EventService {
     private HashtagMapper hashtagMapper;
     private EventEditMapper eventEditMapper;
     private AttachmentMapper attachmentMapper;
+    private AttachmentService attachmentService;
     private EventUpdater eventUpdater;
     private EventValidator eventValidator;
     private EditEventNotificationHandler eventNotificationHandler;
@@ -89,9 +91,9 @@ public class EventService {
         return ResponseEntity.ok(result.stream().map(eventMapper::convert).toList());
     }
 
-    public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto) {  //void?
-
+    public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto) {
         Event event = eventMapper.newEvent(newEventDto);
+
         //validation
         if(event.getType().toString().startsWith("LIMITED")) {
             if(event.getMemberLimit()<1) {
@@ -106,8 +108,15 @@ public class EventService {
             event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get());
         }
 
-        if (!(event.getMainPhoto() == null)) {
-            attachmentRepository.save(event.getMainPhoto());
+        /// Set Main Photo
+        if (!Objects.isNull(mainPhoto)) {
+            try {
+                Attachment mainPhotoFromServer = attachmentService.uploadMainPhotoAndConvertToAttachment(mainPhoto);
+                event.setMainPhoto(mainPhotoFromServer);
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
         }

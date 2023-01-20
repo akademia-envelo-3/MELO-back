@@ -64,4 +64,9 @@ public class FilesStorageServiceImpl implements FilesStorageService {
             throw new RuntimeException("Could not load the files!");
         }
     }
+
+    @Override
+    public String getUrlToFile(String filename) {
+        return root.resolve(filename).toString();
+    }
 }

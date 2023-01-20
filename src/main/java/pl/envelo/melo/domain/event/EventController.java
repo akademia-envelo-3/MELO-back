@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
@@ -80,9 +81,9 @@ public class EventController {
         return false;
     }
 
-    @PostMapping("")
-    public  ResponseEntity<?> addEvent(@RequestBody @Valid NewEventDto newEventDto) {  //Event?
-        return eventService.insertNewEvent(newEventDto);
+    @RequestMapping(method = RequestMethod.POST, consumes = {"multipart/form-data"})
+    public  ResponseEntity<?> addEvent(@RequestPart("eventData") NewEventDto newEventDto, @RequestPart("mainPhoto") MultipartFile mainPhoto) {  //Event?
+        return eventService.insertNewEvent(newEventDto, mainPhoto);
     }
 
     @PostMapping("/{id}/comments")
