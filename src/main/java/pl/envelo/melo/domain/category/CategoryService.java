@@ -8,6 +8,7 @@ import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.mappers.CategoryMapper;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -16,20 +17,36 @@ public class CategoryService {
     private final CategoryMapper categoryMapper;
 
 
-    public ResponseEntity<Boolean> changeStatusCategory(int id) {
-
-        return null;
+    public ResponseEntity<?> changeStatusCategory(int id) {
+        Optional<Category> categoryOptional = categoryRepository.findById(id);
+        if(categoryOptional.isPresent()) {
+            Category category = categoryOptional.get();
+            category.setHidden(!category.isHidden());
+            return ResponseEntity.ok(categoryRepository.save(category));
+        } else return ResponseEntity.notFound().build();
     }
 
-    public ResponseEntity<CategoryDto> insertNewCategory(CategoryDto categoryDto) {
+    public ResponseEntity<?> insertNewCategory(CategoryDto categoryDto) {
         Category category = categoryMapper.toEntity(categoryDto);
         category.setHidden(false);
-        return new ResponseEntity(categoryRepository.save(category), HttpStatus.CREATED);
+        return ResponseEntity.status(201).body(categoryRepository.save(category));
+//        return new ResponseEntity(categoryRepository.save(category), HttpStatus.CREATED);
+    }
+
+    public ResponseEntity<?> editCategoryName(int id, CategoryDto categoryDto) {
+        Optional<Category> categoryOptional = categoryRepository.findById(id);
+        if(categoryOptional.isPresent()) {
+            Category category = categoryOptional.get();
+            category.setName(categoryDto.getName());
+            return ResponseEntity.ok(categoryRepository.save(category));
+        }
+        else return ResponseEntity.status(404).body("Category with given ID does not exist in database");
     }
 
     public ResponseEntity<?> getCategory(int id) {
-        if(categoryRepository.existsById(id)) {
-            Category category = categoryRepository.findById(id).get();
+        Optional<Category> categoryOptional = categoryRepository.findById(id);
+        if(categoryOptional.isPresent()) {
+            Category category = categoryOptional.get();
             return ResponseEntity.ok(categoryMapper.toDto(category));
         }
         else return ResponseEntity.status(404).body("Category with given ID does not exist in database");

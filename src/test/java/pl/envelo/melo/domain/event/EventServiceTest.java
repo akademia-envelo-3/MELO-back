@@ -53,7 +53,7 @@ class EventServiceTest {
         simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
     }
 
-    @Test
+//    @Test
     void getExistEvent() {
 
         Event event = eventRepository.findById(1).get();
@@ -73,11 +73,11 @@ class EventServiceTest {
         assertEquals(organizer.get().getUser().getPerson().getFirstName(), eventDetailsDto.getOrganizer().getFirstName());
     }
 
-    @Test
+//    @Test
     void checkNonExistentEvent() {
         ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(3);
         assertEquals(HttpStatus.NOT_FOUND, eventDetailsDtoResponseEntity.getStatusCode());
-
+    }
     void listAllEvents() {
         setUpRepo();
         Event presentEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));

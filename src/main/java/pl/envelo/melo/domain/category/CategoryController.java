@@ -14,8 +14,13 @@ public class CategoryController {
 
 
     @PostMapping("")
-    public ResponseEntity<CategoryDto> addNewCategory(CategoryDto categoryDto) {
+    public ResponseEntity<?> addNewCategory(@RequestBody CategoryDto categoryDto) {
         return categoryService.insertNewCategory(categoryDto);
+    }
+
+    @PostMapping("{id}")
+    public ResponseEntity<?> editCategoryName(@PathVariable("id") int id, @RequestBody CategoryDto categoryDto) {
+        return categoryService.editCategoryName(id, categoryDto);
     }
 
     @GetMapping("{id}")
@@ -24,13 +29,15 @@ public class CategoryController {
     }
 
 
-    public ResponseEntity<?> hideCategory(int id) {
+    @PatchMapping("{id}")
+    public ResponseEntity<?> toggleCategoryVisibility(@PathVariable("id") int id) {
         return categoryService.changeStatusCategory(id);
     }
 
-    public ResponseEntity<?> activateCategory(int id) {
-        return categoryService.changeStatusCategory(id);
-    }
+//    @PatchMapping("{id}")
+//    public ResponseEntity<?> activateCategory(@PathVariable("id") int id) {
+//        return categoryService.changeStatusCategory(id);
+//    }
 
     @GetMapping("")
     public ResponseEntity<List<CategoryDto>> showAllCategory() {
