@@ -82,7 +82,7 @@ public class EventController {
     }
 
     @RequestMapping(method = RequestMethod.POST, consumes = {"multipart/form-data"})
-    public  ResponseEntity<?> addEvent(@RequestPart("eventData") NewEventDto newEventDto, @RequestPart("mainPhoto") MultipartFile mainPhoto) {  //Event?
+    public  ResponseEntity<?> addEvent(@RequestPart("eventData") NewEventDto newEventDto, @RequestPart("mainPhoto") MultipartFile mainPhoto) {
         return eventService.insertNewEvent(newEventDto, mainPhoto);
     }
 

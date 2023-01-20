@@ -110,13 +110,9 @@ public class EventService {
 
         /// Set Main Photo
         if (!Objects.isNull(mainPhoto)) {
-            try {
-                Attachment mainPhotoFromServer = attachmentService.uploadMainPhotoAndConvertToAttachment(mainPhoto);
-                event.setMainPhoto(mainPhotoFromServer);
+            Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
+            event.setMainPhoto(mainPhotoFromServer);
 
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
         } else {
             event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
         }

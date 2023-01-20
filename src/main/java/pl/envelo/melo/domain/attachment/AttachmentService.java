@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.attachment;
 
+import jakarta.activation.MimeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -26,6 +27,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static pl.envelo.melo.domain.attachment.MimeTypes.*;
+
+
 @RequiredArgsConstructor
 @Service
 public class AttachmentService {
@@ -41,9 +45,11 @@ public class AttachmentService {
         mainPhotoAttachment.getName();
     }
 
-    public Attachment uploadMainPhotoAndConvertToAttachment(MultipartFile mainPhotoUploaded) throws IOException {
+    /*
+    public Attachment uploadMainPhotoAndConvertToAttachment(MultipartFile mainPhotoUploaded) {
 
-        String uploadedFileName = mainPhotoUploaded.getName();
+        String uploadedFileName = mainPhotoUploaded.getOriginalFilename();
+        System.out.println(uploadedFileName);
 
         ///Zapis na serwerze
         storageService.save(mainPhotoUploaded);
@@ -63,6 +69,57 @@ public class AttachmentService {
 
         return mainPhotoFromDb;
     }
+
+     */
+    public Attachment uploadFileAndSaveAsAttachment(MultipartFile attachment) {
+        String uploadedFileName = attachment.getOriginalFilename();
+
+        ///Zapis na serwerze
+        storageService.save(attachment);
+
+        ///Zwracam URI zasobu
+        String UrlToFile = storageService.getUrlToFile(uploadedFileName);
+
+        Attachment attachmentToSave = new Attachment();
+
+        /// Tworzę attachment z nazwą i URL zasobu
+        attachmentToSave.setName(uploadedFileName);
+        attachmentToSave.setAttachmentUrl(UrlToFile);
+
+        /// Waliduję i ustawiam typ załącznika
+        AttachmentType attachmentType = validateAttachmentType(attachment);
+        attachmentToSave.setAttachmentType(AttachmentType.PHOTO);
+
+        ///Zapis do repozytorium attachmentów
+        Attachment attachmentFromDb = attachmentRepository.save(attachmentToSave);
+
+        return attachmentFromDb;
+    }
+    public AttachmentType validateAttachmentType(MultipartFile uploadedAttachment) {
+
+        final List ALLOWED_PHOTO_FORMATS = List.of(MIME_IMAGE_JPEG, MIME_IMAGE_PNG, MIME_IMAGE_TIFF);
+        final List ALLOWED_VIDEO_FORMATS = List.of(MIME_VIDEO_MPEG);
+        final List ALLOWED_DOCUMENT_FORMATS = List.of(MIME_APPLICATION_PDF, MIME_APPLICATION_MSWORD, MIME_APPLICATION_VND_MSPOWERPOINT, MIME_TEXT_PLAIN);
+
+        /// Pobieram absolutną nazwę pliku
+        String fileName = uploadedAttachment.getOriginalFilename();
+
+        /// Wykorzystując MimeTypes weryfikuję typ pliku.
+        String type = MimeTypes.getMimeType(fileName);
+
+        /// Zwracam odpowiedni typ, bądź null jeśli żaden z nich nie pasuje.
+        if (ALLOWED_VIDEO_FORMATS.contains(type)) {
+            return AttachmentType.VIDEO;
+        } else if (ALLOWED_PHOTO_FORMATS.contains(type)) {
+            return AttachmentType.PHOTO;
+        } else if (ALLOWED_DOCUMENT_FORMATS.contains(type)) {
+            return AttachmentType.DOCUMENT;
+        }
+        return null;
+    }
+
+
+
 
 
     public ResponseEntity<ResponseMessage> uploadFiles(MultipartFile[] files) {
