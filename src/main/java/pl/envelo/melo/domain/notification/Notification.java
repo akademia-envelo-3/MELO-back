@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @Entity
+@Table(name = "notifications")
 public class Notification {
     @Id
     @GeneratedValue
@@ -24,8 +25,11 @@ public class Notification {
     @ManyToOne
     @JoinColumn(name = "unit_id")
     private Unit unit;
+    @Column(nullable = false)
     private NotificationType notificationType;
+    @Column(nullable = false)
     private LocalDateTime timestamp;
+    @Column(nullable = false)
     private boolean checked;
 
     @Override

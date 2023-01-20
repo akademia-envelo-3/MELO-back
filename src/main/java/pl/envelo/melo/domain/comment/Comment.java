@@ -1,6 +1,8 @@
 package pl.envelo.melo.domain.comment;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,16 +17,20 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-
+@Table(name = "comments")
 public class Comment {
     @Id
     @GeneratedValue
     private int id;
     @ManyToOne
-    @JoinColumn(name = "employee_id")
+    @NotNull
+    @JoinColumn(name = "employee_id", nullable = false)
     private Employee author;
     @OneToMany
+    @Max(10)
     private List<Attachment> attachments;
+    @Column(nullable = false, length = 2000)
     private String content;
+    @NotNull
     private LocalDateTime timestamp;
 }
