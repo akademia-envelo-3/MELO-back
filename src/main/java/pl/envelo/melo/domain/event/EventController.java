@@ -1,8 +1,9 @@
 package pl.envelo.melo.domain.event;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -84,11 +85,11 @@ public class EventController {
         return false;
     }
 
-    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public  ResponseEntity<?> addEvent(@RequestPart("eventData") NewEventDto newEventDto,
-                                       @RequestPart("mainPhoto") MultipartFile mainPhoto,
-                                       @RequestPart("additionalAttachments") MultipartFile[] additionalAttachments) {
-
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    //@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(encoding = @Encoding(name = "eventData", contentType = "application/json")))
+    public ResponseEntity<?> addEvent(@RequestPart(value = "eventData") @Parameter(schema =@Schema(type = "string", format = "binary")) NewEventDto newEventDto,
+                                       @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
+                                       @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments) {
         return eventService.insertNewEvent(newEventDto, mainPhoto, additionalAttachments);
     }
 
