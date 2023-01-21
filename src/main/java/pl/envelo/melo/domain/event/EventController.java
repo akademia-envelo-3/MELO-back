@@ -1,7 +1,10 @@
 package pl.envelo.melo.domain.event;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -81,9 +84,12 @@ public class EventController {
         return false;
     }
 
-    @RequestMapping(method = RequestMethod.POST, consumes = {"multipart/form-data"})
-    public  ResponseEntity<?> addEvent(@RequestPart("eventData") NewEventDto newEventDto, @RequestPart("mainPhoto") MultipartFile mainPhoto) {
-        return eventService.insertNewEvent(newEventDto, mainPhoto);
+    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public  ResponseEntity<?> addEvent(@RequestPart("eventData") NewEventDto newEventDto,
+                                       @RequestPart("mainPhoto") MultipartFile mainPhoto,
+                                       @RequestPart("additionalAttachments") MultipartFile[] additionalAttachments) {
+
+        return eventService.insertNewEvent(newEventDto, mainPhoto, additionalAttachments);
     }
 
     @PostMapping("/{id}/comments")

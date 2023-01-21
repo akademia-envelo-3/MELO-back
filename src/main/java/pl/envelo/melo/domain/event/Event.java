@@ -58,7 +58,7 @@ public class Event {
     private Long memberLimit;
     @ManyToOne
     private Category category;
-    @OneToMany
+    @OneToMany(cascade=CascadeType.ALL)
     private Set<Attachment> attachments;
     @OneToOne
     private Attachment mainPhoto;
@@ -69,5 +69,4 @@ public class Event {
     @ManyToOne
     private Location location;
     private Theme theme;
-
 }

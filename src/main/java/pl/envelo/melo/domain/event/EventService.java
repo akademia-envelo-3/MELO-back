@@ -1,31 +1,23 @@
 package pl.envelo.melo.domain.event;
 
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
-import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.attachment.AttachmentService;
-import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
-import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
-import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
-import pl.envelo.melo.domain.hashtag.Hashtag;
-import pl.envelo.melo.domain.hashtag.HashtagDto;
 import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.hashtag.HashtagService;
@@ -36,11 +28,9 @@ import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollTemplateRepository;
 
-import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -91,7 +81,7 @@ public class EventService {
         return ResponseEntity.ok(result.stream().map(eventMapper::convert).toList());
     }
 
-    public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto) {
+    public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto, MultipartFile[] additionalAttachments) {
         Event event = eventMapper.newEvent(newEventDto);
 
         //validation
@@ -127,9 +117,12 @@ public class EventService {
             }
         }
 
-        if (!(newEventDto.getAttachments() == null)) {
-            for (Attachment attachment : event.getAttachments()) {
-                attachmentRepository.save(attachment);
+        if (!Objects.isNull(additionalAttachments)) {
+            /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
+            for (MultipartFile multipartFile : additionalAttachments) {
+                Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
+                event.getAttachments().add(attachmentFromServer);
+                //tmpAttachmentSet.add(attachmentFromServer);
             }
         }
 
