@@ -23,7 +23,7 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "employee_id")
     private Employee author;
-    @OneToMany
+    @OneToMany(cascade=CascadeType.ALL)
     private List<Attachment> attachments;
     private String content;
     private LocalDateTime timestamp;
