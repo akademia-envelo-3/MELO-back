@@ -18,16 +18,21 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "persons")
 public class Person {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     @NotBlank
+    @Column(nullable = false)
     private String firstName;
     @NotBlank
+    @Column(nullable = false)
     private String lastName;
     @NotBlank
+    @Column(nullable = false)
+    @Email
     private String email;
     @Override
     public boolean equals(Object o) {
