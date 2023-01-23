@@ -21,16 +21,16 @@ public class LocationService {
 
     public Location insertOrGetLocation(LocationDto locationDto) {
 
-        if (locationDto.getStreetName().equals("")
-                && locationDto.getStreetNumber().equals("")
-                && locationDto.getApartmentNumber().equals("")
-                && locationDto.getPostalCode().equals("")
-                && locationDto.getCity().equals("")){
+        if (locationDto.getStreetName().trim().equals("")
+                && locationDto.getStreetNumber().trim().equals("")
+                && locationDto.getApartmentNumber().trim().equals("")
+                && locationDto.getPostalCode().trim().equals("")
+                && locationDto.getCity().trim().equals("")){
             return null;
-        } else if(locationDto.getStreetName().equals("")
-                || locationDto.getStreetNumber().equals("")
-                || locationDto.getPostalCode().equals("")
-                || locationDto.getCity().equals("")){
+        } else if(locationDto.getStreetName().trim().equals("")
+                || locationDto.getStreetNumber().trim().equals("")
+                || locationDto.getPostalCode().trim().equals("")
+                || locationDto.getCity().trim().equals("")){
             throw new LocationBadRequestException("Location fields (street name, number, postal code, city)" +
                                                     " must be filled in, or all must be left blank");
         }
