@@ -92,7 +92,8 @@ public class EventController {
     }
 
     @PostMapping("/{id}/poll")
-    public ResponseEntity<?> addPollToEvent(@Valid PollTemplateDto pollTemplateDto) {
+    public ResponseEntity<?> addPollToEvent(@Valid PollTemplateDto pollTemplateDto, @RequestParam int id) {
+        pollService.insertNewPollTemplate(pollTemplateDto, id);
         return ResponseEntity.status(HttpStatusCode.valueOf(201)).build();
     }
 

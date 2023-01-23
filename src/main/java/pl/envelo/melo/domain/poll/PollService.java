@@ -24,7 +24,9 @@ public class PollService {
     }
 
     public PollTemplate insertNewPollTemplate(PollTemplateDto pollTemplateDto, int id) {
-        return pollTemplateRepository.save(pollTemplateMapper.convert(pollTemplateDto));
+        PollTemplate pollTemplate = pollTemplateMapper.convert(pollTemplateDto);
+        pollTemplate.setId(id);
+        return pollTemplateRepository.save(pollTemplate);
     }
 
     public ResponseEntity<PollTemplateDto> getPollTemplate(int pollId) {
