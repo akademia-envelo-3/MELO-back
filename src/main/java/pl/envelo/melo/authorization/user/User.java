@@ -21,10 +21,9 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-    @NotBlank
     private String password;
     @NotNull
-    @OneToOne
+    @OneToOne(optional = false)
     private Person person;
 
     @Override
