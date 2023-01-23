@@ -121,8 +121,10 @@ public class EventService {
             /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
             for (MultipartFile multipartFile : additionalAttachments) {
                 Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
+                if(Objects.isNull(event.getAttachments())) {
+                    event.setAttachments(new HashSet<>());
+                }
                 event.getAttachments().add(attachmentFromServer);
-                //tmpAttachmentSet.add(attachmentFromServer);
             }
         }
 

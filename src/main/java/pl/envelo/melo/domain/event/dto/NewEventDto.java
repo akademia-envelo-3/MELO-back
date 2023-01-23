@@ -47,8 +47,6 @@ public class NewEventDto {
     private Set<Integer> invitedMembers;
     private Integer unitId;
     private LocationDto location;
-    private Set<AttachmentDto> attachments;
-    private AttachmentDto mainPhoto;
     private Integer categoryId;
     private Theme theme;
 

@@ -87,16 +87,21 @@ public class EventController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     //@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(encoding = @Encoding(name = "eventData", contentType = "application/json")))
+    //W razie problemów na froncie, pokombinować z enkodowaniem. v2.0 Swaggera, nie wspiera, więc poniższe rozwiązanie wymaga w Swaggerze, uploadu JSON w formie
+    //pliku .json. W PostMan można wysłać zarówno plik jak i json "tekstowy" z parametrem Content-Type application/json.
     public ResponseEntity<?> addEvent(@RequestPart(value = "eventData") @Parameter(schema =@Schema(type = "string", format = "binary")) NewEventDto newEventDto,
                                        @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
                                        @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments) {
         return eventService.insertNewEvent(newEventDto, mainPhoto, additionalAttachments);
     }
 
-    @PostMapping("/{id}/comments")
-    public ResponseEntity<Comment> addCommentToEvent(@PathVariable int id, @RequestBody CommentDto commentDto) {
-        return commentService.insertNewComment(id, commentDto);
+    @PostMapping(value = "/{id}/comments" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Comment> addCommentToEvent(@PathVariable int id,
+                                                     @RequestPart(value = "commentData", required = false) CommentDto commentDto,
+                                                     @RequestPart(value = "attachments", required = false) MultipartFile[] multipartFiles) {
+        return commentService.insertNewComment(id, commentDto, multipartFiles);
     }
+
 
     //    @PostMapping()
     public ResponseEntity<Poll> addPollToEvent(PollTemplateDto pollTemplateDto) {

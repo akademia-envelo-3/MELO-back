@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.comment;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
@@ -33,7 +34,7 @@ public class CommentService {
         this.employeeRepository = employeeRepository;
     }
 
-    public ResponseEntity<Comment> insertNewComment(int eventId, CommentDto commentToSave) {
+    public ResponseEntity<Comment> insertNewComment(int eventId, CommentDto commentToSave, MultipartFile[] multipartFiles) {
         String userIdFromJWT = "1";   ////Zaciągnij mordo z UserDetailsDto
 
         Comment mappedComment = commentMapper.convert(commentToSave);
