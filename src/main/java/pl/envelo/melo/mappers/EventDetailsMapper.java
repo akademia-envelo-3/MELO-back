@@ -44,10 +44,10 @@ public interface EventDetailsMapper {
             pollTemplateDto.setPollQuestion(poll.getPollTemplate().getPollQuestion());
             pollQuestion.setPollQuestion(poll.getPollTemplate().getPollQuestion());
 
-            pollTemplateDto.setPollOption(new ArrayList<>(poll.getPollTemplate().getPollOptions()));
+            pollTemplateDto.setPollOption(new HashSet<>(poll.getPollTemplate().getPollOptions()));
             pollTemplateDto.setMultiChoice(poll.getPollTemplate().isMultiChoice());
 
-            pollTemplateDto.setEventId(event.getId());
+            //pollTemplateDto.setEventId(event.getId());
             pollQuestion.setPollId(poll.getId());
 
             pollTemplateDtoList.add(pollTemplateDto);

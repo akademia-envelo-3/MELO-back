@@ -2,6 +2,7 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -90,9 +91,9 @@ public class EventController {
         return commentService.insertNewComment(id, commentDto);
     }
 
-    //    @PostMapping()
-    public ResponseEntity<Poll> addPollToEvent(PollTemplateDto pollTemplateDto) {
-        return null;
+    @PostMapping("/{id}/poll")
+    public ResponseEntity<?> addPollToEvent(@Valid PollTemplateDto pollTemplateDto) {
+        return ResponseEntity.status(HttpStatusCode.valueOf(201)).build();
     }
 
     //    @PostMapping()

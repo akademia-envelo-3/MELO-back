@@ -48,7 +48,10 @@ public class SimpleEventMocker {
             employees1.add(owner.getUser().getPerson());
             event.setMembers(employees1);
         }
+<<<<<<< HEAD
         eventRepository.save(event);
+=======
+>>>>>>> a1cdc16 (Added inserting poll service funcionality)
         Arrays.stream(employees).map(e -> {
             return e.getUser().getPerson();
         }).sequential().forEach(event.getMembers()::add);
