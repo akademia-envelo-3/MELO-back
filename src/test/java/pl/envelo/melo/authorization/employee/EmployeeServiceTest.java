@@ -1,5 +1,6 @@
 package pl.envelo.melo.authorization.employee;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,11 +9,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import pl.envelo.melo.authorization.person.Person;
+import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.user.User;
+import pl.envelo.melo.authorization.user.UserRepository;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.event.EventType;
+import pl.envelo.melo.domain.event.SimpleEventMocker;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
+import pl.envelo.melo.domain.unit.Unit;
+import pl.envelo.melo.domain.unit.UnitRepository;
+import pl.envelo.melo.mappers.EmployeeMapper;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,6 +28,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Transactional
 class EmployeeServiceTest {
     @Autowired
     EmployeeService employeeService;
@@ -28,18 +36,186 @@ class EmployeeServiceTest {
     EmployeeRepository employeeRepository;
     @Autowired
     EventRepository eventRepository;
+    private SimpleEventMocker simpleEventMocker;
+    @Autowired
+    private PersonRepository personRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UnitRepository unitRepository;
+
+    @BeforeEach
+    void setUpRepo() {
+        eventRepository.deleteAll();
+        employeeRepository.deleteAll();
+        personRepository.deleteAll();
+        userRepository.deleteAll();
+        unitRepository.deleteAll();
+        eventRepository.flush();
+        employeeRepository.flush();
+        personRepository.flush();
+        userRepository.flush();
+        unitRepository.flush();
+        simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
+    }
 
     @Test
-    @Transactional
     void getSetOfOwnedEvents() {
         //Testy
         ResponseEntity<?> responseEntity = employeeService.getSetOfOwnedEvents(1);
         assertEquals(HttpStatus.OK, employeeService.getSetOfOwnedEvents(1).getStatusCode());
         Set<EventToDisplayOnListDto> events = (Set<EventToDisplayOnListDto>) responseEntity.getBody();
-        assertEquals(1,events.size());//Test name
+        assertEquals(1, events.size());//Test name
         assertEquals("Test name", events.stream().findFirst().get().getName());
         assertEquals(HttpStatus.valueOf(404), employeeService.getSetOfOwnedEvents(2).getStatusCode());
 
 
+    }
+
+    @Test
+    void addToOwnedEvents() {
+        Employee employee = simpleEventMocker.mockEmployee("test");
+        Event event1 = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
+        employeeService.addToOwnedEvents(employee.getId(), event1);
+        int len = employeeService.getEmployee(employee.getId()).getBody().getOwnedEvents().size();
+        employeeService.addToOwnedEvents(employee.getId(), event);
+        assertEquals(len + 1, employeeService.getEmployee(employee.getId()).getBody().getOwnedEvents().size());
+
+    }
+
+    @Test
+    void removeFromOwnedEvents() {
+        //Dane
+        Employee employee = simpleEventMocker.mockEmployee("test");
+        Event event1 = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
+        employeeService.addToOwnedEvents(employee.getId(), event);
+        employeeService.addToOwnedEvents(employee.getId(), event1);
+        //Test
+        int len = employeeService.getEmployee(employee.getId()).getBody().getOwnedEvents().size();
+        employeeService.removeFromOwnedEvents(employee.getId(), event1);
+        assertEquals(len - 1, employeeService.getEmployee(employee.getId()).getBody().getOwnedEvents().size());
+    }
+
+    @Test
+    void addToJoinedEvents() {
+        //Dane
+        Employee employee = simpleEventMocker.mockEmployee("test");
+        Event event1 = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
+        //Test
+        employeeService.addToJoinedEvents(employee.getId(), event1);
+        int len = employee.getJoinedEvents().size();
+        employeeService.addToJoinedEvents(employee.getId(), event);
+        assertEquals(len + 1, employee.getJoinedEvents().size());
+    }
+
+
+    @Test
+    void removeFromJoinedEvents() {
+        //Dane
+        Employee employee = simpleEventMocker.mockEmployee("test");
+        Event event1 = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
+        //Test
+        employeeService.addToJoinedEvents(employee.getId(), event);
+        employeeService.addToJoinedEvents(employee.getId(), event1);
+        int len = employee.getJoinedEvents().size();
+        assertTrue(employeeService.removeFromJoinedEvents(employee.getId(), event));
+        assertEquals(len - 1, employee.getJoinedEvents().size());
+        assertFalse(employeeService.removeFromJoinedEvents(employee.getId(),event));
+    }
+
+    @Test
+    void addToOwnedUnits() {
+        //Dane
+        Employee employee = simpleEventMocker.mockEmployee("test");
+        int len;
+        Unit unit = new Unit();
+        unit.setId(1);
+        unit.setName("unit1");
+        unit.setOwner(employee);
+        unitRepository.save(unit);
+        Unit unit2 = new Unit();
+        unit2.setId(2);
+        unit2.setName("unit2");
+        unit2.setOwner(employee);
+        unitRepository.save(unit2);
+        //Test
+        employeeService.addToOwnedUnits(employee.getId(), unit);
+        len = employee.getOwnedUnits().size();
+        employeeService.addToOwnedUnits(employee.getId(), unit2);
+        assertEquals(len + 1, employee.getOwnedUnits().size());
+    }
+
+    @Test
+    void removeFromOwnedUnits() {
+        //Dane
+        Employee employee = simpleEventMocker.mockEmployee("test");
+        int len;
+        Unit unit = new Unit();
+        unit.setId(1);
+        unit.setName("unit1");
+        unit.setOwner(employee);
+        unitRepository.save(unit);
+        Unit unit2 = new Unit();
+        unit2.setId(2);
+        unit2.setName("unit2");
+        unit2.setOwner(employee);
+        unitRepository.save(unit2);
+        employeeService.addToOwnedUnits(employee.getId(), unit);
+        employeeService.addToOwnedUnits(employee.getId(), unit2);
+        //Test
+        len = employee.getOwnedUnits().size();
+        assertTrue(employeeService.removeFromOwnedUnits(1,unit));
+        assertEquals(len - 1, employee.getOwnedUnits().size());
+    }
+
+    @Test
+    void addToJoinedUnits() {
+        //Dane
+        Employee employee = simpleEventMocker.mockEmployee("test");
+        int len;
+        Unit unit = new Unit();
+        unit.setId(1);
+        unit.setName("unit1");
+        unit.setOwner(employee);
+        unitRepository.save(unit);
+        Unit unit2 = new Unit();
+        unit2.setId(2);
+        unit2.setName("unit2");
+        unit2.setOwner(employee);
+        unitRepository.save(unit2);
+        //Test
+        employeeService.addToJoinedUnits(employee.getId(), unit);
+        len = employee.getJoinedUnits().size();
+        assertTrue(employeeService.addToJoinedUnits(employee.getId(),unit2));
+        assertEquals(len + 1, employee.getJoinedUnits().size());
+
+    }
+
+    @Test
+    void removeFromJoinedUnits() {
+        //Dane
+        Employee employee = simpleEventMocker.mockEmployee("test");
+        int len;
+        Unit unit = new Unit();
+        unit.setId(1);
+        unit.setName("unit1");
+        unit.setOwner(employee);
+        unitRepository.save(unit);
+        Unit unit2 = new Unit();
+        unit2.setId(2);
+        unit2.setName("unit2");
+        unit2.setOwner(employee);
+        unitRepository.save(unit2);
+        employeeService.addToJoinedUnits(employee.getId(), unit2);
+        employeeService.addToJoinedUnits(employee.getId(), unit);
+        //Test
+        len = employee.getJoinedUnits().size();
+        assertTrue(employeeService.removeFromJoinedUnits(employee.getId(),unit2));
+        assertEquals(len -1 , employee.getJoinedUnits().size());
+        assertFalse(employeeService.removeFromJoinedUnits(employee.getId(),unit2));
     }
 }
