@@ -39,17 +39,20 @@ public class LocationDto {
     public void setStreetName(String streetName) {
         char[] charStreet = streetName.toCharArray();
 
-        for (char c : charStreet) {
-            if (c >= (int) 65 && c <= (int) 90
-                    || c >= (int) 97 && c <= (int) 122
-                    || c >= (int) 260 && c <= (int) 380
-                    || c >= (int) 45 && c <= (int) 57
-                    || c ==' '){
-                this.streetName = streetName;
+        if (streetName.equals("")) {
+            this.streetName = streetName;
+        } else {
+            for (char c : charStreet) {
+                if (c >= (int) 65 && c <= (int) 90
+                        || c >= (int) 97 && c <= (int) 122
+                        || c >= (int) 260 && c <= (int) 380
+                        || c >= (int) 45 && c <= (int) 57
+                        || c == ' ') {
+                    this.streetName = streetName;
+                } else
+                    throw new LocationBadRequestException("Invalid street name, " +
+                            "street name shouldn't have strange characters except '.', '-' and '/'");
             }
-            else
-                throw new LocationBadRequestException("Invalid street name, " +
-                        "street name shouldn't have strange characters except '.', '-' and '/'");
         }
     }
 
@@ -95,17 +98,20 @@ public class LocationDto {
     public void setCity(String city) {
         char[] charCity = city.toCharArray();
 
-        for (char c : charCity) {
-            if (c >= (int) 65 && c <= (int) 90
-                    || c >= (int) 97 && c <= (int) 122
-                    || c >= (int) 260 && c <= (int) 380
-                    || c == (int) 45){
-                this.city = city;
+        if (city.equals("")) {
+            this.city = city;
+        } else {
+            for (char c : charCity) {
+                if (c >= (int) 65 && c <= (int) 90
+                        || c >= (int) 97 && c <= (int) 122
+                        || c >= (int) 260 && c <= (int) 380
+                        || c == (int) 45 || c == ' ') {
+                    this.city = city;
+                } else
+                    throw new LocationBadRequestException("Invalid city name, " +
+                            "city name should have only letters");
             }
-            else
-                throw new LocationBadRequestException("Invalid city name, " +
-                        "city name should have only letters");
-        }
 
+        }
     }
 }
