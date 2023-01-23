@@ -47,8 +47,9 @@ public class LocationDto {
                         || c >= (int) 97 && c <= (int) 122
                         || c >= (int) 260 && c <= (int) 380
                         || c >= (int) 45 && c <= (int) 57
+                        || c == (int) 211 || c == (int) 243
                         || c == ' ') {
-                    this.streetName = streetName.trim();
+                    this.streetName = streetName.replaceAll("( +)"," ").trim();
                 } else
                     throw new LocationBadRequestException("Invalid street name, " +
                             "street name shouldn't have strange characters except '.', '-' and '/'");
@@ -105,8 +106,9 @@ public class LocationDto {
                 if (c >= (int) 65 && c <= (int) 90
                         || c >= (int) 97 && c <= (int) 122
                         || c >= (int) 260 && c <= (int) 380
+                        || c == (int) 211 || c == (int) 243
                         || c == (int) 45 || c == ' ') {
-                    this.city = city.trim();
+                    this.city = city.replaceAll("( +)"," ").trim();
                 } else
                     throw new LocationBadRequestException("Invalid city name, " +
                             "city name should have only letters");
