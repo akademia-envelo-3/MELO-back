@@ -18,7 +18,7 @@ public class Hashtag {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @NotNull
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     private String content;
     @Column(nullable = false)
     private int globalUsageCount;

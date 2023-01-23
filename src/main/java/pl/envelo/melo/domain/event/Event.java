@@ -2,10 +2,7 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -55,7 +52,7 @@ public class Event {
     @Column(nullable = false)
     private EventType type;
     @ManyToMany
-    @Min(1)
+    @Size(min = 1)
     @NotNull
     private Set<Person> members;
     private PeriodicType periodicType;
@@ -64,13 +61,13 @@ public class Event {
     @ManyToOne
     private Unit unit;
     @ManyToMany
-    @Max(100)
+    @Size(max = 100)
     private Set<Hashtag> hashtags;
     private Long memberLimit;
     @ManyToOne
     private Category category;
     @OneToMany
-    @Max(10)
+    @Size(max = 10)
     private Set<Attachment> attachments;
     @OneToOne
     private Attachment mainPhoto;
@@ -80,5 +77,6 @@ public class Event {
     private Set<Poll> polls;
     @ManyToOne
     private Location location;
+    @Column(nullable = false)
     private Theme theme;
 }

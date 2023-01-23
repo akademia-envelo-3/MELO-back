@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.poll;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,8 +22,7 @@ public class PollTemplate {
     @Column(nullable = false)
     private String pollQuestion;
     @Column(nullable = false)
-    @Min(2)
-    @Max(10)
+    @Size(min = 2, max = 10)
     private Set<String> pollOptions;
     @Column(nullable = false)
     private boolean multiChoice;
