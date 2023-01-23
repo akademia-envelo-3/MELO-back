@@ -2,8 +2,7 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,24 +28,32 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "events")
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @NotBlank
+    @Column(nullable = false)
     private String name;
     @NotBlank
+    @Column(nullable = false, length = 4000)
     private String description;
     @NotNull
+    @Column(nullable = false)
     private LocalDateTime startTime;
     @NotNull
+    @Column(nullable = false)
     private LocalDateTime endTime;
     @NotNull
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Employee organizer;
     @NotNull
+    @Column(nullable = false)
     private EventType type;
     @ManyToMany
+    @Size(min = 1)
+    @NotNull
     private Set<Person> members;
     private PeriodicType periodicType;
     @ManyToMany
@@ -54,11 +61,13 @@ public class Event {
     @ManyToOne
     private Unit unit;
     @ManyToMany
+    @Size(max = 100)
     private Set<Hashtag> hashtags;
     private Long memberLimit;
     @ManyToOne
     private Category category;
     @OneToMany
+    @Size(max = 10)
     private Set<Attachment> attachments;
     @OneToOne
     private Attachment mainPhoto;
@@ -68,6 +77,6 @@ public class Event {
     private Set<Poll> polls;
     @ManyToOne
     private Location location;
+    @Column(nullable = false)
     private Theme theme;
-
 }

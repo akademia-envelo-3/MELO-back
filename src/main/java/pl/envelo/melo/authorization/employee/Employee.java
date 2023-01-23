@@ -19,8 +19,8 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "employees")
 public class Employee {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
@@ -32,7 +32,7 @@ public class Employee {
     private Set<Unit> joinedUnits;
     @OneToMany
     private Set<Unit> ownedUnits;
-    @OneToOne
+    @OneToOne(optional = false)
     @NotNull
     private User user;
     @OneToMany

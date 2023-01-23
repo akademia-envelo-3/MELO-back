@@ -10,6 +10,7 @@ import lombok.Setter;
 import pl.envelo.melo.authorization.user.User;
 import pl.envelo.melo.domain.request.CategoryRequest;
 
+import javax.naming.Name;
 import javax.naming.ldap.PagedResultsControl;
 import java.util.Set;
 
@@ -18,15 +19,14 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "admins")
 public class Admin {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     @ManyToMany
     private Set<CategoryRequest> adminInbox;
-    @OneToOne
-    @NotBlank
+    @OneToOne(optional = false)
+    @NotNull
     private User user;
-
 }

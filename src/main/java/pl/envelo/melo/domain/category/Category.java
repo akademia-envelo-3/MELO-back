@@ -1,9 +1,7 @@
 package pl.envelo.melo.domain.category;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,10 +13,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "categories")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @NotBlank
+    @Column(nullable = false)
     private String name;
+    @Column(nullable = false)
     private boolean hidden;
 }

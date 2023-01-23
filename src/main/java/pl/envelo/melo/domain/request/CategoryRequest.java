@@ -10,6 +10,7 @@ import pl.envelo.melo.authorization.employee.Employee;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "category_requests")
 public class CategoryRequest {
     @Id
     @GeneratedValue
