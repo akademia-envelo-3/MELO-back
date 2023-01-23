@@ -75,7 +75,6 @@ public class EventService {
             Event event = eventRepository.findById(id).get();
             return ResponseEntity.ok(eventDetailsMapper.convert(event));
         } else {
-
             return ResponseEntity.status(404).body("Event with this ID do not exist");
         }
     }

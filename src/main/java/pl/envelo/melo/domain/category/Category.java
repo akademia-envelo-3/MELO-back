@@ -7,6 +7,9 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+
 
 @Entity
 @Getter
@@ -18,5 +21,4 @@ public class Category {
     private int id;
     private String name;
     private boolean hidden;
-
 }
