@@ -1,9 +1,7 @@
 package pl.envelo.melo.domain.hashtag;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,12 +12,17 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "hashtags")
 public class Hashtag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @NotNull
+    @Column(nullable = false, length = 50, unique = true)
     private String content;
+    @Column(nullable = false)
     private int globalUsageCount;
+    @Column(nullable = false)
     private boolean hidden;
     @Override
     public boolean equals(Object o) {

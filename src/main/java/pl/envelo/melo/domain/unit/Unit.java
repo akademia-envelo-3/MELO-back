@@ -16,18 +16,21 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "units")
 public class Unit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @NotBlank
+    @Column(nullable = false)
     private String name;
+    @Column(length = 4000)
     private String description;
     @ManyToMany
     private List<Event> eventList;
     @ManyToMany
     private Set<Employee> members;
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Employee owner;
 
 }
