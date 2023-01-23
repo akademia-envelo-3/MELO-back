@@ -1,12 +1,11 @@
 package pl.envelo.melo.domain.location;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.*;
 
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Objects;
 
@@ -20,34 +19,26 @@ public class Location {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotNull
- //   @Max(value = 255, message = "the length of streetName must not be greater than 255")
+    @NotBlank
+    @Column(nullable = false)
     private String streetName;
-
-    @NotNull
- //   @Max(value = 100, message = "streetNumber is greater than world's highest street address number.")
+    @NotBlank
+    @Column(nullable = false, length = 30)
     private String streetNumber;
-
-    //    @NotBlank(message = "apartmentNumber field can't be blank")
- //   @Max(value = 100, message = "apartmentNumber is to big. Really? SBM Validation Error.")
     private String apartmentNumber;
-
-    @NotNull
+    @NotBlank
+    @Column(nullable = false,length = 6)
     private String postalCode;
-
-    @NotNull
- //   @Max(value = 255, message = "the length of city must not be greater than 255")
+    @NotBlank
+    @Column(nullable = false)
     private String city;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Location location)) return false;
-        return getStreetNumber().equals(location.getStreetNumber())
-                && getApartmentNumber().equals(location.getApartmentNumber())
-                && getPostalCode().equals(location.getPostalCode())
-                && getStreetName().equals(location.getStreetName())
-                && getCity().equals(location.getCity());
+        return Objects.equals(getStreetNumber(), location.getStreetNumber()) && Objects.equals(getApartmentNumber(), location.getApartmentNumber()) && Objects.equals(getPostalCode(), location.getPostalCode()) && getStreetName().equals(location.getStreetName()) && getCity().equals(location.getCity());
+
     }
 
     @Override

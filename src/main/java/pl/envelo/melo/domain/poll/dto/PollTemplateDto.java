@@ -1,7 +1,7 @@
 package pl.envelo.melo.domain.poll.dto;
 
 import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -18,8 +18,6 @@ public class PollTemplateDto {
     private String pollQuestion;
     @NotNull
     private Boolean multiChoice;
-    @NotNull
-    private Integer eventId;
     @Size(min = 2, max = 10)
     private Set<String> pollOption;
 }

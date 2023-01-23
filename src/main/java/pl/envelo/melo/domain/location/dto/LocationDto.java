@@ -24,7 +24,6 @@ public class LocationDto {
     @Max(value = 100, message = "streetNumber is greater than world's highest street address number.")
     private String streetNumber;
 
-//    @NotBlank(message = "apartmentNumber field can't be blank")
     @Max(value = 100, message = "apartmentNumber is to big. Really? SBM Validation Error.")
     private String apartmentNumber;
 
