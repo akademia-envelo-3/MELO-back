@@ -1,9 +1,8 @@
 package pl.envelo.melo.domain.poll.dto;
 
-import jakarta.validation.constraints.Max;
-
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,10 +13,10 @@ import java.util.Set;
 @Setter
 @Getter
 public class PollTemplateDto {
-    @Max(1000)
+    @Size(max = 1000)
+    @NotBlank
     private String pollQuestion;
     @NotNull
     private Boolean multiChoice;
-    @Size(min = 2, max = 10)
-    private Set<String> pollOption;
+    private Set<String> pollOptions;
 }

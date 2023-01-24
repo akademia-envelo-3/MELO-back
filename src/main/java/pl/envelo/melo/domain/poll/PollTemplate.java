@@ -26,5 +26,4 @@ public class PollTemplate {
     private Set<String> pollOptions;
     @Column(nullable = false)
     private boolean multiChoice;
-
 }

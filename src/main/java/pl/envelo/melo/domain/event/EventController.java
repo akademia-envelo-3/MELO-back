@@ -31,7 +31,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/v1/event")
+@RequestMapping("/v1/events")
 public class EventController {
 
     private final EventService eventService;
@@ -91,12 +91,14 @@ public class EventController {
         return commentService.insertNewComment(id, commentDto);
     }
 
-    @PostMapping("/{id}/poll")
-    public ResponseEntity<?> addPollToEvent(@Valid PollTemplateDto pollTemplateDto, @RequestParam int id) {
-        pollService.insertNewPollTemplate(pollTemplateDto, id);
-        return ResponseEntity.status(HttpStatusCode.valueOf(201)).build();
+    @PostMapping("/{id}/polls")
+    public ResponseEntity<?> addPollToEvent(@Valid @RequestBody PollTemplateDto pollTemplateDto, @PathVariable("id") int id) {
+        return pollService.insertNewPollTemplate(pollTemplateDto, id);
     }
-
+    @GetMapping("/{id}/polls/{poll-id}")
+    public ResponseEntity<?> getPollFromEvent(@PathVariable("id") int id, @PathVariable("poll-id") int pollId) {
+        return pollService.getPollTemplate(id, pollId);
+    }
     //    @PostMapping()
     public ResponseEntity<PollAnswer> addPollAnswer(PollAnswerDto pollAnswerDto) {
         return null;

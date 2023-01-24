@@ -55,7 +55,7 @@ public class SimpleEventMocker {
         Arrays.stream(employees).map(e -> {
             return e.getUser().getPerson();
         }).sequential().forEach(event.getMembers()::add);
-
+        event.setTheme(Theme.GREEN);
         return eventRepository.save(event);
     }
 
