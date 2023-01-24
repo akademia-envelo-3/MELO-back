@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+
 
 @Entity
 @Getter
@@ -20,5 +23,4 @@ public class Category {
     private String name;
     @Column(nullable = false)
     private boolean hidden;
-
 }
