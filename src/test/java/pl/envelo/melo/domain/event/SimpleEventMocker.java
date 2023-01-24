@@ -1,5 +1,7 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
@@ -11,6 +13,7 @@ import pl.envelo.melo.authorization.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 
 @AllArgsConstructor
 public class SimpleEventMocker {
@@ -28,17 +31,24 @@ public class SimpleEventMocker {
         event.setStartTime(localDateTime);
         event.setEndTime(localDateTime.plusDays(5));
         event.setType(eventType);
-        event.setMembers(new HashSet<>());
         event.setInvited(new HashSet<>());
+//        event.setMembers(new HashSet<>());
         event.setAttachments(new HashSet<>());
-        if (employees.length != 0)
+        event.setTheme(Theme.BLUE);
+
+        if (employees.length != 0) {
             event.setOrganizer(employees[0]);
-        else {
+            Set<Person> employees1 = new HashSet<>();
+            employees1.add(employees[0].getUser().getPerson());
+            event.setMembers(employees1);
+        }else {
             Employee owner = mockEmployee("test");
             event.setOrganizer(owner);
-            event.getMembers().add(owner.getUser().getPerson());
+            Set<Person> employees1 = new HashSet<>();
+            employees1.add(owner.getUser().getPerson());
+            event.setMembers(employees1);
         }
-
+        eventRepository.save(event);
         Arrays.stream(employees).map(e -> {
             return e.getUser().getPerson();
         }).sequential().forEach(event.getMembers()::add);

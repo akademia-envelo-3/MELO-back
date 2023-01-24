@@ -20,5 +20,4 @@ public class Category {
     private String name;
     @Column(nullable = false)
     private boolean hidden;
-
 }
