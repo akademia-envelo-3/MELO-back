@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.event;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -130,8 +131,9 @@ public class EventController {
         return null;
     }
 
-    //    @PostMapping()
-    public ResponseEntity<?> disjoinEvent(int employeeId, int eventId) {
-        return null;
+    @PatchMapping("/{eventId}/members/{employeeId}")
+    @Operation(summary = "Remove employee from event")
+    public ResponseEntity<?> disjoinEvent(@RequestParam("employeeId") int employeeId,@RequestParam("eventId") int eventId) {
+        return eventService.removeEmployeeFromEvent(employeeId,eventId);
     }
 }

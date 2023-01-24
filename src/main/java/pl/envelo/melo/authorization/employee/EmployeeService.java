@@ -99,7 +99,6 @@ public class EmployeeService {
                 employeeRepository.findById(employeeId).get().getJoinedEvents().remove(event);
                 return true;
             }
-
         }
         return false;
     }
