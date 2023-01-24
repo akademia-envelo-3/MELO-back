@@ -88,7 +88,7 @@ public class AttachmentService {
 
         /// Waliduję i ustawiam typ załącznika
         AttachmentType attachmentType = validateAttachmentType(attachment);
-        attachmentToSave.setAttachmentType(AttachmentType.PHOTO);
+        attachmentToSave.setAttachmentType(attachmentType);
 
         ///Zapis do repozytorium attachmentów
         Attachment attachmentFromDb = attachmentRepository.save(attachmentToSave);
@@ -97,22 +97,23 @@ public class AttachmentService {
     }
     public AttachmentType validateAttachmentType(MultipartFile uploadedAttachment) {
 
-        final List ALLOWED_PHOTO_FORMATS = List.of(MIME_IMAGE_JPEG, MIME_IMAGE_PNG, MIME_IMAGE_TIFF);
-        final List ALLOWED_VIDEO_FORMATS = List.of(MIME_VIDEO_MPEG);
-        final List ALLOWED_DOCUMENT_FORMATS = List.of(MIME_APPLICATION_PDF, MIME_APPLICATION_MSWORD, MIME_APPLICATION_VND_MSPOWERPOINT, MIME_TEXT_PLAIN);
+        /// W miarę czasu pokombinować z MIMETypes. Rozwiązanie tymczasowe.
+        final List ALLOWED_PHOTO_FORMATS = List.of("png", "jpg", "jpeg");
+        final List ALLOWED_VIDEO_FORMATS = List.of("mp4");
+        final List ALLOWED_DOCUMENT_FORMATS = List.of("pdf", "doc", "docx", "txt", "odt");
 
         /// Pobieram absolutną nazwę pliku
         String fileName = uploadedAttachment.getOriginalFilename();
 
         /// Wykorzystując MimeTypes weryfikuję typ pliku.
-        String type = MimeTypes.getMimeType(fileName);
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
 
         /// Zwracam odpowiedni typ, bądź null jeśli żaden z nich nie pasuje.
-        if (ALLOWED_VIDEO_FORMATS.contains(type)) {
+        if (ALLOWED_VIDEO_FORMATS.contains(extension)) {
             return AttachmentType.VIDEO;
-        } else if (ALLOWED_PHOTO_FORMATS.contains(type)) {
+        } else if (ALLOWED_PHOTO_FORMATS.contains(extension)) {
             return AttachmentType.PHOTO;
-        } else if (ALLOWED_DOCUMENT_FORMATS.contains(type)) {
+        } else if (ALLOWED_DOCUMENT_FORMATS.contains(extension)) {
             return AttachmentType.DOCUMENT;
         }
         return null;

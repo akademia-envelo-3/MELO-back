@@ -189,6 +189,7 @@ public class MimeTypes {
                 put1("xhtml", MIME_APPLICATION_XHTML_XML);
                 put1("src", MIME_APPLICATION_X_WAIS_SOURCE);
                 put1("ustar", MIME_APPLICATION_X_USTAR);
+                put1("docx", MIME_APPLICATION_MSWORD);
                 put1("ms", MIME_APPLICATION_X_TROFF_MS);
                 put1("me", MIME_APPLICATION_X_TROFF_ME);
                 put1("man", MIME_APPLICATION_X_TROFF_MAN);
