@@ -47,8 +47,9 @@ public class LocationDto {
                         || c >= (int) 97 && c <= (int) 122
                         || c >= (int) 260 && c <= (int) 380
                         || c >= (int) 45 && c <= (int) 57
+                        || c == (int) 211 || c == (int) 243
                         || c == ' ') {
-                    this.streetName = streetName;
+                    this.streetName = streetName.replaceAll("( +)"," ").trim();
                 } else
                     throw new LocationBadRequestException("Invalid street name, " +
                             "street name shouldn't have strange characters except '.', '-' and '/'");
@@ -61,10 +62,10 @@ public class LocationDto {
         String regexNumbersWithLetter = "^\\d+(?:[/\\S]\\d+)?(?:[/\\S]\\d+)?[A-Za-z]";
         Pattern patternNum = Pattern.compile(regexOnlyNumbers);
         Pattern patternLet = Pattern.compile(regexNumbersWithLetter);
-        if(patternNum.matcher(streetNumber).matches()
-                || patternLet.matcher(streetNumber).matches()
-                || streetNumber.equals("")) {
-            this.streetNumber = streetNumber;
+        if(patternNum.matcher(streetNumber.trim()).matches()
+                || patternLet.matcher(streetNumber.trim()).matches()
+                || streetNumber.trim().equals("")) {
+            this.streetNumber = streetNumber.trim();
         } else
             throw new LocationBadRequestException("Invalid street number, " +
                     "enter a valid number according to format X - XXXX/XXXX/XXXX or Xa-z - XXXX/XXXX/XXXXa-z");
@@ -75,10 +76,10 @@ public class LocationDto {
         String regexNumbersWithLetter = "^\\d+[A-Za-z]";
         Pattern patternNum = Pattern.compile(regexOnlyNumbers);
         Pattern patternLet = Pattern.compile(regexNumbersWithLetter);
-        if(patternNum.matcher(apartmentNumber).matches() && apartmentNumber.length() <= 5
-                || patternLet.matcher(apartmentNumber).matches()&& apartmentNumber.length() <= 5
-                || apartmentNumber.equals("") ) {
-            this.apartmentNumber = apartmentNumber;
+        if(patternNum.matcher(apartmentNumber.trim()).matches() && apartmentNumber.length() <= 5
+                || patternLet.matcher(apartmentNumber.trim()).matches()&& apartmentNumber.length() <= 5
+                || apartmentNumber.trim().equals("") ) {
+            this.apartmentNumber = apartmentNumber.trim();
         } else
             throw new LocationBadRequestException("Invalid apartment number, " +
                     "enter a valid number according to format 1-99999 or 1a-z-9999a-z");
@@ -87,9 +88,9 @@ public class LocationDto {
     public void setPostalCode(String postalCode) {
         String regex = "^[0-9]{2}-[0-9]{3}";
         Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(postalCode);
-        if (matcher.matches() || postalCode.equals("")){
-            this.postalCode = postalCode;
+        Matcher matcher = pattern.matcher(postalCode.trim());
+        if (matcher.matches() || postalCode.trim().equals("")){
+            this.postalCode = postalCode.trim();
         } else
             throw new LocationBadRequestException("Invalid postal code, " +
                     "enter a valid code according to format XX-XXX");
@@ -98,15 +99,16 @@ public class LocationDto {
     public void setCity(String city) {
         char[] charCity = city.toCharArray();
 
-        if (city.equals("")) {
-            this.city = city;
+        if (city.trim().equals("")) {
+            this.city = city.trim();
         } else {
             for (char c : charCity) {
                 if (c >= (int) 65 && c <= (int) 90
                         || c >= (int) 97 && c <= (int) 122
                         || c >= (int) 260 && c <= (int) 380
+                        || c == (int) 211 || c == (int) 243
                         || c == (int) 45 || c == ' ') {
-                    this.city = city;
+                    this.city = city.replaceAll("( +)"," ").trim();
                 } else
                     throw new LocationBadRequestException("Invalid city name, " +
                             "city name should have only letters");
