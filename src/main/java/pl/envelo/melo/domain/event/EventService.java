@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -14,6 +15,7 @@ import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.attachment.AttachmentService;
+import pl.envelo.melo.domain.attachment.AttachmentType;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
@@ -81,6 +83,7 @@ public class EventService {
         return ResponseEntity.ok(result.stream().map(eventMapper::convert).toList());
     }
 
+    @Transactional
     public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto, MultipartFile[] additionalAttachments) {
         Event event = eventMapper.newEvent(newEventDto);
 
@@ -101,6 +104,10 @@ public class EventService {
         /// Set Main Photo
         if (!Objects.isNull(mainPhoto)) {
             Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
+            if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
+                return ResponseEntity.badRequest()
+                        .body("Illegal format of event Photo!");
+            }
             event.setMainPhoto(mainPhotoFromServer);
 
         } else {

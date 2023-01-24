@@ -25,6 +25,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static pl.envelo.melo.domain.attachment.MimeTypes.*;
@@ -88,6 +89,9 @@ public class AttachmentService {
 
         /// Waliduję i ustawiam typ załącznika
         AttachmentType attachmentType = validateAttachmentType(attachment);
+        if(Objects.isNull(attachmentType)) {
+            return null;
+        }
         attachmentToSave.setAttachmentType(attachmentType);
 
         ///Zapis do repozytorium attachmentów
