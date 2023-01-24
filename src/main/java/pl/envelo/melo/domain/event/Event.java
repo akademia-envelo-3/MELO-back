@@ -53,7 +53,6 @@ public class Event {
     private EventType type;
     @ManyToMany
     @Size(min = 1)
-    @NotNull
     private Set<Person> members;
     private PeriodicType periodicType;
     @ManyToMany
