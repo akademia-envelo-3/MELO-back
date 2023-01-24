@@ -36,6 +36,7 @@ public class PollService {
     private static final String POLL_OPTION_TOO_LONG = "One of the poll options is exceeding limit of 255 characters";
     private static final String POLL_OPTION_BLANK = "Poll option must not be blank";
     private static final String OUT_OF_OPTION_COUNT_BOUNDS = "Poll must have minimum of 2 options and maximum of 10 options";
+    private static final String EVENT_AND_POLL_NOT_CORRELATED = "Event with id %d and poll with id %d are not correlated";
 
 
     public ResponseEntity<List<Integer>> calculatePollResults(int pollId) {
@@ -77,7 +78,7 @@ public class PollService {
         if (pollRepository.findById(pollId).isEmpty() || eventRepository.findById(eventId).isEmpty())
             return ResponseEntity.notFound().build();
         if (!eventRepository.findById(eventId).get().getPolls().contains(pollRepository.findById(pollId).get()))
-            return ResponseEntity.status(HttpStatusCode.valueOf(403)).build();
+            return ResponseEntity.status(HttpStatusCode.valueOf(403)).body(String.format(EVENT_AND_POLL_NOT_CORRELATED,eventId, pollId));
         return ResponseEntity.ok(pollTemplateMapper.convert(pollRepository.findById(pollId).get().getPollTemplate()));
     }
 
