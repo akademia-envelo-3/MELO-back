@@ -5,7 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.mappers.HashtagMapper;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -49,5 +51,23 @@ public class HashtagService {
 
     public ResponseEntity<List<HashtagDto>> listAllHashtag() {
         return null;
+    }
+
+    public ResponseEntity<?> listHashtagStatistic(){
+        List<Hashtag> hashtagList = hashtagRepository.findAll();
+        if(hashtagList != null) {
+            Map<String, Integer> hashtagStatistic = new HashMap<>();
+
+            for (Hashtag hashtag : hashtagList) {
+                if (hashtag.getContent() == null){
+                    continue;
+                } else {
+                    hashtagStatistic.put(hashtag.getContent(), hashtag.getGlobalUsageCount());
+                }
+            }
+            return ResponseEntity.ok(hashtagStatistic);
+        } else {
+            return ResponseEntity.status(404).body("There is no hashtags to display");
+        }
     }
 }
