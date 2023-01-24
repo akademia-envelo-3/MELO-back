@@ -119,8 +119,7 @@ public class AttachmentService {
     }
 
 
-
-
+/*
 
     public ResponseEntity<ResponseMessage> uploadFiles(MultipartFile[] files) {
         String message = "";
@@ -156,6 +155,7 @@ public class AttachmentService {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
+*/
 
 
 

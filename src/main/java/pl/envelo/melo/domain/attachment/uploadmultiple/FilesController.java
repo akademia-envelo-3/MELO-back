@@ -21,11 +21,11 @@ import pl.envelo.melo.domain.attachment.uploadmultiple.FileInfo;
 import pl.envelo.melo.domain.attachment.uploadmultiple.ResponseMessage;
 import pl.envelo.melo.domain.attachment.uploadmultiple.FilesStorageService;
 
-@Controller
-@CrossOrigin("http://localhost:8081")
+//@Controller
+//@CrossOrigin("http://localhost:8081")
 public class FilesController {
 
-    @Autowired
+    /*@Autowired
     FilesStorageService storageService;
 
     @PostMapping("/upload")
@@ -58,12 +58,12 @@ public class FilesController {
         }).collect(Collectors.toList());
 
         return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
-    }
+    }*/
 
-    @GetMapping("/files/{filename:.+}")
+   /* @GetMapping("/files/{filename:.+}")
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
         Resource file = storageService.load(filename);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(file);
-    }
+    }*/
 }

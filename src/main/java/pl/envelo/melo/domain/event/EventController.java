@@ -32,6 +32,7 @@ import pl.envelo.melo.domain.poll.dto.PollAnswerDto;
 import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @AllArgsConstructor
@@ -92,14 +93,27 @@ public class EventController {
     public ResponseEntity<?> addEvent(@RequestPart(value = "eventData") @Parameter(schema =@Schema(type = "string", format = "binary")) NewEventDto newEventDto,
                                        @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
                                        @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments) {
+        if(!Objects.isNull(additionalAttachments)) {
+            if(additionalAttachments.length > 10) {
+                return ResponseEntity.badRequest()
+                        .body("You can upload max 10 attachments to Your Event");
+            }
+        }
+
         return eventService.insertNewEvent(newEventDto, mainPhoto, additionalAttachments);
     }
 
     @PostMapping(value = "/{id}/comments" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> addCommentToEvent(@PathVariable int id,
                                                      @RequestPart(value = "commentData" , required = false)
-                                                        @Parameter(schema =@Schema(type = "string", format = "binary")) CommentDto commentDto,
+                                                     @Parameter(schema =@Schema(type = "string", format = "binary")) CommentDto commentDto,
                                                      @RequestPart(value = "attachments", required = false) MultipartFile[] multipartFiles) {
+        if(!Objects.isNull(multipartFiles)) {
+            if(multipartFiles.length > 10) {
+                return ResponseEntity.badRequest()
+                        .body("You can upload max 10 attachments to each Comment");
+            }
+        }
         return commentService.insertNewComment(id, commentDto, multipartFiles);
     }
 
