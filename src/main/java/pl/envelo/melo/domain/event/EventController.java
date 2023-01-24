@@ -96,8 +96,9 @@ public class EventController {
     }
 
     @PostMapping(value = "/{id}/comments" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Comment> addCommentToEvent(@PathVariable int id,
-                                                     @RequestPart(value = "commentData", required = false) CommentDto commentDto,
+    public ResponseEntity<?> addCommentToEvent(@PathVariable int id,
+                                                     @RequestPart(value = "commentData" , required = false)
+                                                        @Parameter(schema =@Schema(type = "string", format = "binary")) CommentDto commentDto,
                                                      @RequestPart(value = "attachments", required = false) MultipartFile[] multipartFiles) {
         return commentService.insertNewComment(id, commentDto, multipartFiles);
     }

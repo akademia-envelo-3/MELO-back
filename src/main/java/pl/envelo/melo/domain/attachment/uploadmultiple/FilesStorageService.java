@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface FilesStorageService {
     public void init();
 
-    public void save(MultipartFile file);
+    public String save(MultipartFile file);
 
     public Resource load(String filename);
 
@@ -17,4 +17,6 @@ public interface FilesStorageService {
     public Stream<Path> loadAll();
 
     public String getUrlToFile(String filename);
+
+    public String generateUniqueFileName(MultipartFile file);
 }

@@ -75,15 +75,15 @@ public class AttachmentService {
         String uploadedFileName = attachment.getOriginalFilename();
 
         ///Zapis na serwerze
-        storageService.save(attachment);
+        String newUniqueFilename = storageService.save(attachment);
 
         ///Zwracam URI zasobu
-        String UrlToFile = storageService.getUrlToFile(uploadedFileName);
+        String UrlToFile = storageService.getUrlToFile(newUniqueFilename);
 
         Attachment attachmentToSave = new Attachment();
 
         /// Tworzę attachment z nazwą i URL zasobu
-        attachmentToSave.setName(uploadedFileName);
+        attachmentToSave.setName(newUniqueFilename);
         attachmentToSave.setAttachmentUrl(UrlToFile);
 
         /// Waliduję i ustawiam typ załącznika
