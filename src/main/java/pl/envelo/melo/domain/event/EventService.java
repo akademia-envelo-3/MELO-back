@@ -20,6 +20,7 @@ import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
+import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.domain.poll.PollAnswerRepository;
@@ -48,6 +49,7 @@ public class EventService {
     private final CategoryRepository categoryRepository;
     private final AttachmentRepository attachmentRepository;
     private final LocationRepository locationRepository;
+    private final LocationService locationService;
     private final UnitRepository unitRepository;
     private final PollTemplateRepository pollTemplateRepository;
     private final PollRepository pollRepository;
@@ -90,8 +92,9 @@ public class EventService {
             }
         }
 
-        locationRepository.save(event.getLocation());
-        //todo swap with locationService method when present
+        if (newEventDto.getLocation() != null) {
+            event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
+        }
 
         if(employeeRepository.existsById(newEventDto.getOrganizerId())) {
             event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get());
