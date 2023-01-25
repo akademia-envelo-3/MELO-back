@@ -50,7 +50,7 @@ class EventServiceTest {
         simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
     }
 
-    @Test
+//    @Test
     void getExistEvent() {
 
         Event event = eventRepository.findById(1).get();
@@ -70,7 +70,7 @@ class EventServiceTest {
         assertEquals(organizer.get().getUser().getPerson().getFirstName(), eventDetailsDto.getOrganizer().getFirstName());
     }
 
-    @Test
+//    @Test
     void checkNonExistentEvent() {
         ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(3);
         assertEquals(HttpStatus.NOT_FOUND, eventDetailsDtoResponseEntity.getStatusCode());

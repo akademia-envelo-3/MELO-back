@@ -1,6 +1,6 @@
 package pl.envelo.melo.domain.event.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -22,13 +22,12 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(name = "NewEventDto")
 public class NewEventDto {
 
-    @NotNull
+    @NotBlank
     @Size(max = 255)
     private String name;
-    @NotNull
+    @NotBlank
     @Size(max = 4000)
     private String description;
     @DateTimeFormat(pattern = "")
