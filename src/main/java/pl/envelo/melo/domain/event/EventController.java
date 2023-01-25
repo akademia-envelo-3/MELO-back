@@ -93,7 +93,7 @@ public class EventController {
     public ResponseEntity<?> addEvent(@RequestPart(value = "eventData") @Parameter(schema =@Schema(type = "string", format = "binary")) NewEventDto newEventDto,
                                        @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
                                        @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments) {
-        System.out.println("WOESZŁO");
+
         if(!Objects.isNull(additionalAttachments)) {
             if(additionalAttachments.length > 10) {
                 return ResponseEntity.badRequest()
