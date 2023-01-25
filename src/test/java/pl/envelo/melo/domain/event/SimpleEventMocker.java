@@ -42,7 +42,7 @@ public class SimpleEventMocker {
             employees1.add(employees[0].getUser().getPerson());
             event.setMembers(employees1);
         }else {
-            Employee owner = mockEmployee("test");
+            Employee owner = mockEmployee("owner");
             event.setOrganizer(owner);
             Set<Person> employees1 = new HashSet<>();
             employees1.add(owner.getUser().getPerson());

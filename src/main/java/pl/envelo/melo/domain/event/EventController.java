@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.event;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -131,6 +132,7 @@ public class EventController {
         return null;
     }
 
+    @Transactional
     @PatchMapping("/{eventId}/members/{employeeId}")
     @Operation(summary = "Remove employee from event")
     public ResponseEntity<?> disjoinEvent(@RequestParam("employeeId") int employeeId,@RequestParam("eventId") int eventId) {

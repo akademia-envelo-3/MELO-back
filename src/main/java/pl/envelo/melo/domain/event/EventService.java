@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -32,10 +33,7 @@ import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -182,14 +180,33 @@ public class EventService {
     public ResponseEntity<?> removeEmployeeFromEvent(int employeeId, int eventId) {
 
         if (!employeeRepository.existsById(employeeId)) {
-            return ResponseEntity.status(404).body("Employee with " + employeeId + " does not exist");
-        } else if (!eventRepository.existsById(eventId)) {
-            return ResponseEntity.status(404).body("Event with " + eventId + " does not exist");
-        } else {
-            Optional<Employee> employee = employeeRepository.findById(employeeId);
-            Optional<Event> event = eventRepository.findById(eventId);
 
-            return ResponseEntity.status(200).body(employeeService.removeFromJoinedEvents(employeeId, event.get()));
+            return ResponseEntity.status(404).body("Employee with Id " + employeeId + " does not exist");
+
+        } else if (!eventRepository.existsById(eventId)) {
+
+            return ResponseEntity.status(404).body("Event with Id " + eventId + " does not exist");
+
+        } else if (!eventRepository.findById(eventId).get()
+                .getMembers()
+                .contains(employeeRepository.findById(employeeId).get().getUser().getPerson())) {
+
+            return ResponseEntity.status(404).body("Employee with Id " + employeeId + " is not a member of this event");
+
+        } else if (eventRepository.findById(eventId).get().getOrganizer().getId() == employeeId) {
+
+            return ResponseEntity.status(403).body("Event organizer cant be remove from his event");
+
+        } else {
+            eventRepository.findById(eventId).get()
+                    .getMembers()
+                    .remove(employeeRepository
+                            .findById(employeeId).get()
+                            .getUser()
+                            .getPerson());
+            employeeService.removeFromJoinedEvents(employeeId, eventRepository.findById(eventId).get());
+            return ResponseEntity.status(200).body("Successfully removed an employee with Id "
+                    + employeeId + " from the event with Id" + eventId);
         }
     }
 

@@ -22,10 +22,7 @@ import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.mappers.EventDetailsMapper;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.time.LocalDateTime;
 
 @Transactional
@@ -159,4 +156,53 @@ class EventServiceTest {
         event.setPeriodicType(PeriodicType.NONE);
         assertEquals(PeriodicType.NONE, ((NewEventDto) Objects.requireNonNull(eventService.editEventForm(event.getId()).getBody())).getPeriodicType());
     }
+
+ //   @Test
+    void removeEmployeeFromEventTest(){
+        setUpRepo();
+
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),
+                EventType.LIMITED_PUBLIC_INTERNAL);
+        Employee test = simpleEventMocker.mockEmployee("test");
+        event.getMembers().add(test.getUser().getPerson());
+
+        Set<Event> eventSet = new HashSet<>();
+        eventSet.add(event);
+        test.setJoinedEvents(eventSet);
+
+        assertFalse(event.getMembers().isEmpty());
+        assertTrue(event.getMembers().contains(test.getUser().getPerson()));
+        assertTrue(test.getJoinedEvents().contains(event));
+
+        eventService.removeEmployeeFromEvent(test.getId(),event.getId());
+
+        assertTrue(test.getJoinedEvents().isEmpty());
+        assertFalse(event.getMembers().contains(test.getUser().getPerson()));
+
+    }
+
+ //   @Test
+    void removeEmployeeFromEventThrowExceptionTest(){
+        setUpRepo();
+        Employee test = simpleEventMocker.mockEmployee("test");
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),
+                EventType.LIMITED_PUBLIC_INTERNAL, test);
+
+        Set<Event> eventSet = new HashSet<>();
+        eventSet.add(event);
+        test.setJoinedEvents(eventSet);
+
+        assertFalse(event.getMembers().isEmpty());
+        assertTrue(event.getMembers().contains(test.getUser().getPerson()));
+        assertTrue(test.getJoinedEvents().contains(event));
+        ResponseEntity responseEntity = eventService.removeEmployeeFromEvent(test.getId(),event.getId());
+
+        assertEquals(ResponseEntity.status(403).body("Event organizer cant be remove from his event"),
+                responseEntity);
+
+        assertFalse(test.getJoinedEvents().isEmpty());
+        assertTrue(event.getMembers().contains(test.getUser().getPerson()));
+
+    }
+
 }
