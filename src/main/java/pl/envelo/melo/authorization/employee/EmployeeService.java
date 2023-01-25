@@ -137,8 +137,9 @@ public class EmployeeService {
                 joinedUnits = new HashSet<>();
                 joinedUnits.add(unit);
                 employeeRepository.findById(employeeId).get().setJoinedUnits(joinedUnits);
+            }else {
+                employeeRepository.findById(employeeId).get().getJoinedUnits().add(unit);
             }
-            employeeRepository.findById(employeeId).get().getJoinedUnits().add(unit);
             return true;
         }
         return false;

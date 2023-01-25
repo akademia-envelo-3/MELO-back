@@ -2,6 +2,7 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -110,9 +111,15 @@ public class EventController {
         return null;
     }
 
-    //    @PostMapping()
-    public ResponseEntity<?> joinEvent(int employeeId, int eventId) {
-        return null;
+    @GetMapping("{id}/join")
+    public ResponseEntity<?> joinEvent(@PathVariable int eventId) {
+        int employeeId = 1;//TODO take Id from Token
+        if(employeeService.getEmployee(employeeId).getStatusCode()==HttpStatus.OK) {
+            return eventService.addPersonToEvent(employeeId,eventId);
+        }
+        else{
+            return ResponseEntity.status(404).body("Employee is not in DataBase");
+        }
     }
 
     //    @PostMapping()
