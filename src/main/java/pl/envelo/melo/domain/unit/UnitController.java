@@ -2,10 +2,7 @@ package pl.envelo.melo.domain.unit;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.unit.dto.UnitDto;
 
@@ -13,6 +10,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
+@RequestMapping("/v1/units")
 public class UnitController {
 
     private final UnitService unitService;
@@ -48,7 +46,8 @@ public class UnitController {
     }
 
 
-    public ResponseEntity<Unit> addNewUnit(UnitDto unitDto) {
+    @PostMapping("")
+    public ResponseEntity<?> addNewUnit(@RequestBody UnitDto unitDto) {
         return unitService.insertNewUnit(unitDto);
     }
 

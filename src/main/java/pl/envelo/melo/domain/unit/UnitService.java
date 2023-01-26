@@ -5,10 +5,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
+import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.unit.dto.UnitDto;
+import pl.envelo.melo.mappers.UnitMapper;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -16,6 +20,8 @@ public class UnitService {
 
     private final UnitRepository unitRepository;
     private final EmployeeRepository employeeRepository;
+    private final EmployeeService employeeService;
+    private UnitMapper unitMapper;
 
 
     public ResponseEntity<UnitDto> getUnit(int id) {
@@ -42,8 +48,21 @@ public class UnitService {
         return null;
     }
 
-    public ResponseEntity<Unit> insertNewUnit(UnitDto unitDto) {
-        return null;
+    public ResponseEntity<?> insertNewUnit(UnitDto unitDto) {
+        int employeeId =1;//TODO Wyciągnąc z tokena
+        Unit unit = unitMapper.toEntity(unitDto);
+        if(employeeRepository.findById(employeeId).isEmpty()){
+            return ResponseEntity.status(404).body("Employee is not in Database");
+        }
+        Employee employee = employeeRepository.findById(employeeId).get();
+        unit.setOwner(employee);
+        Set<Employee> members = new HashSet<>();
+        members.add(employee);
+        unit.setMembers(members);
+        unitRepository.save(unit);
+        employeeService.addToOwnedUnits(employee.getId(),unit);
+        employeeRepository.save(employee);
+        return ResponseEntity.ok(unitMapper.toDto(unit));
     }
 
     public ResponseEntity<Unit> updateUnit(UnitDto unitDto) {
