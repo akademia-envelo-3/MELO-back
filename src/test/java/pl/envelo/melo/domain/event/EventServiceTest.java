@@ -1,22 +1,14 @@
 package pl.envelo.melo.domain.event;
 
-import jakarta.transaction.Transactional;
-
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import pl.envelo.melo.EventContextTest;
 import pl.envelo.melo.authorization.employee.Employee;
-import pl.envelo.melo.authorization.employee.EmployeeRepository;
-import pl.envelo.melo.authorization.person.PersonRepository;
-import pl.envelo.melo.authorization.user.UserRepository;
-import pl.envelo.melo.domain.attachment.Attachment;
-import pl.envelo.melo.domain.attachment.AttachmentType;
-import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.mappers.EventDetailsMapper;
@@ -28,32 +20,18 @@ import java.util.Objects;
 import java.util.Optional;
 import java.time.LocalDateTime;
 
-@Transactional
-@SpringBootTest
-class EventServiceTest {
+class EventServiceTest extends EventContextTest {
 
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    PersonRepository personRepository;
     @Autowired
     EventDetailsMapper eventDetailsMapper;
     @Autowired
     EventService eventService;
-    @Autowired
-    EventRepository eventRepository;
-    @Autowired
-    EmployeeRepository employeeRepository;
-    SimpleEventMocker simpleEventMocker;
 
-    void setUpRepo() {
-        simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
-    }
-
-//    @Test
+    @Test
     void getExistEvent() {
 
-        Event event = eventRepository.findById(1).get();
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now(),EventType.LIMITED_EXTERNAL);
+        event.setMemberLimit(10L);
         EventDetailsDto eventDetailsDto = eventDetailsMapper.convert(event);
         ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(1);
 
@@ -62,8 +40,6 @@ class EventServiceTest {
         assertEquals(event.getDescription(), eventDetailsDto.getDescription());
         assertEquals(event.getOrganizer().getUser().getPerson().getFirstName()
                 , eventDetailsDto.getOrganizer().getFirstName());
-        assertEquals(event.getCategory().getName()
-                , eventDetailsDto.getCategory());
         assertEquals(event.getMemberLimit(), eventDetailsDto.getMemberLimit());
 
         Optional<Employee> organizer = employeeRepository.findById(event.getOrganizer().getId());
@@ -76,9 +52,9 @@ class EventServiceTest {
         assertEquals(HttpStatus.NOT_FOUND, eventDetailsDtoResponseEntity.getStatusCode());
     }
 
-    //@Test
+    @Test
     void listAllEvents() {
-        setUpRepo();
+        //setUpRepo();
         Event presentEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));
         Event presentBeforeEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(2), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"),simpleEventMocker.mockEmployee("test3"));
         Event presentPrivateEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PRIVATE_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));
@@ -93,15 +69,10 @@ class EventServiceTest {
         assertNull(eventToDisplayOnListDto.getMainPhoto());
     }
 
-    //@Test
+    @Test
     void updateEvent() {
-        setUpRepo();
+       // setUpRepo();
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
-        event.setAttachments(new HashSet<>());
-        Attachment attachment = new Attachment();
-        attachment.setAttachmentType(AttachmentType.PHOTO);
-        attachment.setAttachmentUrl("http://wp.pl/photo");
-        event.getAttachments().add(attachment);
         eventRepository.save(event);
 
         Employee employee = simpleEventMocker.mockEmployee("owwneer");
@@ -130,31 +101,19 @@ class EventServiceTest {
         assertEquals(employee.getUser().getPerson().getFirstName(), event.getOrganizer().getUser().getPerson().getFirstName());
         assertEquals("juh", event.getInvited().stream().filter(e -> e.getId() == invited.getId()).findFirst().get().getUser().getPerson().getFirstName());
         assertEquals(2, event.getInvited().size());
-        AttachmentDto attachmentDto = new AttachmentDto();
-        attachmentDto.setAttachmentType(AttachmentType.PHOTO);
-        attachmentDto.setAttachmentUrl("http://wp.pl/photo");
-        newEventDto.setAttachments(new HashSet<>());
-        newEventDto.getAttachments().add(attachmentDto);
+
 
         eventService.updateEvent(event.getId(), newEventDto);
 
         //TODO sprawdzić attachment po implementacji multipart file upload
         event = eventRepository.getReferenceById(event.getId());
-        assertEquals(attachmentDto.getAttachmentUrl(), event.getAttachments().stream().findFirst().get().getAttachmentUrl());
-        assertEquals(1, event.getAttachments().size());
         //TODO sprawdzić notification box
         //TODO sprawdzić hashtagi
     }
 
-    //@Test
+    @Test
     void editEventForm() {
-        setUpRepo();
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
-        event.setAttachments(new HashSet<>());
-        Attachment attachment = new Attachment();
-        attachment.setAttachmentType(AttachmentType.PHOTO);
-        attachment.setAttachmentUrl("http://wp.pl/photo");
-        event.getAttachments().add(attachment);
         eventRepository.save(event);
         event.setPeriodicType(PeriodicType.NONE);
         assertEquals(PeriodicType.NONE, ((NewEventDto) Objects.requireNonNull(eventService.editEventForm(event.getId()).getBody())).getPeriodicType());

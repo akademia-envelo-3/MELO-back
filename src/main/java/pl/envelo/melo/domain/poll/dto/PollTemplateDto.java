@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @Setter
@@ -18,7 +18,7 @@ public class PollTemplateDto {
     @Min(2)
     @Max(10)
     @NotNull
-    private List<String> pollOption;
+    private Set<String> pollOptions;
     @NotNull
     private Boolean multiChoice;
     @NotNull

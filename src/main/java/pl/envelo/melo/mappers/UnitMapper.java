@@ -15,10 +15,14 @@ import pl.envelo.melo.domain.unit.UnitService;
 import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.domain.unit.dto.UnitDto;
 
+import java.util.Objects;
+
 @Mapper(componentModel = "spring")
 public interface UnitMapper {
 
     default Unit map(Integer unitId) {
+        if(Objects.isNull(unitId))
+            return null;
         Unit unit = new Unit();
         //fixme add UnitMapper
         unit.setId(unitId);

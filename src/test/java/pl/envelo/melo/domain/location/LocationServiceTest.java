@@ -1,16 +1,22 @@
 package pl.envelo.melo.domain.location;
 
 
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.annotation.DirtiesContext;
 import pl.envelo.melo.domain.location.dto.LocationDto;
+import pl.envelo.melo.utils.H2Utils;
 
+import javax.sql.DataSource;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Transactional
 @SpringBootTest
 public class LocationServiceTest {
 
@@ -19,6 +25,12 @@ public class LocationServiceTest {
     @Autowired
     private LocationRepository locationRepository;
 
+    @Autowired
+    private DataSource dataSource;
+    @BeforeEach
+    void setUp(){
+        H2Utils.clearDb(dataSource);
+    }
 
     @Test
     void getOrInsertLocationTest(){
