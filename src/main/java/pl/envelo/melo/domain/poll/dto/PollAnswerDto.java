@@ -13,12 +13,8 @@ import java.util.Set;
 @Setter
 @Getter
 public class PollAnswerDto {
-    @NotNull
-    private Integer employeeId;
-    @Min(2)
-    @Max(10)
-    @NotNull
-    private Set<String> pollResult;
-    @NotNull
-    private Integer pollId;
+
+    private int id;
+    private String pollAnswer;
+
 }

@@ -25,7 +25,6 @@ import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
-import pl.envelo.melo.domain.poll.PollTemplateRepository;
 
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
@@ -51,7 +50,6 @@ public class EventService {
     private final LocationRepository locationRepository;
     private final LocationService locationService;
     private final UnitRepository unitRepository;
-    private final PollTemplateRepository pollTemplateRepository;
     private final PollRepository pollRepository;
     private final PollAnswerRepository pollAnswerRepository;
     private final CommentRepository commentRepository;

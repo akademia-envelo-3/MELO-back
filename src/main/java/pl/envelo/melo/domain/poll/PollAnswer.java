@@ -22,10 +22,12 @@ public class PollAnswer {
     @Id
     @GeneratedValue
     private int id;
-    @ManyToOne
-    @JoinColumn(name = "employee_id", nullable = false)
-    private Employee employee;
     @NotNull
-    private Set<String> pollResult;
+    private String pollAnswer;
+    @ManyToOne
+    @JoinColumn(name="poll_id")
+    private Poll poll;
+    @OneToMany(fetch = FetchType.EAGER)
+    private Set<Employee> employee;
 
 }

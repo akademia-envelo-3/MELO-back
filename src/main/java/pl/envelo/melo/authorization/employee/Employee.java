@@ -9,6 +9,7 @@ import lombok.Setter;
 import pl.envelo.melo.authorization.user.User;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.notification.Notification;
+import pl.envelo.melo.domain.poll.PollAnswer;
 import pl.envelo.melo.domain.unit.Unit;
 
 import java.util.Objects;

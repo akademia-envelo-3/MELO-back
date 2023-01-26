@@ -2,7 +2,6 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -21,11 +20,10 @@ import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationService;
-import pl.envelo.melo.domain.poll.Poll;
 import pl.envelo.melo.domain.poll.PollAnswer;
 import pl.envelo.melo.domain.poll.PollService;
 import pl.envelo.melo.domain.poll.dto.PollAnswerDto;
-import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
+import pl.envelo.melo.domain.poll.dto.PollDto;
 
 import java.util.List;
 
@@ -92,14 +90,14 @@ public class EventController {
     }
 
     @PostMapping("/{id}/polls")
-    public ResponseEntity<?> addPollToEvent(@Valid @RequestBody PollTemplateDto pollTemplateDto, @PathVariable("id") int id) {
-        return pollService.insertNewPollTemplate(pollTemplateDto, id);
+    public ResponseEntity<?> addPollToEvent(@Valid @RequestBody PollDto pollDto, @PathVariable("id") int id) {
+        return pollService.insertNewPoll(pollDto, id);
     }
     @GetMapping("/{id}/polls/{poll-id}")
     public ResponseEntity<?> getPollFromEvent(@PathVariable("id") int id, @PathVariable("poll-id") int pollId) {
-        return pollService.getPollTemplate(id, pollId);
+        return pollService.getPoll(id, pollId);
     }
-    //    @PostMapping()
+//        @PostMapping()
     public ResponseEntity<PollAnswer> addPollAnswer(PollAnswerDto pollAnswerDto) {
         return null;
     }
