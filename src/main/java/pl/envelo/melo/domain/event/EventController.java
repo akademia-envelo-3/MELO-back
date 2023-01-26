@@ -1,6 +1,9 @@
 package pl.envelo.melo.domain.event;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -113,9 +116,15 @@ public class EventController {
     }
 
     @GetMapping("/{id}/join")
+    @Operation(summary = "Add employee to event members",
+    responses = {
+            @ApiResponse(responseCode = "200", description = "Employee added to event", content = @Content(mediaType = "aplication/json", schema = @Schema(implementation = Event.class))),
+            @ApiResponse(responseCode = "400", description = "Event is full or employee already on list", content = @Content(mediaType = "aplication/json", schema = @Schema(implementation = Event.class))),
+            @ApiResponse(responseCode = "404", description = "Event or employee do not exist")
+    })
     public ResponseEntity<?> joinEvent(@PathVariable("id") int id) {
-        int employeeId = 2;//TODO take Id from Token
-        if(employeeService.getEmployee(employeeId).getStatusCode()==HttpStatus.OK) {
+        int employeeId = 1;//TODO take Id from Token
+        if(employeeService.getEmployee(employeeId).getStatusCode()== HttpStatus.OK) {
             return eventService.addEmployeeToEvent(employeeId,id);
         }
         else{
