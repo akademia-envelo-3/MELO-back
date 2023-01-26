@@ -1,17 +1,22 @@
 package pl.envelo.melo.domain.unit;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.unit.dto.UnitDto;
 
 import java.util.List;
+import java.util.Set;
 
+@RequestMapping("/v1/units")
 @RestController
+@Tag(name = "Unit Controller")
 @AllArgsConstructor
 public class UnitController {
 
@@ -22,8 +27,17 @@ public class UnitController {
         return unitService.getUnit(id);
     }
 
-
-    public ResponseEntity<List<UnitDto>> getUnits() {
+    @GetMapping
+    @Operation(summary = "Retrieve list of units",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Retrieve list of units", content =
+                    @Content(mediaType = "application/json", schema = @Schema(
+                            description = "List of units",
+                            oneOf = {UnitDto.class}
+                    ))
+                    )
+            })
+    public ResponseEntity<?> getUnits() {
         return unitService.getUnits();
     }
 

@@ -28,6 +28,6 @@ public interface UnitMapper {
         unit.setId(unitId);
         return unit;
     }
-
+    UnitDto convert(Unit unit);
 
 }
