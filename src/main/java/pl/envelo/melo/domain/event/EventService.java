@@ -10,6 +10,7 @@ import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
+import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
@@ -62,6 +63,7 @@ public class EventService {
     private AttachmentMapper attachmentMapper;
     private EventUpdater eventUpdater;
     private EventValidator eventValidator;
+    private EmployeeMapper employeeMapper;
     private EditEventNotificationHandler eventNotificationHandler;
 
     public ResponseEntity<?> getEvent(int id) {
@@ -146,11 +148,30 @@ public class EventService {
         return null;
     }
 
-    public ResponseEntity<Employee> changeEventOrganizer(int id, Employee employee) { //void?
-        return null;
+    public ResponseEntity<?> changeEventOrganizer(int eventId, int employeeId) {
+        int currentTokenId = 1;
+        Employee employee;
+        if (!eventRepository.existsById(eventId)) {
+            return ResponseEntity.status(404).body("Event with Id " + eventId + " does not exist");
+        } else if (!employeeRepository.existsById(employeeId)) {
+            return ResponseEntity.status(404).body("Employee with Id " + employeeId + " does not exist");
+        }else if (currentTokenId != eventRepository.findById(eventId).get().getOrganizer().getId()){
+            return ResponseEntity.status(401).body("You do not have the authority");
+        } else {
+            employee = employeeRepository.getReferenceById(employeeId);
+            Event event = eventRepository.findById(eventId).get();
+            employeeService.removeFromOwnedEvents(event.getOrganizer().getId(), event);
+            event.setOrganizer(employee);
+            employeeService.addToOwnedEvents(employeeId, event);
+        }
+
+            return ResponseEntity.status(200).body("The organizer of the event with id "
+                    + eventId + " has been correctly changed to "
+                    + employee.getUser().getPerson().getFirstName() + " "
+                    + employee.getUser().getPerson().getLastName());
     }
 
-    public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto) { //void?
+    public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto) {
         //TODO dostosować do funckjonalnosci wysyłania plików na serwer
         Optional<Event> optionalEvent = eventRepository.findById(id);
         if (optionalEvent.isEmpty())

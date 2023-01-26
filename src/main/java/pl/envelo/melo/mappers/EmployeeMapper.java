@@ -30,7 +30,10 @@ public interface EmployeeMapper extends EntityMapper<EmployeeDto, Employee>{
     Employee toEntity(EmployeeDto employeeDto);
     @InheritInverseConfiguration
     EmployeeDto toDto(Employee employee);
-    
+
+    @Mapping(source = "firstName", target = "user.person.firstName")
+    @Mapping(source = "lastName", target = "user.person.lastName")
+    Employee toEntity(EmployeeNameDto employeeNameDto);
     
     default EmployeeNameDto convertEmployeeToEmployeeNameDto(Employee employee) {
        EmployeeNameDto employeeNameDto = new EmployeeNameDto();

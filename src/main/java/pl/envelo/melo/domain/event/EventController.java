@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeService;
+import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonService;
@@ -72,14 +73,16 @@ public class EventController {
         return null;
     }
 
-    //    @GetMapping()
+    //    @GetMapping()/
     public ResponseEntity<EmployeeNameDto> getEventOrganizer(int id) {
         return null;
     }
 
-    //    @PostMapping()
-    public boolean changeEventOrganizer(int id, Employee employee) {
-        return false;
+    @Transactional
+    @PatchMapping("/{id}/organizer")
+    @Operation(summary = "Change event organizer from current to another")
+    public ResponseEntity<?> changeEventOrganizer(@RequestParam("id")int eventId, @RequestBody int employeeId) {
+        return eventService.changeEventOrganizer(eventId,employeeId);
     }
 
     @PostMapping("")
