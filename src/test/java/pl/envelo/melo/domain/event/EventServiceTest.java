@@ -205,4 +205,30 @@ class EventServiceTest {
 
     }
 
+    @Test
+    void changeOrganizerTest(){
+        setUpRepo();
+        Employee test = simpleEventMocker.mockEmployee("test");
+        Employee test2 = simpleEventMocker.mockEmployee("test2");
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),
+                EventType.LIMITED_PUBLIC_INTERNAL, test, test2);
+
+        Set<Event> eventSet = new HashSet<>();
+        eventSet.add(event);
+        test.setOwnedEvents(eventSet);
+
+        assertTrue(test.getOwnedEvents().contains(event));
+        assertEquals(test.getId(),event.getOrganizer().getId());
+
+        eventService.changeEventOrganizer(event.getId(),test2.getId());
+
+        assertFalse(test.getOwnedEvents().contains(event));
+        assertNotEquals(test.getId(),event.getOrganizer().getId());
+
+        assertTrue(test2.getOwnedEvents().contains(event));
+        assertEquals(test2.getId(),event.getOrganizer().getId());
+
+
+    }
+
 }

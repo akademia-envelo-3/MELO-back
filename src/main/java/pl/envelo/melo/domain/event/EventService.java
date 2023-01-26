@@ -149,6 +149,7 @@ public class EventService {
     }
 
     public ResponseEntity<?> changeEventOrganizer(int eventId, int employeeId) {
+
         int currentTokenId = 1;
         Employee employee;
         if (!eventRepository.existsById(eventId)) {
@@ -156,19 +157,20 @@ public class EventService {
         } else if (!employeeRepository.existsById(employeeId)) {
             return ResponseEntity.status(404).body("Employee with Id " + employeeId + " does not exist");
         }else if (currentTokenId != eventRepository.findById(eventId).get().getOrganizer().getId()){
-            return ResponseEntity.status(401).body("You do not have the authority");
+            return ResponseEntity.status(401).body("You are not the organizer of the event you " +
+                                                        "do not have the authority to make changes");
         } else {
             employee = employeeRepository.getReferenceById(employeeId);
             Event event = eventRepository.findById(eventId).get();
             employeeService.removeFromOwnedEvents(event.getOrganizer().getId(), event);
             event.setOrganizer(employee);
             employeeService.addToOwnedEvents(employeeId, event);
-        }
 
             return ResponseEntity.status(200).body("The organizer of the event with id "
                     + eventId + " has been correctly changed to "
                     + employee.getUser().getPerson().getFirstName() + " "
                     + employee.getUser().getPerson().getLastName());
+        }
     }
 
     public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto) {
