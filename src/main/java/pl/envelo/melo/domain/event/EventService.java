@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -7,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
+import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
@@ -31,10 +33,7 @@ import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -45,6 +44,7 @@ public class EventService {
     private EventDetailsMapper eventDetailsMapper;
     private final EventRepository eventRepository;
     private final EmployeeRepository employeeRepository;
+    private final EmployeeService employeeService;
     private final HashtagRepository hashtagRepository;
     private final CategoryRepository categoryRepository;
     private final AttachmentRepository attachmentRepository;
@@ -87,8 +87,8 @@ public class EventService {
 
         Event event = eventMapper.newEvent(newEventDto);
         //validation
-        if(event.getType().toString().startsWith("LIMITED")) {
-            if(event.getMemberLimit()<1) {
+        if (event.getType().toString().startsWith("LIMITED")) {
+            if (event.getMemberLimit() < 1) {
                 return ResponseEntity.status(400).body("Event with limited eventType must have higher memberLimit than 0.");
             }
         }
@@ -97,7 +97,7 @@ public class EventService {
             event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
         }
 
-        if(employeeRepository.existsById(newEventDto.getOrganizerId())) {
+        if (employeeRepository.existsById(newEventDto.getOrganizerId())) {
             event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get());
         }
 
@@ -109,10 +109,9 @@ public class EventService {
 
 
         if (!(newEventDto.getCategoryId() == null)) {
-            if(categoryRepository.findById(newEventDto.getCategoryId()).isPresent()) {
+            if (categoryRepository.findById(newEventDto.getCategoryId()).isPresent()) {
                 event.setCategory(categoryRepository.findById(newEventDto.getCategoryId()).get());
-            }
-            else {
+            } else {
                 event.setCategory(null); // todo set category
             }
         }
@@ -131,10 +130,9 @@ public class EventService {
         }
 
         if (!(newEventDto.getUnitId() == null)) {
-            if(unitRepository.findById(newEventDto.getUnitId()).isPresent()) {
+            if (unitRepository.findById(newEventDto.getUnitId()).isPresent()) {
                 event.setUnit(unitRepository.findById(newEventDto.getUnitId()).get());
-            }
-            else {
+            } else {
                 event.setUnit(null);
             }
         } //todo create UnitMapper and use UnitRepository to find unit in database
@@ -154,31 +152,62 @@ public class EventService {
 
     public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto) { //void?
         //TODO dostosować do funckjonalnosci wysyłania plików na serwer
-            Optional<Event> optionalEvent = eventRepository.findById(id);
-            if (optionalEvent.isEmpty())
-                return ResponseEntity.badRequest().body("Event with id " +id+" not found");
-            Event event = optionalEvent.get();
+        Optional<Event> optionalEvent = eventRepository.findById(id);
+        if (optionalEvent.isEmpty())
+            return ResponseEntity.badRequest().body("Event with id " + id + " not found");
+        Event event = optionalEvent.get();
 
-            Map<String, String> validationResult = eventValidator.validateToEdit(event, newEventDto);
-            validationResult.forEach((k, v) -> System.out.println(k + " " + v));
-            if (validationResult.size() != 0) {
-                return ResponseEntity.badRequest().body(validationResult);
-            }
-            eventUpdater.update(event, newEventDto);
-            eventNotificationHandler.editNotification(event, newEventDto).forEach(notificationService::insertEventNotification);
-            return ResponseEntity.ok(eventDetailsMapper.convert(eventRepository.save(event)));
+        Map<String, String> validationResult = eventValidator.validateToEdit(event, newEventDto);
+        validationResult.forEach((k, v) -> System.out.println(k + " " + v));
+        if (validationResult.size() != 0) {
+            return ResponseEntity.badRequest().body(validationResult);
+        }
+        eventUpdater.update(event, newEventDto);
+        eventNotificationHandler.editNotification(event, newEventDto).forEach(notificationService::insertEventNotification);
+        return ResponseEntity.ok(eventDetailsMapper.convert(eventRepository.save(event)));
     }
-    public ResponseEntity<?> editEventForm(int id){
-        if(!eventRepository.existsById(id))
-            return ResponseEntity.status(HttpStatusCode.valueOf(404)).body("Event with "+id+" does not exists");
+
+    public ResponseEntity<?> editEventForm(int id) {
+        if (!eventRepository.existsById(id))
+            return ResponseEntity.status(HttpStatusCode.valueOf(404)).body("Event with " + id + " does not exists");
         return ResponseEntity.ok(eventEditMapper.convert(eventRepository.getReferenceById(id)));
     }
-    public ResponseEntity<Employee> addEmployeeToEvent(int EmployeeId, int EventId) { //void?
+
+    public ResponseEntity<?> addEmployeeToEvent(int employeeId, int eventId) {
         return null;
     }
 
-    public ResponseEntity<Employee> removeEmployeeFromEvent(int EmployeeId, int EventId) { //void?
-        return null;
+    public ResponseEntity<?> removeEmployeeFromEvent(int employeeId, int eventId) {
+
+        if (!employeeRepository.existsById(employeeId)) {
+
+            return ResponseEntity.status(404).body("Employee with Id " + employeeId + " does not exist");
+
+        } else if (!eventRepository.existsById(eventId)) {
+
+            return ResponseEntity.status(404).body("Event with Id " + eventId + " does not exist");
+
+        } else if (!eventRepository.findById(eventId).get()
+                .getMembers()
+                .contains(employeeRepository.findById(employeeId).get().getUser().getPerson())) {
+
+            return ResponseEntity.status(404).body("Employee with Id " + employeeId + " is not a member of this event");
+
+        } else if (eventRepository.findById(eventId).get().getOrganizer().getId() == employeeId) {
+
+            return ResponseEntity.status(403).body("Event organizer cant be remove from his event");
+
+        } else {
+            eventRepository.findById(eventId).get()
+                    .getMembers()
+                    .remove(employeeRepository
+                            .findById(employeeId).get()
+                            .getUser()
+                            .getPerson());
+            employeeService.removeFromJoinedEvents(employeeId, eventRepository.findById(eventId).get());
+            return ResponseEntity.status(200).body("Successfully removed an employee with Id "
+                    + employeeId + " from the event with Id" + eventId);
+        }
     }
 
     public ResponseEntity<Person> addPersonToEvent(int PersonId, int EventId) { //void?
