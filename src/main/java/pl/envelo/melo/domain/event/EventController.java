@@ -138,7 +138,7 @@ public class EventController {
     @Transactional
     @PatchMapping("/{eventId}/members/{employeeId}")
     @Operation(summary = "Remove employee from event")
-    public ResponseEntity<?> disjoinEvent(@RequestParam("employeeId") int employeeId,@RequestParam("eventId") int eventId) {
+    public ResponseEntity<?> disjoinEvent(@PathVariable("employeeId") int employeeId,@PathVariable("eventId") int eventId) {
         return eventService.removeEmployeeFromEvent(employeeId,eventId);
     }
 }
