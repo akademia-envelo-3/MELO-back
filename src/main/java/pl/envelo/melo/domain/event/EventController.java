@@ -30,7 +30,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/v1/event")
+@RequestMapping("/v1/events")
 public class EventController {
 
     private final EventService eventService;

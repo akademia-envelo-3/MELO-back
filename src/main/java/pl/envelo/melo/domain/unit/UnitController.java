@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.unit;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +48,7 @@ public class UnitController {
 
 
     @PostMapping("")
-    public ResponseEntity<?> addNewUnit(@RequestBody UnitDto unitDto) {
+    public ResponseEntity<?> addNewUnit(@RequestBody @Valid UnitDto unitDto) {
         return unitService.insertNewUnit(unitDto);
     }
 
