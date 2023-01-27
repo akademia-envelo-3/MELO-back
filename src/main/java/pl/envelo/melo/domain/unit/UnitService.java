@@ -63,7 +63,7 @@ public class UnitService {
             return ResponseEntity.status(400).body("Unit with this name already exist");
         }
         unit.setName(unit.getName().replaceAll("( +)", " ").trim().toLowerCase());
-        unit.setDescription(unit.getDescription().replaceAll("( +)", " ").trim().toLowerCase());
+        unit.setDescription(unit.getDescription().replaceAll("( +)", " ").trim());
         Employee employee = employeeRepository.findById(employeeId).get();
         unit.setOwner(employee);
         Set<Employee> members = new HashSet<>();
