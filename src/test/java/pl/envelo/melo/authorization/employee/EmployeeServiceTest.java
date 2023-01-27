@@ -16,8 +16,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class EmployeeServiceTest extends EventContextTest {
     @Autowired
     EmployeeService employeeService;
@@ -88,14 +86,16 @@ class EmployeeServiceTest extends EventContextTest {
     void removeFromJoinedEvents() {
         //Dane
         Employee employee = simpleEventMocker.mockEmployee("test");
+        Employee employee1 = simpleEventMocker.mockEmployee("test");
         Event event1 = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
         //Test
         employeeService.addToJoinedEvents(employee.getId(), event);
+        employeeService.addToJoinedEvents(employee1.getId(), event);
         employeeService.addToJoinedEvents(employee.getId(), event1);
-        int len = employee.getJoinedEvents().size();
-        assertTrue(employeeService.removeFromJoinedEvents(employee.getId(), event));
-        assertEquals(len - 1, employee.getJoinedEvents().size());
+        int len = employee1.getJoinedEvents().size();
+        assertTrue(employeeService.removeFromJoinedEvents(employee1.getId(), event));
+        assertEquals(len - 1, employee1.getJoinedEvents().size());
         assertFalse(employeeService.removeFromJoinedEvents(employee.getId(),event));
     }
 

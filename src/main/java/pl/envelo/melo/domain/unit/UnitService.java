@@ -10,6 +10,7 @@ import pl.envelo.melo.mappers.UnitMapper;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -28,7 +29,7 @@ public class UnitService {
         return ResponseEntity.ok(unitRepository.findAll().stream().map(e->{
             UnitDto dto = unitMapper.convert(e);
             return dto;
-        }));
+        }).collect(Collectors.toList()));
     }
 
     public ResponseEntity<List<Employee>> getUnitEmployees() {
