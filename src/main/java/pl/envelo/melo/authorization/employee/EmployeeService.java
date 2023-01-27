@@ -93,13 +93,12 @@ public class EmployeeService {
     }
 
     public boolean removeFromJoinedEvents(int employeeId, Event event) {
-        if (employeeRepository.existsById(employeeId)) {
+        if (employeeRepository.existsById(employeeId) && event.getOrganizer().getId() != employeeId) {
             Set<Event> joinedEvent = employeeRepository.findById(employeeId).get().getJoinedEvents();
             if (joinedEvent != null && joinedEvent.contains(event)) {
                 employeeRepository.findById(employeeId).get().getJoinedEvents().remove(event);
                 return true;
             }
-
         }
         return false;
     }

@@ -1,26 +1,36 @@
 package pl.envelo.melo.domain.hashtag;
 
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import pl.envelo.melo.EventContextTest;
 import pl.envelo.melo.mappers.HashtagMapper;
+import pl.envelo.melo.utils.H2Utils;
+
+import javax.sql.DataSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-class HashtagServiceTest {
-
+@Transactional
+class HashtagServiceTest{
     @Autowired
     HashtagRepository hashtagRepository;
     @Autowired
     HashtagService hashtagService;
     @Autowired
     HashtagMapper hashtagMapper;
+    @Autowired
+    DataSource dataSource;
+    @BeforeEach
+    void setUp(){
+        H2Utils.clearDb(dataSource);
+    }
     @Test
-    @Transactional
     void incrementHashtagGlobalCount() {
         Hashtag hashtag = new Hashtag();
         hashtag.setId(1);
@@ -39,7 +49,6 @@ class HashtagServiceTest {
     }
 
     @Test
-    @Transactional
     void insertNewHashtag() {
         Hashtag hashtag = new Hashtag();
         hashtag.setId(1);
