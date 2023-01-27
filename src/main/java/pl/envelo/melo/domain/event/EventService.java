@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -21,6 +22,7 @@ import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
+import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.domain.poll.PollAnswerRepository;
@@ -42,12 +44,12 @@ public class EventService {
     private EventDetailsMapper eventDetailsMapper;
     private final EventRepository eventRepository;
     private final EmployeeRepository employeeRepository;
-
     private final EmployeeService employeeService;
     private final HashtagRepository hashtagRepository;
     private final CategoryRepository categoryRepository;
     private final AttachmentRepository attachmentRepository;
     private final LocationRepository locationRepository;
+    private final LocationService locationService;
     private final UnitRepository unitRepository;
     private final PollTemplateRepository pollTemplateRepository;
     private final PollRepository pollRepository;
@@ -61,7 +63,6 @@ public class EventService {
     private EventUpdater eventUpdater;
     private EventValidator eventValidator;
     private EditEventNotificationHandler eventNotificationHandler;
-
 
     public ResponseEntity<?> getEvent(int id) {
         if (eventRepository.existsById(id)) {
@@ -91,8 +92,9 @@ public class EventService {
             }
         }
 
-        locationRepository.save(event.getLocation());
-        //todo swap with locationService method when present
+        if (newEventDto.getLocation() != null) {
+            event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
+        }
 
         if (employeeRepository.existsById(newEventDto.getOrganizerId())) {
             event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get());
@@ -197,8 +199,37 @@ public class EventService {
         return ResponseEntity.status(404).body("Event do not exist");
     }
 
-    public ResponseEntity<Employee> removeEmployeeFromEvent(int EmployeeId, int EventId) { //void?
-        return null;
+    public ResponseEntity<?> removeEmployeeFromEvent(int employeeId, int eventId) {
+
+        if (!employeeRepository.existsById(employeeId)) {
+
+            return ResponseEntity.status(404).body("Employee with Id " + employeeId + " does not exist");
+
+        } else if (!eventRepository.existsById(eventId)) {
+
+            return ResponseEntity.status(404).body("Event with Id " + eventId + " does not exist");
+
+        } else if (!eventRepository.findById(eventId).get()
+                .getMembers()
+                .contains(employeeRepository.findById(employeeId).get().getUser().getPerson())) {
+
+            return ResponseEntity.status(404).body("Employee with Id " + employeeId + " is not a member of this event");
+
+        } else if (eventRepository.findById(eventId).get().getOrganizer().getId() == employeeId) {
+
+            return ResponseEntity.status(403).body("Event organizer cant be remove from his event");
+
+        } else {
+            eventRepository.findById(eventId).get()
+                    .getMembers()
+                    .remove(employeeRepository
+                            .findById(employeeId).get()
+                            .getUser()
+                            .getPerson());
+            employeeService.removeFromJoinedEvents(employeeId, eventRepository.findById(eventId).get());
+            return ResponseEntity.status(200).body("Successfully removed an employee with Id "
+                    + employeeId + " from the event with Id" + eventId);
+        }
     }
 
     public ResponseEntity<Person> addPersonToEvent(int PersonId, int EventId) { //void?

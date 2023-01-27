@@ -52,7 +52,8 @@ public class Event {
     @Column(nullable = false)
     private EventType type;
     @ManyToMany
-    @Size(min = 1)
+//    @Size(min = 1)
+//    @NotNull
     private Set<Person> members;
     private PeriodicType periodicType;
     @ManyToMany

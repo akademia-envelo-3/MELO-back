@@ -1,6 +1,8 @@
 package pl.envelo.melo.domain.event;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.transaction.Transactional;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -147,8 +149,10 @@ public class EventController {
         return null;
     }
 
-    //    @PostMapping()
-    public ResponseEntity<?> disjoinEvent(int employeeId, int eventId) {
-        return null;
+    @Transactional
+    @PatchMapping("/{eventId}/members/{employeeId}")
+    @Operation(summary = "Remove employee from event")
+    public ResponseEntity<?> disjoinEvent(@PathVariable("employeeId") int employeeId,@PathVariable("eventId") int eventId) {
+        return eventService.removeEmployeeFromEvent(employeeId,eventId);
     }
 }

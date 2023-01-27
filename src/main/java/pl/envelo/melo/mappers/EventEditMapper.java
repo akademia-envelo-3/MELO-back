@@ -32,6 +32,7 @@ public abstract class EventEditMapper {
         if(event.getUnit()!=null) {
             newEventDto.setUnitId(event.getUnit().getId());
         }
-        newEventDto.setCategoryId(event.getCategory().getId());
+        if(event.getCategory()!= null)
+            newEventDto.setCategoryId(event.getCategory().getId());
     }
 }
