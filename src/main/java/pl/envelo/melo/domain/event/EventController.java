@@ -81,7 +81,7 @@ public class EventController {
     @Transactional
     @PatchMapping("/{id}/organizer")
     @Operation(summary = "Change event organizer from current to another")
-    public ResponseEntity<?> changeEventOrganizer(@RequestParam("id")int eventId, @RequestBody int employeeId) {
+    public ResponseEntity<?> changeEventOrganizer(@PathVariable("id") int eventId, @RequestBody int employeeId) {
         return eventService.changeEventOrganizer(eventId,employeeId);
     }
 

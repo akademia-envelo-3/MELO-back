@@ -162,9 +162,14 @@ public class EventService {
         } else {
             employee = employeeRepository.getReferenceById(employeeId);
             Event event = eventRepository.findById(eventId).get();
+
             employeeService.removeFromOwnedEvents(event.getOrganizer().getId(), event);
             event.setOrganizer(employee);
             employeeService.addToOwnedEvents(employeeId, event);
+            employeeService.addToJoinedEvents(employeeId, event);
+            eventRepository.findById(eventId).get()
+                    .getMembers()
+                    .add(employee.getUser().getPerson());
 
             return ResponseEntity.status(200).body("The organizer of the event with id "
                     + eventId + " has been correctly changed to "
