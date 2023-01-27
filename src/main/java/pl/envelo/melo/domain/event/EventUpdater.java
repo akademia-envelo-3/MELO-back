@@ -177,11 +177,17 @@ public class EventUpdater {
     }
 
     void updateLocation(Event event, NewEventDto newEventDto) {
-        event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
+        if(newEventDto.getLocation()!=null)
+            event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
+        else
+            event.setLocation(null);
     }
 
     void updateMemberLimit(Event event, NewEventDto newEventDto) {
-        event.setMemberLimit((long) newEventDto.getMemberLimit());
+        if(newEventDto.getMemberLimit()>1)
+            event.setMemberLimit((long) newEventDto.getMemberLimit());
+        else
+            event.setMemberLimit(null);
     }
 
     void updateMainPhoto(Event event, NewEventDto newEventDto) {

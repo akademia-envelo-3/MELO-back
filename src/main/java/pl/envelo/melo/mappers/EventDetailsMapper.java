@@ -12,18 +12,18 @@ import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
 import java.util.*;
 
 @Mapper(componentModel = "spring", uses = {HashtagMapper.class, AttachmentMapper.class, EmployeeMapper.class,
-                                            LocationMapper.class, CategoryMapper.class})
+        LocationMapper.class, CategoryMapper.class})
 public interface EventDetailsMapper {
 
-   EventDetailsDto convert(Event event);
+    EventDetailsDto convert(Event event);
 
     @AfterMapping
-    default void update(Event event, @MappingTarget EventDetailsDto eventDetailsDto){
+    default void update(Event event, @MappingTarget EventDetailsDto eventDetailsDto) {
 
-       eventDetailsDto.setEventType(event.getType());
+        eventDetailsDto.setEventType(event.getType());
 
-       List<EmployeeNameDto> confirmedMembers = new ArrayList<>();
-       Set<Person> members = event.getMembers();
+        List<EmployeeNameDto> confirmedMembers = new ArrayList<>();
+        Set<Person> members = event.getMembers();
         for (Person member : members) {
             EmployeeNameDto confirmedMember = new EmployeeNameDto();
             confirmedMember.setFirstName(member.getFirstName());
@@ -33,27 +33,27 @@ public interface EventDetailsMapper {
 
         eventDetailsDto.setConfirmedMembers(confirmedMembers);
 
-       List<PollTemplateDto> pollTemplateDtoList = new ArrayList<>();
-       List<PollQuestionDto> pollQuestionList = new ArrayList<>();
-       Set<Poll> pollSet = event.getPolls();
-        for (Poll poll : pollSet) {
+        List<PollTemplateDto> pollTemplateDtoList = new ArrayList<>();
+        List<PollQuestionDto> pollQuestionList = new ArrayList<>();
+        Set<Poll> pollSet = event.getPolls();
+        if (pollSet != null) {
+            for (Poll poll : pollSet) {
 
-            PollTemplateDto pollTemplateDto = new PollTemplateDto();
-            PollQuestionDto pollQuestion = new PollQuestionDto();
+                PollTemplateDto pollTemplateDto = new PollTemplateDto();
+                PollQuestionDto pollQuestion = new PollQuestionDto();
 
-            pollTemplateDto.setPollQuestion(poll.getPollTemplate().getPollQuestion());
-            pollQuestion.setPollQuestion(poll.getPollTemplate().getPollQuestion());
+                pollTemplateDto.setPollQuestion(poll.getPollTemplate().getPollQuestion());
+                pollQuestion.setPollQuestion(poll.getPollTemplate().getPollQuestion());
 
-            pollTemplateDto.setPollOption(new ArrayList<>(poll.getPollTemplate().getPollOptions()));
-            pollTemplateDto.setMultiChoice(poll.getPollTemplate().isMultiChoice());
+                pollTemplateDto.setPollOptions(new HashSet<>(poll.getPollTemplate().getPollOptions()));
+                pollTemplateDto.setMultiChoice(poll.getPollTemplate().isMultiChoice());
 
-            pollTemplateDto.setEventId(event.getId());
-            pollQuestion.setPollId(poll.getId());
+                pollQuestion.setPollId(poll.getId());
 
-            pollTemplateDtoList.add(pollTemplateDto);
-            pollQuestionList.add(pollQuestion);
+                pollTemplateDtoList.add(pollTemplateDto);
+                pollQuestionList.add(pollQuestion);
+            }
         }
-
         eventDetailsDto.setPolls(pollTemplateDtoList);
         eventDetailsDto.setPollQuestion(pollQuestionList);
 
