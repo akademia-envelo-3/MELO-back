@@ -23,7 +23,16 @@ public class UnitController {
 
     private final UnitService unitService;
 
-
+    @GetMapping("/{id}")
+    @Operation(summary = "Retrieve list of units",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Retrieve details of single unit with given id", content =
+                    @Content(mediaType = "application/json", schema = @Schema(
+                            description = "",
+                            oneOf = {UnitToDisplayOnListDto.class}
+                    ))
+                    )
+            })
     public ResponseEntity<UnitToDisplayOnListDto> getUnit(int id) {
         return unitService.getUnit(id);
     }
