@@ -27,7 +27,6 @@ public class UnitService {
     public ResponseEntity<?> getUnits() {
         return ResponseEntity.ok(unitRepository.findAll().stream().map(e->{
             UnitDto dto = unitMapper.convert(e);
-            dto.setOwnerId(e.getId());
             return dto;
         }));
     }

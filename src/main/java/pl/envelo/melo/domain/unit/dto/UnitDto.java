@@ -18,5 +18,5 @@ public class UnitDto {
     @Max(value = 4000, message = "too long description (max 4000 characters)")
     private String description;
     @NotNull
-    private int ownerId;
+    private int unitId;
 }

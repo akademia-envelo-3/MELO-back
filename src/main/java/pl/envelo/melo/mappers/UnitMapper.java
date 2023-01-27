@@ -28,6 +28,7 @@ public interface UnitMapper {
         unit.setId(unitId);
         return unit;
     }
+    @Mapping(source = "id", target = "unitId")
     UnitDto convert(Unit unit);
 
 }
