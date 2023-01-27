@@ -43,7 +43,7 @@ class EventServiceTest extends EventContextTest {
         assertEquals(organizer.get().getUser().getPerson().getFirstName(), eventDetailsDto.getOrganizer().getFirstName());
     }
 
-//    @Test
+    @Test
     void checkNonExistentEvent() {
         ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(3);
         assertEquals(HttpStatus.NOT_FOUND, eventDetailsDtoResponseEntity.getStatusCode());
@@ -51,7 +51,6 @@ class EventServiceTest extends EventContextTest {
 
     @Test
     void listAllEvents() {
-        //setUpRepo();
         Event presentEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));
         Event presentBeforeEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(2), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"),simpleEventMocker.mockEmployee("test3"));
         Event presentPrivateEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PRIVATE_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));
@@ -68,7 +67,6 @@ class EventServiceTest extends EventContextTest {
 
     @Test
     void updateEvent() {
-       // setUpRepo();
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
         eventRepository.save(event);
 
@@ -116,10 +114,8 @@ class EventServiceTest extends EventContextTest {
         assertEquals(PeriodicType.NONE, ((NewEventDto) Objects.requireNonNull(eventService.editEventForm(event.getId()).getBody())).getPeriodicType());
     }
 
- //   @Test
+    @Test
     void removeEmployeeFromEventTest(){
-        setUpRepo();
-
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),
                 EventType.LIMITED_PUBLIC_INTERNAL);
         Employee test = simpleEventMocker.mockEmployee("test");
@@ -140,9 +136,8 @@ class EventServiceTest extends EventContextTest {
 
     }
 
- //   @Test
+    @Test
     void removeEmployeeFromEventThrowExceptionTest(){
-        setUpRepo();
         Employee test = simpleEventMocker.mockEmployee("test");
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),
                 EventType.LIMITED_PUBLIC_INTERNAL, test);
