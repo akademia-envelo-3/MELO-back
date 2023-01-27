@@ -38,4 +38,9 @@ public class EmployeeController {
     public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(@PathVariable int id){
         return (ResponseEntity<Set<EventToDisplayOnListDto>>) employeeService.getSetOfOwnedEvents(id);
     }
+
+    @GetMapping("/user/{id}/joined-units")
+    public ResponseEntity<?> getJoinedUnitList(@PathVariable int id) {
+        return employeeService.getListOfJoinedUnits(id);
+    }
 }

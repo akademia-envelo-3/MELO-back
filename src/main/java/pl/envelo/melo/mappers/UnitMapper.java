@@ -20,6 +20,19 @@ import java.util.Objects;
 @Mapper(componentModel = "spring")
 public interface UnitMapper {
 
+ //   @InheritInverseConfiguration
+
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "description", target = "description")
+    @Mapping(source = "owner.id", target = "ownerId")
+    UnitDto toDto(Unit unit);
+//        UnitDto unitDto = new UnitDto();
+//        unitDto.setDescription(unit.getDescription());
+//        unitDto.setName(unit.getName());
+//        unitDto.setOwnerId(unit.getOwner().getId());
+//        return unitDto;
+
+
     default Unit map(Integer unitId) {
         if(Objects.isNull(unitId))
             return null;

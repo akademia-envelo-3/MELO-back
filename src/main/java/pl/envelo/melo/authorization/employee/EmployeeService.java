@@ -12,6 +12,7 @@ import pl.envelo.melo.mappers.EmployeeMapper;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.mappers.EventMapper;
+import pl.envelo.melo.mappers.UnitMapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ public class EmployeeService {
     private final EventMapper eventMapper;
     private PersonRepository personRepository;
     private final EmployeeMapper employeeMapper;
+    private final UnitMapper unitMapper;
 
 
     public ResponseEntity<EmployeeDto> getEmployee(int id) {
@@ -93,13 +95,12 @@ public class EmployeeService {
     }
 
     public boolean removeFromJoinedEvents(int employeeId, Event event) {
-        if (employeeRepository.existsById(employeeId)) {
+        if (employeeRepository.existsById(employeeId) && event.getOrganizer().getId() != employeeId) {
             Set<Event> joinedEvent = employeeRepository.findById(employeeId).get().getJoinedEvents();
             if (joinedEvent != null && joinedEvent.contains(event)) {
                 employeeRepository.findById(employeeId).get().getJoinedEvents().remove(event);
                 return true;
             }
-
         }
         return false;
     }
@@ -163,6 +164,19 @@ public class EmployeeService {
         } else {
             return ResponseEntity.status(404).body("Employee with this ID do not exist");
         }
+    }
 
+    public ResponseEntity<?> getListOfJoinedUnits(int id){
+        if (!employeeRepository.existsById(id)) {
+            return ResponseEntity.status(404).body("Employee with this ID do not exist");
+        } else if (employeeRepository.findById(id).get().getJoinedUnits().isEmpty()){
+            return ResponseEntity.status(204).body("You haven't joined any unit yet");
+        } else {
+            return ResponseEntity.ok(employeeRepository.findById(id).get()
+                    .getJoinedUnits()
+                    .stream()
+                    .map(unitMapper::toDto)
+                    .collect(Collectors.toSet()));
+        }
     }
 }
