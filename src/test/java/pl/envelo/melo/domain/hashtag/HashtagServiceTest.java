@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import pl.envelo.melo.EventContextTest;
 import pl.envelo.melo.mappers.HashtagMapper;
 import pl.envelo.melo.utils.H2Utils;
 

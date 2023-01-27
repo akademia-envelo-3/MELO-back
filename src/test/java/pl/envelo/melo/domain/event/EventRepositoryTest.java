@@ -9,9 +9,6 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@Transactional
-@SpringBootTest
 class EventRepositoryTest extends EventContextTest {
     SimpleEventMocker simpleEventMocker;
     //@Test

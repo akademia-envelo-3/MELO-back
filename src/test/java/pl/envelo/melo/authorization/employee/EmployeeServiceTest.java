@@ -10,19 +10,22 @@ import pl.envelo.melo.domain.event.EventType;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitRepository;
+import pl.envelo.melo.domain.unit.UnitService;
+import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class EmployeeServiceTest extends EventContextTest {
     @Autowired
     EmployeeService employeeService;
     @Autowired
     private UnitRepository unitRepository;
+    @Autowired
+    private UnitService unitService;
     @Test
     void getSetOfOwnedEvents() {
         //Testy
@@ -88,14 +91,16 @@ class EmployeeServiceTest extends EventContextTest {
     void removeFromJoinedEvents() {
         //Dane
         Employee employee = simpleEventMocker.mockEmployee("test");
+        Employee employee1 = simpleEventMocker.mockEmployee("test");
         Event event1 = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
         //Test
         employeeService.addToJoinedEvents(employee.getId(), event);
+        employeeService.addToJoinedEvents(employee1.getId(), event);
         employeeService.addToJoinedEvents(employee.getId(), event1);
-        int len = employee.getJoinedEvents().size();
-        assertTrue(employeeService.removeFromJoinedEvents(employee.getId(), event));
-        assertEquals(len - 1, employee.getJoinedEvents().size());
+        int len = employee1.getJoinedEvents().size();
+        assertTrue(employeeService.removeFromJoinedEvents(employee1.getId(), event));
+        assertEquals(len - 1, employee1.getJoinedEvents().size());
         assertFalse(employeeService.removeFromJoinedEvents(employee.getId(),event));
     }
 
@@ -189,5 +194,54 @@ class EmployeeServiceTest extends EventContextTest {
         assertTrue(employeeService.removeFromJoinedUnits(employee.getId(),unit2));
         assertEquals(len -1 , employee.getJoinedUnits().size());
         assertFalse(employeeService.removeFromJoinedUnits(employee.getId(),unit2));
+    }
+
+    @Test
+    void getJoinedUnits() {
+        String ownerName = "owner";
+        String unitName = "pros";
+        String unitDesc = "unit for pros";
+        String nextUnitName = "noobs";
+        String nextUnitDesc = "unit for noobs";
+        Employee owner = simpleEventMocker.mockEmployee(ownerName);
+        Employee employee = simpleEventMocker.mockEmployee("employee");
+
+        Unit unit = new Unit();
+        unit.setName(unitName);
+        unit.setDescription(unitDesc);
+        unit.setOwner(owner);
+        unitRepository.save(unit);
+
+        Unit nextUnit = new Unit();
+        nextUnit.setName(nextUnitName);
+        nextUnit.setDescription(nextUnitDesc);
+        nextUnit.setOwner(owner);
+        unitRepository.save(nextUnit);
+
+        assertEquals(HttpStatus.NOT_FOUND, employeeService.getListOfJoinedUnits(employee.getId()).getStatusCode());
+
+        Set<Unit> joinedUnits = new HashSet<>();
+        joinedUnits.add(unit);
+        employee.setJoinedUnits(joinedUnits);
+
+        assertEquals(HttpStatus.OK, employeeService.getListOfJoinedUnits(employee.getId()).getStatusCode());
+
+        ResponseEntity<?> responseEntity = employeeService.getListOfJoinedUnits(employee.getId());
+        Set<UnitToDisplayOnListDto> unitToDisplayOnList = (Set<UnitToDisplayOnListDto>) responseEntity.getBody();
+        assertEquals(1,unitToDisplayOnList.size());
+        assertEquals(unitName,unitToDisplayOnList.stream().findFirst().get().getName());
+        assertNotEquals(nextUnit,unitToDisplayOnList.stream().findFirst().get().getName());
+        assertEquals(HttpStatus.valueOf(404), employeeService.getSetOfOwnedEvents(4).getStatusCode());
+
+        joinedUnits.add(nextUnit);
+        employee.setJoinedUnits(joinedUnits);
+
+        ResponseEntity<?> responseEntity2 = employeeService.getListOfJoinedUnits(employee.getId());
+        Set<UnitToDisplayOnListDto> unitToDisplayOnList2 = (Set<UnitToDisplayOnListDto>) responseEntity2.getBody();
+        assertEquals(2,unitToDisplayOnList2.size());
+        assertTrue(((UnitToDisplayOnListDto)(((Set<?>) responseEntity2.getBody()).stream().findFirst().get())).getName().equals(unitName) ||
+                ((UnitToDisplayOnListDto)(((Set<?>) responseEntity2.getBody()).stream().findFirst().get())).getName().equals(nextUnitName)
+        );
+
     }
 }

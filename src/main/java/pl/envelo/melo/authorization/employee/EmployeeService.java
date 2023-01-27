@@ -169,13 +169,14 @@ public class EmployeeService {
     public ResponseEntity<?> getListOfJoinedUnits(int id){
         if (!employeeRepository.existsById(id)) {
             return ResponseEntity.status(404).body("Employee with this ID do not exist");
-        } else if (employeeRepository.findById(id).get().getJoinedUnits().isEmpty()){
-            return ResponseEntity.status(204).body("You haven't joined any unit yet");
+        } else if (employeeRepository.findById(id).get()
+                .getJoinedUnits() == null){
+            return ResponseEntity.status(404).body("No units to display");
         } else {
             return ResponseEntity.ok(employeeRepository.findById(id).get()
                     .getJoinedUnits()
                     .stream()
-                    .map(unitMapper::toDto)
+                    .map(unitMapper::convert)
                     .collect(Collectors.toSet()));
         }
     }
