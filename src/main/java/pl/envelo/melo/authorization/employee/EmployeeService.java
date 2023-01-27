@@ -58,6 +58,9 @@ public class EmployeeService {
                 ownedEvent.add(event);
                 employeeRepository.findById(employeeId).get().setOwnedEvents(ownedEvent);
             } else {
+                if(ownedEvent.contains(event)) {
+                    return false;
+                }
                 employeeRepository.findById(employeeId).get().getOwnedEvents().add(event);
             }
             return true;
@@ -85,6 +88,9 @@ public class EmployeeService {
                 joinedEvent.add(event);
                 employeeRepository.findById(employeeId).get().setJoinedEvents(joinedEvent);
             } else {
+                if(joinedEvent.contains(event)) {
+                    return false;
+                }
                 employeeRepository.findById(employeeId).get().getJoinedEvents().add(event);
             }
             return true;
@@ -111,6 +117,9 @@ public class EmployeeService {
                 ownedUnit.add(unit);
                 employeeRepository.findById(employeeId).get().setOwnedUnits(ownedUnit);
             } else {
+                if(ownedUnit.contains(unit)) {
+                    return false;
+                }
                 employeeRepository.findById(employeeId).get().getOwnedUnits().add(unit);
             }
             return true;
@@ -137,6 +146,9 @@ public class EmployeeService {
                 joinedUnits.add(unit);
                 employeeRepository.findById(employeeId).get().setJoinedUnits(joinedUnits);
             }else {
+                if(joinedUnits.contains(unit)) {
+                    return false;
+                }
                 employeeRepository.findById(employeeId).get().getJoinedUnits().add(unit);
             }
             return true;

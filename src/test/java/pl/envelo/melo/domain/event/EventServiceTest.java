@@ -159,4 +159,27 @@ class EventServiceTest extends EventContextTest {
 
     }
 
+
+    @Test
+    void addEmployeeToEvent() {
+        Employee test = simpleEventMocker.mockEmployee("test");
+        Employee member = simpleEventMocker.mockEmployee("member");
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),
+                EventType.LIMITED_PUBLIC_INTERNAL, test);
+        event.setMemberLimit(3L);
+        eventRepository.save(event);
+        assertEquals(1, event.getMembers().size());
+        ResponseEntity<?> addedMember = eventService.addEmployeeToEvent(member.getId(), event.getId());
+        assertEquals(HttpStatus.OK, addedMember.getStatusCode());
+        assertTrue(addedMember.getBody() instanceof Employee);
+        assertEquals(member.getId(), ((Employee)addedMember.getBody()).getId());
+        assertEquals(2,event.getMembers().size());
+        addedMember = eventService.addEmployeeToEvent(member.getId(), event.getId());
+        assertEquals(HttpStatus.valueOf(400), addedMember.getStatusCode());
+        assertEquals("Employee already on list", addedMember.getBody());
+        Employee member1 = simpleEventMocker.mockEmployee("member1");
+        addedMember = eventService.addEmployeeToEvent(member1.getId(), event.getId());
+        addedMember = eventService.addEmployeeToEvent(member1.getId(), event.getId());
+        assertEquals("Event is full", addedMember.getBody());
+    }
 }
