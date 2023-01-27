@@ -1,29 +1,42 @@
 package pl.envelo.melo.domain.unit;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
-import pl.envelo.melo.domain.unit.dto.UnitDto;
+import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.util.List;
 
+@RequestMapping("/v1/units")
 @RestController
+@Tag(name = "Unit Controller")
 @AllArgsConstructor
 public class UnitController {
 
     private final UnitService unitService;
 
 
-    public ResponseEntity<UnitDto> getUnit(int id) {
+    public ResponseEntity<UnitToDisplayOnListDto> getUnit(int id) {
         return unitService.getUnit(id);
     }
 
-
-    public ResponseEntity<List<UnitDto>> getUnits() {
+    @GetMapping
+    @Operation(summary = "Retrieve list of units",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Retrieve list of units", content =
+                    @Content(mediaType = "application/json", schema = @Schema(
+                            description = "List of units",
+                            oneOf = {UnitToDisplayOnListDto.class}
+                    ))
+                    )
+            })
+    public ResponseEntity<?> getUnits() {
         return unitService.getUnits();
     }
 
@@ -48,12 +61,12 @@ public class UnitController {
     }
 
 
-    public ResponseEntity<Unit> addNewUnit(UnitDto unitDto) {
-        return unitService.insertNewUnit(unitDto);
+    public ResponseEntity<Unit> addNewUnit(UnitToDisplayOnListDto unitToDisplayOnListDto) {
+        return unitService.insertNewUnit(unitToDisplayOnListDto);
     }
 
-    public ResponseEntity<Unit> updateUnit(UnitDto unitDto) {
-        return unitService.updateUnit(unitDto);
+    public ResponseEntity<Unit> updateUnit(UnitToDisplayOnListDto unitToDisplayOnListDto) {
+        return unitService.updateUnit(unitToDisplayOnListDto);
     }
 
 
