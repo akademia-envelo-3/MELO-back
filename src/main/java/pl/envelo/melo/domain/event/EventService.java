@@ -159,6 +159,8 @@ public class EventService {
         }else if (currentTokenId != eventRepository.findById(eventId).get().getOrganizer().getId()){
             return ResponseEntity.status(401).body("You are not the organizer of the event you " +
                                                         "do not have the authority to make changes");
+        }else if (employeeId == eventRepository.findById(eventId).get().getOrganizer().getId()){
+            return ResponseEntity.status(400).body("You are event organizer already");
         } else {
             employee = employeeRepository.getReferenceById(employeeId);
             Event event = eventRepository.findById(eventId).get();
