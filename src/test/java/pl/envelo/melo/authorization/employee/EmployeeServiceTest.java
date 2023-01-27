@@ -1,69 +1,39 @@
 package pl.envelo.melo.authorization.employee;
 
-import org.junit.Ignore;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
-import pl.envelo.melo.authorization.person.Person;
-import pl.envelo.melo.authorization.person.PersonRepository;
-import pl.envelo.melo.authorization.user.User;
-import pl.envelo.melo.authorization.user.UserRepository;
+import pl.envelo.melo.EventContextTest;
 import pl.envelo.melo.domain.event.Event;
-import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.event.EventType;
-import pl.envelo.melo.domain.event.SimpleEventMocker;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitRepository;
-import pl.envelo.melo.mappers.EmployeeMapper;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-@SpringBootTest
-@Transactional
-class EmployeeServiceTest {
+class EmployeeServiceTest extends EventContextTest {
     @Autowired
     EmployeeService employeeService;
     @Autowired
-    EmployeeRepository employeeRepository;
-    @Autowired
-    EventRepository eventRepository;
-    private SimpleEventMocker simpleEventMocker;
-    @Autowired
-    private PersonRepository personRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private UnitRepository unitRepository;
-
-    @BeforeEach
-    void setUpRepo() {
-        eventRepository.deleteAll();
-        employeeRepository.deleteAll();
-        personRepository.deleteAll();
-        userRepository.deleteAll();
-        unitRepository.deleteAll();
-        eventRepository.flush();
-        employeeRepository.flush();
-        personRepository.flush();
-        userRepository.flush();
-        unitRepository.flush();
-        simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
-    }
-
     @Test
     void getSetOfOwnedEvents() {
         //Testy
         ResponseEntity<?> responseEntity = employeeService.getSetOfOwnedEvents(1);
-        assertEquals(HttpStatus.OK, employeeService.getSetOfOwnedEvents(1).getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, employeeService.getSetOfOwnedEvents(1).getStatusCode());
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),EventType.LIMITED_PUBLIC_INTERNAL);
+        event.setName("Test name");
+        event.getOrganizer().setOwnedEvents(new HashSet<>());
+        event.getOrganizer().setJoinedEvents(new HashSet<>());
+        event.getOrganizer().getOwnedEvents().add(event);
+        event.getOrganizer().getJoinedEvents().add(event);
+        System.out.println(event.getOrganizer().getId());
+        responseEntity = employeeService.getSetOfOwnedEvents(event.getOrganizer().getId());
         Set<EventToDisplayOnListDto> events = (Set<EventToDisplayOnListDto>) responseEntity.getBody();
         assertEquals(1, events.size());//Test name
         assertEquals("Test name", events.stream().findFirst().get().getName());
@@ -116,14 +86,16 @@ class EmployeeServiceTest {
     void removeFromJoinedEvents() {
         //Dane
         Employee employee = simpleEventMocker.mockEmployee("test");
+        Employee employee1 = simpleEventMocker.mockEmployee("test");
         Event event1 = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
         //Test
         employeeService.addToJoinedEvents(employee.getId(), event);
+        employeeService.addToJoinedEvents(employee1.getId(), event);
         employeeService.addToJoinedEvents(employee.getId(), event1);
-        int len = employee.getJoinedEvents().size();
-        assertTrue(employeeService.removeFromJoinedEvents(employee.getId(), event));
-        assertEquals(len - 1, employee.getJoinedEvents().size());
+        int len = employee1.getJoinedEvents().size();
+        assertTrue(employeeService.removeFromJoinedEvents(employee1.getId(), event));
+        assertEquals(len - 1, employee1.getJoinedEvents().size());
         assertFalse(employeeService.removeFromJoinedEvents(employee.getId(),event));
     }
 
@@ -168,7 +140,7 @@ class EmployeeServiceTest {
         employeeService.addToOwnedUnits(employee.getId(), unit2);
         //Test
         len = employee.getOwnedUnits().size();
-        assertTrue(employeeService.removeFromOwnedUnits(1,unit));
+        assertTrue(employeeService.removeFromOwnedUnits(unit.getOwner().getId(),unit));
         assertEquals(len - 1, employee.getOwnedUnits().size());
     }
 
