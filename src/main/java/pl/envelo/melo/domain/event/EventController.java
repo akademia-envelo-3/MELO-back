@@ -60,8 +60,8 @@ public class EventController {
     //    @GetMapping()
 
     @GetMapping("/{id}")
-    public ResponseEntity<EventDetailsDto> getEvent(@RequestParam("id") int id) {
-        return (ResponseEntity<EventDetailsDto>) eventService.getEvent(id);
+    public ResponseEntity<?> getEvent(@RequestParam("id") int id, @RequestParam("employeeId") Integer employeeId) {
+        return eventService.getEvent(id, employeeId);
     }
 
     //    @GetMapping()

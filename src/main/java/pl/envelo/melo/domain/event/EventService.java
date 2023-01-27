@@ -14,6 +14,7 @@ import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
+import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.hashtag.Hashtag;
@@ -22,18 +23,16 @@ import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
 import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.notification.NotificationService;
+import pl.envelo.melo.domain.poll.*;
+import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.UnitRepository;
-import pl.envelo.melo.domain.poll.PollAnswerRepository;
-import pl.envelo.melo.domain.poll.PollRepository;
 
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -49,11 +48,13 @@ public class EventService {
     private final AttachmentRepository attachmentRepository;
     private final LocationRepository locationRepository;
     private final LocationService locationService;
+    private final PollService pollService;
     private final UnitRepository unitRepository;
     private final PollRepository pollRepository;
     private final PollAnswerRepository pollAnswerRepository;
     private final CommentRepository commentRepository;
     private final PersonRepository personRepository;
+    private final PollToDisplayOnListDtoMapper pollToDisplayOnListDtoMapper;
     private EventMapper eventMapper;
     private HashtagMapper hashtagMapper;
     private EventEditMapper eventEditMapper;
@@ -62,12 +63,25 @@ public class EventService {
     private EventValidator eventValidator;
     private EditEventNotificationHandler eventNotificationHandler;
 
-    public ResponseEntity<?> getEvent(int id) {
+    public ResponseEntity<?> getEvent(int id, Integer employeeId) {
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
-            return ResponseEntity.ok(eventDetailsMapper.convert(event));
-        } else {
+            EventDetailsDto eventDetailsDto = eventDetailsMapper.convert(event);
+            if(eventDetailsDto.getPolls() != null) {
+                Set<PollToDisplayOnListDto> pollSet = new HashSet<>();
 
+                event.getPolls().stream()
+                        .map(poll -> {
+                            PollToDisplayOnListDto dto = pollToDisplayOnListDtoMapper.convert(poll);
+                            dto.setFilled(pollService.employeeOnLists(poll, employeeId));
+                            return dto;
+                        })
+                        .forEach(pollSet::add);
+                eventDetailsDto.setPolls(pollSet);
+            }
+
+            return ResponseEntity.ok(eventDetailsDto);
+        } else {
             return ResponseEntity.status(404).body("Event with this ID do not exist");
         }
     }

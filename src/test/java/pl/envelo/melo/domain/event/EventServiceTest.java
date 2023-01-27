@@ -55,7 +55,7 @@ class EventServiceTest {
 
         Event event = eventRepository.findById(1).get();
         EventDetailsDto eventDetailsDto = eventDetailsMapper.convert(event);
-        ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(1);
+        ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(1, 1);
 
         assertEquals(HttpStatus.OK, eventDetailsDtoResponseEntity.getStatusCode());
         assertEquals(event.getName(), eventDetailsDto.getName());
@@ -72,7 +72,7 @@ class EventServiceTest {
 
 //    @Test
     void checkNonExistentEvent() {
-        ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(3);
+        ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(3, 1);
         assertEquals(HttpStatus.NOT_FOUND, eventDetailsDtoResponseEntity.getStatusCode());
     }
 

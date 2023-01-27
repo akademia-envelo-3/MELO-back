@@ -27,7 +27,6 @@ public class PollAnswer {
     @ManyToOne
     @JoinColumn(name="poll_id")
     private Poll poll;
-    @OneToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Employee> employee;
-
 }

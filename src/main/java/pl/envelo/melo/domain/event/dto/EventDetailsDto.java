@@ -12,6 +12,7 @@ import pl.envelo.melo.domain.event.Theme;
 import pl.envelo.melo.domain.location.dto.LocationDto;
 import pl.envelo.melo.domain.poll.dto.PollDto;
 import pl.envelo.melo.domain.poll.dto.PollQuestionDto;
+import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,7 +31,7 @@ public class EventDetailsDto {
     private EventType eventType;
     private EmployeeNameDto organizer;
     private PeriodicType periodicType;
-    private List<PollDto> polls;
+    private Set<PollToDisplayOnListDto> polls;
     private Set<String> hashtags;
     private int memberLimit;
     private List<EmployeeNameDto> confirmedMembers;
@@ -39,6 +40,5 @@ public class EventDetailsDto {
     private AttachmentDto mainPhoto;
     private String category;
     private Theme theme;
-    private List<PollQuestionDto> pollQuestion;
 
 }
