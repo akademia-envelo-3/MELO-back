@@ -40,12 +40,6 @@ public class AttachmentService {
     @Autowired
     FilesStorageService storageService;
 
-
-    public void transformAttachment(MultipartFile mainPhotoAttachment) {
-        mainPhotoAttachment.getContentType();
-        mainPhotoAttachment.getName();
-    }
-
     /*
     public Attachment uploadMainPhotoAndConvertToAttachment(MultipartFile mainPhotoUploaded) {
 
@@ -122,6 +116,7 @@ public class AttachmentService {
         }
         return null;
     }
+
 
 
 /*
