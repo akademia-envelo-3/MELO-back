@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
+import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 
 import java.util.List;
 
@@ -63,7 +64,13 @@ public class UnitController {
 
 
     @PostMapping("")
-    public ResponseEntity<?> addNewUnit(@RequestBody @Valid UnitDto unitDto) {
+    @Operation(summary = "Add new unit",
+    responses = {
+            @ApiResponse(responseCode = "200", description = "New unit is created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitToDisplayOnListDto.class))),
+            @ApiResponse(responseCode = "404"),
+            @ApiResponse(responseCode = "400", description = "Wrong data")
+    })
+    public ResponseEntity<?> addNewUnit(@RequestBody @Valid UnitNewDto unitDto) {
         return unitService.insertNewUnit(unitDto);
     }
 

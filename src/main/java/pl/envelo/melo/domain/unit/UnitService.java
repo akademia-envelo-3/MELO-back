@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
-import pl.envelo.melo.domain.unit.dto.UnitDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
+import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.mappers.UnitMapper;
 
 import java.util.HashSet;
@@ -53,9 +53,9 @@ public class UnitService {
         return null;
     }
 
-    public ResponseEntity<?> insertNewUnit(UnitDto unitDto) {
+    public ResponseEntity<?> insertNewUnit(UnitNewDto unitNewDto) {
         int employeeId =1;//TODO Wyciągnąc z tokena
-        Unit unit = unitMapper.toEntity(unitDto);
+        Unit unit = unitMapper.toEntity(unitNewDto);
         if(employeeRepository.findById(employeeId).isEmpty()){
             return ResponseEntity.status(404).body("Employee is not in Database");
         }
@@ -72,7 +72,8 @@ public class UnitService {
         unitRepository.save(unit);
         employeeService.addToOwnedUnits(employee.getId(),unit);
         employeeRepository.save(employee);
-        return ResponseEntity.ok(unitMapper.toDto(unitRepository.findById(unit.getId()).get()));
+        UnitToDisplayOnListDto unitReturn = unitMapper.convert(unitRepository.findById(unit.getId()).get());
+        return ResponseEntity.ok(unitReturn);
     }
 
     public ResponseEntity<Unit> updateUnit(UnitToDisplayOnListDto unitToDisplayOnListDto) {
