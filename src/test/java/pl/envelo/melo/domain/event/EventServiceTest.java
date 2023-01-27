@@ -47,7 +47,7 @@ class EventServiceTest {
         simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
     }
 
-//    @Test
+    @Test
     void getExistEvent() {
 
         Event event = eventRepository.findById(1).get();
@@ -67,13 +67,13 @@ class EventServiceTest {
         assertEquals(organizer.get().getUser().getPerson().getFirstName(), eventDetailsDto.getOrganizer().getFirstName());
     }
 
-//    @Test
+    @Test
     void checkNonExistentEvent() {
         ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(3);
         assertEquals(HttpStatus.NOT_FOUND, eventDetailsDtoResponseEntity.getStatusCode());
     }
 
-    //@Test
+    @Test
     void listAllEvents() {
         setUpRepo();
         Event presentEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));
@@ -90,7 +90,7 @@ class EventServiceTest {
         assertNull(eventToDisplayOnListDto.getMainPhoto());
     }
 
-    //@Test
+    @Test
     void updateEvent() {
         setUpRepo();
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
@@ -143,7 +143,7 @@ class EventServiceTest {
         //TODO sprawdzić hashtagi
     }
 
-    //@Test
+    @Test
     void editEventForm() {
         setUpRepo();
         Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
@@ -157,7 +157,7 @@ class EventServiceTest {
         assertEquals(PeriodicType.NONE, ((NewEventDto) Objects.requireNonNull(eventService.editEventForm(event.getId()).getBody())).getPeriodicType());
     }
 
- //   @Test
+    @Test
     void removeEmployeeFromEventTest(){
         setUpRepo();
 
@@ -181,7 +181,7 @@ class EventServiceTest {
 
     }
 
- //   @Test
+    @Test
     void removeEmployeeFromEventThrowExceptionTest(){
         setUpRepo();
         Employee test = simpleEventMocker.mockEmployee("test");
@@ -205,7 +205,7 @@ class EventServiceTest {
 
     }
 
- //   @Test
+    @Test
     void changeOrganizerTest(){
         setUpRepo();
         Employee test = simpleEventMocker.mockEmployee("test");

@@ -33,7 +33,7 @@ class EventRepositoryTest {
     @AfterEach
     void tearDown() {
     }
-    //@Test
+    @Test
     void findAllByStartTimeGreaterThan() {
         setUpRepo();
         Event presentEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.UNLIMITED_PUBLIC_INTERNAL);
