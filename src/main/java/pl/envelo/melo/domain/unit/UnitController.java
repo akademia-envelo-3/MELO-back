@@ -9,10 +9,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
-import pl.envelo.melo.domain.unit.dto.UnitDto;
+import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.util.List;
-import java.util.Set;
 
 @RequestMapping("/v1/units")
 @RestController
@@ -23,7 +22,7 @@ public class UnitController {
     private final UnitService unitService;
 
 
-    public ResponseEntity<UnitDto> getUnit(int id) {
+    public ResponseEntity<UnitToDisplayOnListDto> getUnit(int id) {
         return unitService.getUnit(id);
     }
 
@@ -33,7 +32,7 @@ public class UnitController {
                     @ApiResponse(responseCode = "200", description = "Retrieve list of units", content =
                     @Content(mediaType = "application/json", schema = @Schema(
                             description = "List of units",
-                            oneOf = {UnitDto.class}
+                            oneOf = {UnitToDisplayOnListDto.class}
                     ))
                     )
             })
@@ -62,12 +61,12 @@ public class UnitController {
     }
 
 
-    public ResponseEntity<Unit> addNewUnit(UnitDto unitDto) {
-        return unitService.insertNewUnit(unitDto);
+    public ResponseEntity<Unit> addNewUnit(UnitToDisplayOnListDto unitToDisplayOnListDto) {
+        return unitService.insertNewUnit(unitToDisplayOnListDto);
     }
 
-    public ResponseEntity<Unit> updateUnit(UnitDto unitDto) {
-        return unitService.updateUnit(unitDto);
+    public ResponseEntity<Unit> updateUnit(UnitToDisplayOnListDto unitToDisplayOnListDto) {
+        return unitService.updateUnit(unitToDisplayOnListDto);
     }
 
 

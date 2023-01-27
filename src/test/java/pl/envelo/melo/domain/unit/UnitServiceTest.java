@@ -1,18 +1,11 @@
 package pl.envelo.melo.domain.unit;
 
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import pl.envelo.melo.EventContextTest;
 import pl.envelo.melo.authorization.employee.Employee;
-import pl.envelo.melo.domain.unit.dto.UnitDto;
-import pl.envelo.melo.mappers.UnitMapper;
-import pl.envelo.melo.utils.H2Utils;
-
-import javax.sql.DataSource;
+import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.util.List;
 
@@ -52,8 +45,8 @@ class UnitServiceTest extends EventContextTest{
         assertTrue(response.getBody() instanceof List<?>);
         assertEquals(2, ((List<?>)response.getBody()).size());
         assertTrue(((List<?>) response.getBody()).stream().findFirst().isPresent());
-        assertTrue(((UnitDto)(((List<?>) response.getBody()).stream().findFirst().get())).getName().equals(unitName) ||
-                        ((UnitDto)(((List<?>) response.getBody()).stream().findFirst().get())).getName().equals(nextUnitName)
+        assertTrue(((UnitToDisplayOnListDto)(((List<?>) response.getBody()).stream().findFirst().get())).getName().equals(unitName) ||
+                        ((UnitToDisplayOnListDto)(((List<?>) response.getBody()).stream().findFirst().get())).getName().equals(nextUnitName)
                 );
     }
 
