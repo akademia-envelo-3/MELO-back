@@ -19,10 +19,8 @@ import pl.envelo.melo.mappers.PollMapper;
 import pl.envelo.melo.mappers.PollToDisplayOnListDtoMapper;
 
 import java.net.URI;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -42,7 +40,7 @@ public class PollService {
     private static final String POLL_OPTION_BLANK = "Poll option must not be blank";
     private static final String OUT_OF_OPTION_COUNT_BOUNDS = "Poll must have minimum of 2 options and maximum of 10 options";
     private static final String EVENT_AND_POLL_NOT_CORRELATED = "Event with id %d and poll with id %d are not correlated";
-
+    private static final String POLL_OPTIONS_NOT_UNIQUE = "Poll options cannot be the same";
 
     public ResponseEntity<List<Integer>> calculatePollResults(int pollId) {
         return null;
@@ -64,6 +62,12 @@ public class PollService {
             if (option.length() > OPTION_CHARACTER_LIMIT) {
                 return ResponseEntity.badRequest().body(POLL_OPTION_TOO_LONG);
             }
+            if (Collections.frequency(pollDto.getPollAnswers().stream().map(PollAnswerDto::getPollAnswer)
+                    .collect(Collectors.toList()), option) > 1) {
+                return ResponseEntity.badRequest().body(POLL_OPTIONS_NOT_UNIQUE);
+            }
+            option = option.replaceAll("\\s+", " ").trim();
+            pollAnswerDto.setPollAnswer(option);
         }
         if (eventRepository.findById(eventId).isEmpty()) {
             return ResponseEntity.notFound().build();

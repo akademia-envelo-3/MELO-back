@@ -81,7 +81,7 @@ public class EventService {
                             return dto;
                         })
                         .forEach(pollSet::add);
-                eventDetailsDto.setPolls(pollSet);
+                 eventDetailsDto.setPolls(pollSet);
             }
 
             return ResponseEntity.ok(eventDetailsDto);
