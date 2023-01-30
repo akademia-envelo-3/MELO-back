@@ -69,8 +69,11 @@ public class AttachmentService {
      */
     @Transactional
     public Attachment uploadFileAndSaveAsAttachment(MultipartFile attachment) {
-        String uploadedFileName = attachment.getOriginalFilename();
-
+        //String uploadedFileName = attachment.getOriginalFilename();
+        AttachmentType attachmentType = validateAttachmentType(attachment);
+        if(Objects.isNull(attachmentType)) {
+            return null;
+        }
 
         ///Zapis na serwerze
         String newUniqueFilename = storageService.save(attachment);
@@ -85,8 +88,8 @@ public class AttachmentService {
         attachmentToSave.setAttachmentUrl(UrlToFile);
 
         /// Waliduję i ustawiam typ załącznika
-        AttachmentType attachmentType = validateAttachmentType(attachment);
-        if(Objects.isNull(attachmentType)) {
+        AttachmentType attachmentTyp = validateAttachmentType(attachment);
+        if(Objects.isNull(attachmentTyp)) {
             return null;
         }
 
