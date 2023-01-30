@@ -172,32 +172,37 @@ public class EventService {
         return ResponseEntity.ok(eventEditMapper.convert(eventRepository.getReferenceById(id)));
     }
 
+    @Transactional
     public ResponseEntity<?> addEmployeeToEvent(int employeeId, int eventId) { //void?
-        Optional<Event> event = eventRepository.findById(eventId);
-        if (event.isPresent()) {
-            if (event.get().getType().toString().startsWith("LIMITED")) {
-                if (event.get().getMembers().size() >= event.get().getMemberLimit().intValue()) {
-                    return ResponseEntity.status(400).body("Event is full");
+        if (employeeRepository.existsById(employeeId)) {
+            Employee employee = employeeRepository.findById(employeeId).get();
+            Optional<Event> event = eventRepository.findById(eventId);
+            if (event.isPresent()) {
+                if (event.get().getType().toString().startsWith("LIMITED")) {
+                    if (event.get().getMembers().size() >= event.get().getMemberLimit().intValue()) {
+                        return ResponseEntity.status(400).body("Event is full");
+                    }
                 }
-            }
-            if (employeeService.addToJoinedEvents(employeeId, event.get())) {
-                Set<Person> eventMembers = event.get().getMembers();
-                if (eventMembers == null) {
-                    eventMembers = new HashSet<>();
-                    eventMembers.add(employeeRepository.findById(employeeId).get().getUser().getPerson());
-                    event.get().setMembers(eventMembers);
+                if (employeeService.addToJoinedEvents(employeeId, event.get())) {
+                    Set<Person> eventMembers = event.get().getMembers();
+                    if (eventMembers == null) {
+                        eventMembers = new HashSet<>();
+                        eventMembers.add(employee.getUser().getPerson());
+                        event.get().setMembers(eventMembers);
+                    } else {
+                        event.get().getMembers().add(employee.getUser().getPerson());
+                    }
+                    return ResponseEntity.ok(eventMapper.convert(event.get()));
                 } else {
-                    event.get().getMembers().add(employeeRepository.findById(employeeId).get().getUser().getPerson());
+                    return ResponseEntity.status(400).body("Employee already on list");
                 }
-                eventRepository.save(event.get());
-                return ResponseEntity.ok(employeeRepository.findById(employeeId).get());
-            } else {
-                return ResponseEntity.status(400).body("Employee already on list");
-            }
 
+            }
+            return ResponseEntity.status(404).body("Event does not exist");
+        } else {
+            return ResponseEntity.status(404).body("Employee is not in Database");
+        }
     }
-        return ResponseEntity.status(404).body("Event does not exist");
-}
 
     public ResponseEntity<?> removeEmployeeFromEvent(int employeeId, int eventId) {
 

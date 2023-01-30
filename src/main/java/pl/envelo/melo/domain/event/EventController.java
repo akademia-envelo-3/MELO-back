@@ -117,21 +117,17 @@ public class EventController {
         return null;
     }
 
-    @GetMapping("/{id}/join")
+    @GetMapping("/{id}/join/{employeeId}")
     @Operation(summary = "Add employee to event members",
     responses = {
-            @ApiResponse(responseCode = "200", description = "Employee added to event", content = @Content(mediaType = "aplication/json", schema = @Schema(implementation = Event.class))),
-            @ApiResponse(responseCode = "400", description = "Event is full or employee already on list", content = @Content(mediaType = "aplication/json", schema = @Schema(implementation = Event.class))),
+            @ApiResponse(responseCode = "200", description = "Employee added to event", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Event.class))),
+            @ApiResponse(responseCode = "400", description = "Event is full or employee already on list", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Event.class))),
             @ApiResponse(responseCode = "404", description = "Event or employee do not exist")
     })
-    public ResponseEntity<?> joinEvent(@PathVariable("id") int id) {
-        int employeeId = 1;//TODO take Id from Token
-        if(employeeService.getEmployee(employeeId).getStatusCode()== HttpStatus.OK) {
+    public ResponseEntity<?> joinEvent(@PathVariable("id") int id, @PathVariable("employeeId") int employeeId) {
+//        int employeeId = 2;//TODO take Id from Token
             return eventService.addEmployeeToEvent(employeeId,id);
-        }
-        else{
-            return ResponseEntity.status(404).body("Employee is not in DataBase");
-        }
+
     }
 
     //    @PostMapping()
