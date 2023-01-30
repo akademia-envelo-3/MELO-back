@@ -31,9 +31,10 @@ public class UnitController {
                             description = "",
                             oneOf = {UnitToDisplayOnListDto.class}
                     ))
-                    )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Error when unit with given ID is missing")
             })
-    public ResponseEntity<?> getUnit(@PathVariable int id) {
+    public ResponseEntity<?> getUnit(@PathVariable("id") int id) {
         return unitService.getUnit(id);
     }
 
