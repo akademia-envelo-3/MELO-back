@@ -26,7 +26,7 @@ public class Unit {
     private String name;
     @Column(length = 4000)
     private String description;
-    @ManyToMany
+    @OneToMany
     private List<Event> eventList;
     @ManyToMany
     private Set<Employee> members;

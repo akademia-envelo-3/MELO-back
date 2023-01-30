@@ -8,7 +8,7 @@ import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.util.Objects;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {EmployeeMapper.class, EventMapper.class})
 public interface UnitMapper extends EntityMapper<UnitNewDto, Unit> {
     default Unit map(Integer unitId) {
         if(Objects.isNull(unitId))
