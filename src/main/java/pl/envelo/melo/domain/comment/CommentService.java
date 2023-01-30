@@ -73,6 +73,7 @@ public class CommentService {
         if (EmployeeFromDb.isPresent() && tmpEvent.isPresent()) {
             mappedComment.setAuthor(EmployeeFromDb.get());
             mappedComment.setTimestamp(LocalDateTime.now());
+            mappedComment.setContent(commentToSave.getContent());
 
             if(!Objects.isNull(multipartFiles)) {
                 for (MultipartFile multipartFile : multipartFiles) {
