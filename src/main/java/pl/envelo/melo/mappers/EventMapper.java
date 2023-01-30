@@ -16,7 +16,7 @@ import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.*;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 
-@Mapper(componentModel = "spring", uses = {HashtagMapper.class, EmployeeMapper.class, UnitMapper.class, EmployeeService.class})
+@Mapper(componentModel = "spring", uses = {HashtagMapper.class, EmployeeMapper.class, UnitMapper.class, EmployeeService.class, LocationMapper.class})
 public interface EventMapper {
     EventMapper INSTANCE = Mappers.getMapper(EventMapper.class);
 

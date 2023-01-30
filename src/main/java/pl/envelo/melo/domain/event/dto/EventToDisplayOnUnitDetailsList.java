@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.envelo.melo.domain.location.dto.LocationDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,10 +12,11 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class EventToDisplayOnUnitDetailsList {
-    String name;
-    LocalDateTime startTime;
-    LocalDateTime endTime;
-    String category;
-    List<String> hashtags;
-    int eventId;
+    private String name;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private String category;
+    private List<String> hashtags;
+    private LocationDto location;
+    private int eventId;
 }
