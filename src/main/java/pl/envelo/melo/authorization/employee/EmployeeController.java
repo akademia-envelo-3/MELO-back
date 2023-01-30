@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,6 +44,20 @@ public class EmployeeController {
     @GetMapping("{id}/owned-events")
     public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(@PathVariable int id){
         return (ResponseEntity<Set<EventToDisplayOnListDto>>) employeeService.getSetOfOwnedEvents(id);
+    }
+
+    @Operation(summary = "Retrieve list of employee joined units",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Retrieve list of employee joined units", content =
+                    @Content(mediaType = "application/json", schema = @Schema(
+                            description = "List of employee joined units",
+                            oneOf = {UnitToDisplayOnListDto.class}
+                    ))
+                    )
+            })
+    @GetMapping("/{id}/joined-units")
+    public ResponseEntity<?> getJoinedUnitList(@PathVariable("id") int id) {
+        return employeeService.getListOfJoinedUnits(id);
     }
 
     @GetMapping("/{id}/owned-units")

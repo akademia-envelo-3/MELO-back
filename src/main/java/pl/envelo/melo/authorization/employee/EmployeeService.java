@@ -28,6 +28,7 @@ public class EmployeeService {
     private final UnitMapper unitMapper;
     private PersonRepository personRepository;
     private final EmployeeMapper employeeMapper;
+    private final UnitMapper unitMapper;
 
 
     public ResponseEntity<EmployeeDto> getEmployee(int id) {
@@ -164,7 +165,21 @@ public class EmployeeService {
         } else {
             return ResponseEntity.status(404).body("Employee with this ID do not exist");
         }
+    }
 
+    public ResponseEntity<?> getListOfJoinedUnits(int id){
+        if (!employeeRepository.existsById(id)) {
+            return ResponseEntity.status(404).body("Employee with this ID do not exist");
+        } else if (employeeRepository.findById(id).get()
+                .getJoinedUnits() == null){
+            return ResponseEntity.status(404).body("No units to display");
+        } else {
+            return ResponseEntity.ok(employeeRepository.findById(id).get()
+                    .getJoinedUnits()
+                    .stream()
+                    .map(unitMapper::convert)
+                    .collect(Collectors.toSet()));
+        }
     }
 
     public ResponseEntity<?> getListOfCreatedUnits(int employeeId){
