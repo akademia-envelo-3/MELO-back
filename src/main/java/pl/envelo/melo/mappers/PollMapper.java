@@ -7,8 +7,4 @@ import pl.envelo.melo.domain.poll.dto.PollDto;
 
 @Mapper(componentModel = "spring")
 public interface PollMapper extends EntityMapper<PollDto, Poll> {
-//    PollTemplateDto convert(PollTemplate pollTemplate);
-//
-//    @InheritInverseConfiguration
-//    PollTemplate convert(PollTemplateDto pollTemplateDto);
 }
