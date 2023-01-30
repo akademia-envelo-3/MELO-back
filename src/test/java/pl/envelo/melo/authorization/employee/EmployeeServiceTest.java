@@ -11,6 +11,7 @@ import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.domain.unit.UnitService;
+import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.time.LocalDateTime;
@@ -243,5 +244,39 @@ class EmployeeServiceTest extends EventContextTest {
                 ((UnitToDisplayOnListDto)(((Set<?>) responseEntity2.getBody()).stream().findFirst().get())).getName().equals(nextUnitName)
         );
 
+    }
+
+    @Test
+    void getListOfCreatedUnits() {
+        //Dane
+        Employee employee1 = simpleEventMocker.mockEmployee("test1");
+        Employee employee2 = simpleEventMocker.mockEmployee("test2");
+        Unit unit1= new Unit();
+        unit1.setName("unit1");
+        unit1.setDescription("unit");
+        unit1.setOwner(employee1);
+        unitRepository.save(unit1);
+        employeeService.addToOwnedUnits(employee1.getId(),unit1);
+        Unit unit2= new Unit();
+        unit2.setName("unit2");
+        unit2.setDescription("unit");
+        unit2.setOwner(employee1);
+        unitRepository.save(unit2);
+        employeeService.addToOwnedUnits(employee1.getId(),unit2);
+        Unit unit3= new Unit();
+        unit3.setName("unit3");
+        unit3.setDescription("unit");
+        unit3.setOwner(employee2);
+        unitRepository.save(unit3);
+        employeeService.addToOwnedUnits(employee2.getId(),unit3);
+        //Testy
+        ResponseEntity<?> entity = employeeService.getListOfCreatedUnits(employee1.getId());
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertTrue(entity.getBody() instanceof Set<?>);
+        assertEquals(2, ((Set<?>)entity.getBody()).size());
+        ResponseEntity<?> entity2 = employeeService.getListOfCreatedUnits(employee2.getId());
+        assertEquals(HttpStatus.OK, entity2.getStatusCode());
+        assertTrue(entity2.getBody() instanceof Set<?>);
+        assertEquals(1, ((Set<?>)entity2.getBody()).size());
     }
 }
