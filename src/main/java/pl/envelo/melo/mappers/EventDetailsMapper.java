@@ -16,17 +16,17 @@ import java.util.*;
                                             LocationMapper.class, CategoryMapper.class, PollAnswerMapper.class})
 public interface EventDetailsMapper {
 
-   EventDetailsDto convert(Event event);
+    EventDetailsDto convert(Event event);
 
    //todo fixme bruh
 
     @AfterMapping
-    default void update(Event event, @MappingTarget EventDetailsDto eventDetailsDto){
+    default void update(Event event, @MappingTarget EventDetailsDto eventDetailsDto) {
 
-       eventDetailsDto.setEventType(event.getType());
+        eventDetailsDto.setEventType(event.getType());
 
-       List<EmployeeNameDto> confirmedMembers = new ArrayList<>();
-       Set<Person> members = event.getMembers();
+        List<EmployeeNameDto> confirmedMembers = new ArrayList<>();
+        Set<Person> members = event.getMembers();
         for (Person member : members) {
             EmployeeNameDto confirmedMember = new EmployeeNameDto();
             confirmedMember.setFirstName(member.getFirstName());
@@ -35,7 +35,7 @@ public interface EventDetailsMapper {
         }
 
         eventDetailsDto.setConfirmedMembers(confirmedMembers);
-
+        
        Set<PollToDisplayOnListDto> pollDtoList = new HashSet<>();
        Set<Poll> pollSet = event.getPolls();
         for (Poll poll : pollSet) {
@@ -50,6 +50,7 @@ public interface EventDetailsMapper {
         }
 
         eventDetailsDto.setPolls(pollDtoList);
+
 
     }
 }
