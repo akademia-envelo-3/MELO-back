@@ -16,7 +16,7 @@ import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.*;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 
-@Mapper(componentModel = "spring", uses = {HashtagMapper.class, EmployeeMapper.class, UnitMapper.class, EmployeeService.class})
+@Mapper(componentModel = "spring", uses = {HashtagMapper.class, EmployeeMapper.class, UnitMapper.class, EmployeeService.class, LocationMapper.class})
 public interface EventMapper {
     EventMapper INSTANCE = Mappers.getMapper(EventMapper.class);
 
@@ -26,6 +26,14 @@ public interface EventMapper {
 //    @Mapping(source = "organizerId", target = "organizer")
     Event newEvent(NewEventDto newEventDto);
 
+    @Mapping(ignore = true, target = "category")
+    EventToDisplayOnUnitDetailsList convertToEventToDisplayOnUnitDetailsList(Event event);
+    @AfterMapping
+    default void updateResult(Event event, @MappingTarget EventToDisplayOnUnitDetailsList eventToDisplayOnUnitDetailsList){
+        if(event.getCategory() != null)
+            eventToDisplayOnUnitDetailsList.setCategory(event.getCategory().getName());
+        eventToDisplayOnUnitDetailsList.setEventId(event.getId());
+    }
 
     @Mapping(source = "id", target = "eventId")
     public EventToDisplayOnListDto convert(Event event);

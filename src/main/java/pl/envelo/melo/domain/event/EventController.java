@@ -1,9 +1,13 @@
 package pl.envelo.melo.domain.event;
 
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeService;
+import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonService;
@@ -36,7 +41,7 @@ import java.util.Objects;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/v1/event")
+@RequestMapping("/v1/events")
 public class EventController {
 
     private final EventService eventService;
@@ -76,14 +81,16 @@ public class EventController {
         return null;
     }
 
-    //    @GetMapping()
+    //    @GetMapping()/
     public ResponseEntity<EmployeeNameDto> getEventOrganizer(int id) {
         return null;
     }
 
-    //    @PostMapping()
-    public boolean changeEventOrganizer(int id, Employee employee) {
-        return false;
+    @Transactional
+    @PatchMapping("/{id}/organizer")
+    @Operation(summary = "Change event organizer from current to another")
+    public ResponseEntity<?> changeEventOrganizer(@PathVariable("id") int eventId, @RequestBody int employeeId) {
+        return eventService.changeEventOrganizer(eventId,employeeId);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -158,8 +165,10 @@ public class EventController {
         return null;
     }
 
-    //    @PostMapping()
-    public ResponseEntity<?> disjoinEvent(int employeeId, int eventId) {
-        return null;
+    @Transactional
+    @PatchMapping("/{eventId}/members/{employeeId}")
+    @Operation(summary = "Remove employee from event")
+    public ResponseEntity<?> disjoinEvent(@PathVariable("employeeId") int employeeId,@PathVariable("eventId") int eventId) {
+        return eventService.removeEmployeeFromEvent(employeeId,eventId);
     }
 }
