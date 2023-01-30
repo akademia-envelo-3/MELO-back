@@ -104,18 +104,7 @@ public class EventService {
             event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get());
         }
 
-        /// Set Main Photo
-        if (!Objects.isNull(mainPhoto)) {
-            Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
-            if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
-                return ResponseEntity.badRequest()
-                        .body("Illegal format of event Photo!");
-            }
-            event.setMainPhoto(mainPhotoFromServer);
 
-        } else {
-            event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
-        }
 
 
         if (!(newEventDto.getCategoryId() == null)) {
@@ -136,6 +125,18 @@ public class EventService {
                 }
                 event.getAttachments().add(attachmentFromServer);
             }
+        }
+        /// Set Main Photo
+        if (!Objects.isNull(mainPhoto)) {
+            Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
+            if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
+                return ResponseEntity.badRequest()
+                        .body("Illegal format of event Photo!");
+            }
+            event.setMainPhoto(mainPhotoFromServer);
+
+        } else {
+            event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
         }
 
         if (!(newEventDto.getHashtags() == null)) {
