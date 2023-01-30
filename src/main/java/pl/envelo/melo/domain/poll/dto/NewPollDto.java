@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import pl.envelo.melo.domain.poll.PollAnswer;
 
 import java.util.Set;
 
@@ -12,10 +11,10 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PollDto {
+public class NewPollDto {
 
     private String pollQuestion;
-    private Set<PollAnswerDto> pollAnswers;
+    private Set<NewPollAnswerDto> pollAnswers;
     private boolean multichoice;
 
 }

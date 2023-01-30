@@ -10,13 +10,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
+import pl.envelo.melo.domain.poll.dto.NewPollDto;
 import pl.envelo.melo.domain.poll.dto.PollAnswerDto;
 import pl.envelo.melo.domain.poll.dto.PollDto;
 import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
 import pl.envelo.melo.exceptions.ResourceNotFoundException;
-import pl.envelo.melo.mappers.PollAnswerMapper;
-import pl.envelo.melo.mappers.PollMapper;
-import pl.envelo.melo.mappers.PollToDisplayOnListDtoMapper;
+import pl.envelo.melo.mappers.*;
 
 import java.net.URI;
 import java.util.*;
@@ -25,11 +24,11 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class PollService {
-    private PollRepository pollRepository;
-    private PollAnswerRepository pollAnswerRepository;
-    private EventRepository eventRepository;
-    private PollMapper pollMapper;
-    private PollAnswerMapper pollAnswerMapper;
+    private final PollRepository pollRepository;
+    private final PollAnswerRepository pollAnswerRepository;
+    private final EventRepository eventRepository;
+    private final PollMapper pollMapper;
+    private final NewPollMapper newPollMapper;
     private final PollToDisplayOnListDtoMapper pollToDisplayOnListDtoMapper;
 
     private static final int OPTION_CHARACTER_LIMIT = 255;
@@ -47,13 +46,17 @@ public class PollService {
     }
 
 
-    public ResponseEntity<?> insertNewPoll(PollDto pollDto, int eventId) {
+    public ResponseEntity<?> insertNewPoll(NewPollDto newPollDto, int eventId) {
+
+        PollDto pollDto = newPollMapper.toDto(newPollDto);
+
         if (Objects.isNull(pollDto.getPollAnswers())
                 || pollDto.getPollAnswers().size() < MIN_OPTION_COUNT
                 || pollDto.getPollAnswers().size() > MAX_OPTION_COUNT
         ) {
             return ResponseEntity.badRequest().body(OUT_OF_OPTION_COUNT_BOUNDS);
         }
+
         for (PollAnswerDto pollAnswerDto : pollDto.getPollAnswers()) {
             String option = pollAnswerDto.getPollAnswer();
             if (option.isBlank()) {
@@ -62,13 +65,13 @@ public class PollService {
             if (option.length() > OPTION_CHARACTER_LIMIT) {
                 return ResponseEntity.badRequest().body(POLL_OPTION_TOO_LONG);
             }
-            if (Collections.frequency(pollDto.getPollAnswers().stream().map(PollAnswerDto::getPollAnswer)
-                    .collect(Collectors.toList()), option) > 1) {
-                return ResponseEntity.badRequest().body(POLL_OPTIONS_NOT_UNIQUE);
-            }
             option = option.replaceAll("\\s+", " ").trim();
             pollAnswerDto.setPollAnswer(option);
         }
+        if (pollDto.getPollAnswers().stream().map(PollAnswerDto::getPollAnswer).distinct().count() != pollDto.getPollAnswers().size()) {
+            return ResponseEntity.badRequest().body(POLL_OPTIONS_NOT_UNIQUE);
+        }
+
         if (eventRepository.findById(eventId).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -95,13 +98,13 @@ public class PollService {
         if (pollRepository.findById(pollId).isEmpty() || eventRepository.findById(eventId).isEmpty())
             return ResponseEntity.notFound().build();
         if (!eventRepository.findById(eventId).get().getPolls().contains(pollRepository.findById(pollId).get()))
-            return ResponseEntity.status(HttpStatusCode.valueOf(403)).body(String.format(EVENT_AND_POLL_NOT_CORRELATED, eventId, pollId));
+            return ResponseEntity.badRequest().body(String.format(EVENT_AND_POLL_NOT_CORRELATED, eventId, pollId));
         return ResponseEntity.ok(pollMapper.toDto(pollRepository.findById(pollId).get()));
     }
 
-// todo needs to be checked
+    // todo needs to be checked
     public ResponseEntity<Set<PollToDisplayOnListDto>> listAllPollsForEvent(int eventId) {
-        if(eventRepository.findById(eventId).isPresent()) {
+        if (eventRepository.findById(eventId).isPresent()) {
             Event event = eventRepository.findById(eventId).get();
             Set<Poll> pollSet = event.getPolls();
             return ResponseEntity.ok(pollToDisplayOnListDtoMapper.convert(pollSet));
