@@ -251,14 +251,18 @@ class EmployeeServiceTest extends EventContextTest {
         //Dane
         Employee employee1 = simpleEventMocker.mockEmployee("test1");
         Employee employee2 = simpleEventMocker.mockEmployee("test2");
-        UnitNewDto unit1=new UnitNewDto();
-        unit1.setName("Unit1");
-        unit1.setDescription("Unit");
-        unitService.insertNewUnit(unit1);
-        UnitNewDto unit2=new UnitNewDto();
-        unit2.setName("Unit2");
-        unit2.setDescription("Unit");
-        unitService.insertNewUnit(unit2);
+        Unit unit1= new Unit();
+        unit1.setName("unit1");
+        unit1.setDescription("unit");
+        unit1.setOwner(employee1);
+        unitRepository.save(unit1);
+        employeeService.addToOwnedUnits(employee1.getId(),unit1);
+        Unit unit2= new Unit();
+        unit2.setName("unit2");
+        unit2.setDescription("unit");
+        unit2.setOwner(employee1);
+        unitRepository.save(unit2);
+        employeeService.addToOwnedUnits(employee1.getId(),unit2);
         Unit unit3= new Unit();
         unit3.setName("unit3");
         unit3.setDescription("unit");
@@ -266,7 +270,7 @@ class EmployeeServiceTest extends EventContextTest {
         unitRepository.save(unit3);
         employeeService.addToOwnedUnits(employee2.getId(),unit3);
         //Testy
-        ResponseEntity<?> entity = employeeService.getListOfCreatedUnits(1);
+        ResponseEntity<?> entity = employeeService.getListOfCreatedUnits(employee1.getId());
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         assertTrue(entity.getBody() instanceof Set<?>);
         assertEquals(2, ((Set<?>)entity.getBody()).size());
