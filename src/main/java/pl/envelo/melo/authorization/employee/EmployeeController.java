@@ -54,7 +54,7 @@ public class EmployeeController {
                     )
             })
     @GetMapping("/user/{id}/joined-units")
-    public ResponseEntity<?> getJoinedUnitList(@PathVariable int id) {
+    public ResponseEntity<?> getJoinedUnitList(@PathVariable("id") int id) {
         return employeeService.getListOfJoinedUnits(id);
     }
 }
