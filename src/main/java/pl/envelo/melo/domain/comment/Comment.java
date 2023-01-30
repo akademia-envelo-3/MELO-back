@@ -1,7 +1,6 @@
 package pl.envelo.melo.domain.comment;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,14 +22,11 @@ public class Comment {
     @GeneratedValue
     private int id;
     @ManyToOne
-    @NotNull
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee author;
-    @OneToMany
-    @Max(10)
+    @OneToMany(cascade=CascadeType.ALL)
     private List<Attachment> attachments;
-    @Column(nullable = false, length = 2000)
+    @Column(length = 2000)
     private String content;
-    @NotNull
     private LocalDateTime timestamp;
 }
