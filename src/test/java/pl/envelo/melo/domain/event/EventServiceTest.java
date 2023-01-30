@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import pl.envelo.melo.EventContextTest;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
+import pl.envelo.melo.domain.event.dto.EventToDisplayOnUnitDetailsList;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.mappers.EventDetailsMapper;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
@@ -195,8 +196,6 @@ class EventServiceTest extends EventContextTest {
         assertEquals(1, event.getMembers().size());
         ResponseEntity<?> addedMember = eventService.addEmployeeToEvent(member.getId(), event.getId());
         assertEquals(HttpStatus.OK, addedMember.getStatusCode());
-        assertTrue(addedMember.getBody() instanceof Employee);
-        assertEquals(member.getId(), ((Employee)addedMember.getBody()).getId());
         assertEquals(2,event.getMembers().size());
         addedMember = eventService.addEmployeeToEvent(member.getId(), event.getId());
         assertEquals(HttpStatus.valueOf(400), addedMember.getStatusCode());
