@@ -85,7 +85,7 @@ public class EventService {
         return ResponseEntity.ok(result.stream().map(eventMapper::convert).toList());
     }
 
-    //@Transactional
+    @Transactional
     public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto, MultipartFile[] additionalAttachments) {
         Event event = eventMapper.newEvent(newEventDto);
 
@@ -104,20 +104,6 @@ public class EventService {
             event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get());
         }
 
-        /// Set Main Photo
-        if (!Objects.isNull(mainPhoto)) {
-            Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
-            if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
-                return ResponseEntity.badRequest()
-                        .body("Illegal format of event Photo!");
-            }
-            event.setMainPhoto(mainPhotoFromServer);
-
-        } else {
-            event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
-        }
-
-
         if (!(newEventDto.getCategoryId() == null)) {
             if(categoryRepository.findById(newEventDto.getCategoryId()).isPresent()) {
                 event.setCategory(categoryRepository.findById(newEventDto.getCategoryId()).get());
@@ -130,12 +116,39 @@ public class EventService {
         if (!Objects.isNull(additionalAttachments)) {
             /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
             for (MultipartFile multipartFile : additionalAttachments) {
+                AttachmentType attachmentType = attachmentService.validateAttachmentType(multipartFile);
+                if(Objects.isNull(attachmentType)) {
+                    return ResponseEntity.badRequest()
+                            .body("Illegal format of attachment. WTF ARE U DOING? TURBO ERROR!");
+                }
+            }
+
+
+            for (MultipartFile multipartFile : additionalAttachments) {
                 Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
+                if (attachmentFromServer == null) {
+                    return ResponseEntity.badRequest()
+                            .body("Illegal format of attachment. WTF ARE U DOING?");
+                }
                 if(Objects.isNull(event.getAttachments())) {
                     event.setAttachments(new HashSet<>());
                 }
                 event.getAttachments().add(attachmentFromServer);
             }
+        }
+
+        /// Set Main Photo
+        if (!Objects.isNull(mainPhoto)) {
+            Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
+            if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
+                return ResponseEntity.badRequest()
+                        .body("Illegal format of event Photo!");
+            }
+            event.setMainPhoto(mainPhotoFromServer);
+            event.getAttachments().add(mainPhotoFromServer);
+
+        } else {
+            event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
         }
 
         if (!(newEventDto.getHashtags() == null)) {

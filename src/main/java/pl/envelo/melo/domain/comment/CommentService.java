@@ -79,6 +79,10 @@ public class CommentService {
                 for (MultipartFile multipartFile : multipartFiles) {
 
                     Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
+                    if (attachmentFromServer == null) {
+                        return ResponseEntity.badRequest()
+                                .body("Illegal format of attachment. WTF ARE U DOING?");
+                    }
                     if(Objects.isNull(mappedComment.getAttachments())) {
                         mappedComment.setAttachments(new ArrayList<>());
                     }
