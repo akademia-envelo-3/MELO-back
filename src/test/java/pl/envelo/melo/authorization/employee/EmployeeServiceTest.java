@@ -11,6 +11,7 @@ import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.domain.unit.UnitService;
+import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.time.LocalDateTime;
@@ -243,5 +244,35 @@ class EmployeeServiceTest extends EventContextTest {
                 ((UnitToDisplayOnListDto)(((Set<?>) responseEntity2.getBody()).stream().findFirst().get())).getName().equals(nextUnitName)
         );
 
+    }
+
+    @Test
+    void getListOfCreatedUnits() {
+        //Dane
+        Employee employee1 = simpleEventMocker.mockEmployee("test1");
+        Employee employee2 = simpleEventMocker.mockEmployee("test2");
+        UnitNewDto unit1=new UnitNewDto();
+        unit1.setName("Unit1");
+        unit1.setDescription("Unit");
+        unitService.insertNewUnit(unit1);
+        UnitNewDto unit2=new UnitNewDto();
+        unit2.setName("Unit2");
+        unit2.setDescription("Unit");
+        unitService.insertNewUnit(unit2);
+        Unit unit3= new Unit();
+        unit3.setName("unit3");
+        unit3.setDescription("unit");
+        unit3.setOwner(employee2);
+        unitRepository.save(unit3);
+        employeeService.addToOwnedUnits(employee2.getId(),unit3);
+        //Testy
+        ResponseEntity<?> entity = employeeService.getListOfCreatedUnits(1);
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertTrue(entity.getBody() instanceof Set<?>);
+        assertEquals(2, ((Set<?>)entity.getBody()).size());
+        ResponseEntity<?> entity2 = employeeService.getListOfCreatedUnits(employee2.getId());
+        assertEquals(HttpStatus.OK, entity2.getStatusCode());
+        assertTrue(entity2.getBody() instanceof Set<?>);
+        assertEquals(1, ((Set<?>)entity2.getBody()).size());
     }
 }
