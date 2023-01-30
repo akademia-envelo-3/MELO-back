@@ -2,12 +2,15 @@ package pl.envelo.melo.domain.unit;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.envelo.melo.EventContextTest;
 import pl.envelo.melo.authorization.employee.Employee;
+import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,8 +69,29 @@ class UnitServiceTest extends EventContextTest{
     void quitUnit() {
     }
 
-    //@Test
+    @Test
     void insertNewUnit() {
+        String ownerName = "owner";
+        String unitName = "pros";
+        String unitDesc = "unit for pros";
+        Employee owner = simpleEventMocker.mockEmployee(ownerName);
+        UnitNewDto unit = new UnitNewDto();
+        unit.setName(unitName);
+        unit.setDescription(unitDesc);
+        ResponseEntity<?> unit1 = unitService.insertNewUnit(unit);
+        assertTrue(unit1.getBody() instanceof UnitToDisplayOnListDto);
+        assertEquals(HttpStatus.OK, unit1.getStatusCode());
+        assertEquals(unitName, ((UnitToDisplayOnListDto) unit1.getBody()).getName());
+        assertEquals(HttpStatus.valueOf(400), unitService.insertNewUnit(unit).getStatusCode());
+        String unitName2 = "Prosto     ";
+        String unitDesc2 = "unit      for pros";
+        UnitNewDto unit2 = new UnitNewDto();
+        unit2.setName(unitName2);
+        unit2.setDescription(unitDesc2);
+        ResponseEntity<?> unit3 = unitService.insertNewUnit(unit2);
+        assertTrue(unit3.getBody() instanceof UnitToDisplayOnListDto);
+        assertEquals("prosto", ((UnitToDisplayOnListDto) unit3.getBody()).getName());
+        assertEquals("unit for pros", ((UnitToDisplayOnListDto) unit3.getBody()).getDescription());
     }
 
     //@Test
