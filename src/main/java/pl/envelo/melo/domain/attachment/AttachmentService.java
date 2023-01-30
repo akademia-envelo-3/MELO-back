@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.attachment;
 
 import jakarta.activation.MimeType;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -40,12 +41,6 @@ public class AttachmentService {
     @Autowired
     FilesStorageService storageService;
 
-
-    public void transformAttachment(MultipartFile mainPhotoAttachment) {
-        mainPhotoAttachment.getContentType();
-        mainPhotoAttachment.getName();
-    }
-
     /*
     public Attachment uploadMainPhotoAndConvertToAttachment(MultipartFile mainPhotoUploaded) {
 
@@ -72,8 +67,10 @@ public class AttachmentService {
     }
 
      */
+    @Transactional
     public Attachment uploadFileAndSaveAsAttachment(MultipartFile attachment) {
         String uploadedFileName = attachment.getOriginalFilename();
+
 
         ///Zapis na serwerze
         String newUniqueFilename = storageService.save(attachment);
@@ -92,6 +89,7 @@ public class AttachmentService {
         if(Objects.isNull(attachmentType)) {
             return null;
         }
+
         attachmentToSave.setAttachmentType(attachmentType);
 
         ///Zapis do repozytorium attachmentów
@@ -122,6 +120,7 @@ public class AttachmentService {
         }
         return null;
     }
+
 
 
 /*

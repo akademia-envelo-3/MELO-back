@@ -14,6 +14,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 @Service
 public class FilesStorageServiceImpl implements FilesStorageService {
@@ -72,8 +73,12 @@ public class FilesStorageServiceImpl implements FilesStorageService {
 
     @Override
     public String getUrlToFile(String filename) {
-        return root.resolve(filename).toString();
+        String url_string = root.resolve(filename).toString();
+        //return url_string;
+        return MvcUriComponentsBuilder
+                .fromMethodName(FilesController.class, "getFile", filename).build().toString();
     }
+
 
     @Override
     public String generateUniqueFileName(MultipartFile file) {

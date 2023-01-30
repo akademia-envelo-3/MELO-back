@@ -111,6 +111,9 @@ public class MimeTypes {
     public static final String MIME_TEXT_X_COMPONENT      = "text/x-component";
     public static final String MIME_VIDEO_QUICKTIME       = "video/quicktime";
     public static final String MIME_VIDEO_MPEG          = "video/mpeg";
+
+    public static final String MIME_VIDEO_MP4          = "video/mp4";
+
     public static final String MIME_VIDEO_VND_MPEGURL     = "video/vnd.mpegurl";
     public static final String MIME_VIDEO_X_MSVIDEO       = "video/x-msvideo";
     public static final String MIME_VIDEO_X_MS_WMV        = "video/x-ms-wmv";
@@ -127,6 +130,7 @@ public class MimeTypes {
                 }
             }
             {
+                put1("mp4", MIME_VIDEO_MP4);
                 put1("xul", MIME_APPLICATION_VND_MOZZILLA_XUL_XML);
                 put1("json", MIME_APPLICATION_JSON);
                 put1("ice", MIME_X_CONFERENCE_X_COOLTALK);

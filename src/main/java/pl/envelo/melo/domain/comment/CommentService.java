@@ -73,11 +73,16 @@ public class CommentService {
         if (EmployeeFromDb.isPresent() && tmpEvent.isPresent()) {
             mappedComment.setAuthor(EmployeeFromDb.get());
             mappedComment.setTimestamp(LocalDateTime.now());
+            mappedComment.setContent(commentToSave.getContent());
 
             if(!Objects.isNull(multipartFiles)) {
                 for (MultipartFile multipartFile : multipartFiles) {
 
                     Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
+                    if (attachmentFromServer == null) {
+                        return ResponseEntity.badRequest()
+                                .body("Illegal format of attachment. WTF ARE U DOING?");
+                    }
                     if(Objects.isNull(mappedComment.getAttachments())) {
                         mappedComment.setAttachments(new ArrayList<>());
                     }

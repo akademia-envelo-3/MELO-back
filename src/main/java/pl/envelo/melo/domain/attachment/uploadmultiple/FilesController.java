@@ -17,15 +17,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import pl.envelo.melo.domain.attachment.MimeTypes;
 import pl.envelo.melo.domain.attachment.uploadmultiple.FileInfo;
 import pl.envelo.melo.domain.attachment.uploadmultiple.ResponseMessage;
 import pl.envelo.melo.domain.attachment.uploadmultiple.FilesStorageService;
 
-//@Controller
+import static pl.envelo.melo.domain.attachment.MimeTypes.MIME_APPLICATION_OCTET_STREAM;
+
+@Controller
 //@CrossOrigin("http://localhost:8081")
 public class FilesController {
 
-    /*@Autowired
+    @Autowired
     FilesStorageService storageService;
 
     @PostMapping("/upload")
@@ -58,12 +61,22 @@ public class FilesController {
         }).collect(Collectors.toList());
 
         return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
-    }*/
-
-   /* @GetMapping("/files/{filename:.+}")
+    }
+    @GetMapping("/files/{filename:.+}")
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
         Resource file = storageService.load(filename);
+
+        String extension = filename.substring(filename.lastIndexOf(".") + 1);
+        String mimeFound = MimeTypes.getMimeType(extension);
+
+        if(mimeFound.equals(MIME_APPLICATION_OCTET_STREAM)) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=" + filename).body(file);
+        }
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(file);
-    }*/
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .header(HttpHeaders.CONTENT_TYPE, mimeFound).body(file);
+    }
 }
