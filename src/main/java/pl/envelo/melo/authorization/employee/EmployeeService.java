@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.domain.unit.Unit;
+import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.mappers.EmployeeMapper;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.mappers.EventMapper;
+import pl.envelo.melo.mappers.UnitMapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,6 +26,7 @@ public class EmployeeService {
 
     private EmployeeRepository employeeRepository;
     private final EventMapper eventMapper;
+    private final UnitMapper unitMapper;
     private PersonRepository personRepository;
     private final EmployeeMapper employeeMapper;
 
@@ -175,6 +178,32 @@ public class EmployeeService {
         } else {
             return ResponseEntity.status(404).body("Employee with this ID do not exist");
         }
+    }
 
+    public ResponseEntity<?> getListOfJoinedUnits(int id){
+        if (!employeeRepository.existsById(id)) {
+            return ResponseEntity.status(404).body("Employee with this ID do not exist");
+        } else if (employeeRepository.findById(id).get()
+                .getJoinedUnits() == null){
+            return ResponseEntity.status(404).body("No units to display");
+        } else {
+            return ResponseEntity.ok(employeeRepository.findById(id).get()
+                    .getJoinedUnits()
+                    .stream()
+                    .map(unitMapper::convert)
+                    .collect(Collectors.toSet()));
+        }
+    }
+
+    public ResponseEntity<?> getListOfCreatedUnits(int employeeId){
+        if(employeeRepository.existsById(employeeId)){
+            return ResponseEntity.ok(employeeRepository.findById(employeeId).get().getOwnedUnits().stream().map(e->{
+                UnitToDisplayOnListDto dto = unitMapper.convert(e);
+                return dto;
+            }).collect(Collectors.toSet()));
+        }
+        else{
+            return ResponseEntity.status(404).body("Employee with this ID do not exist");
+        }
     }
 }

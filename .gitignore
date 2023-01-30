@@ -1,4 +1,5 @@
 HELP.md
+uploads/
 target/
 !**/src/main/**/target/
 !**/src/test/**/target/
