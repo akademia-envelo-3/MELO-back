@@ -33,7 +33,7 @@ public class UnitController {
                     ))
                     )
             })
-    public ResponseEntity<UnitToDisplayOnListDto> getUnit(int id) {
+    public ResponseEntity<?> getUnit(@PathVariable int id) {
         return unitService.getUnit(id);
     }
 

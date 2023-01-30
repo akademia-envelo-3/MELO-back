@@ -26,6 +26,14 @@ public interface EventMapper {
 //    @Mapping(source = "organizerId", target = "organizer")
     Event newEvent(NewEventDto newEventDto);
 
+    @Mapping(ignore = true, target = "category")
+    EventToDisplayOnUnitDetailsList convertToEventToDisplayOnUnitDetailsList(Event event);
+    @AfterMapping
+    default void updateResult(Event event, @MappingTarget EventToDisplayOnUnitDetailsList eventToDisplayOnUnitDetailsList){
+        if(event.getCategory() != null)
+            eventToDisplayOnUnitDetailsList.setCategory(event.getCategory().getName());
+        eventToDisplayOnUnitDetailsList.setEventId(event.getId());
+    }
 
     @Mapping(source = "id", target = "eventId")
     public EventToDisplayOnListDto convert(Event event);
