@@ -23,8 +23,18 @@ public class UnitController {
 
     private final UnitService unitService;
 
-
-    public ResponseEntity<UnitToDisplayOnListDto> getUnit(int id) {
+    @GetMapping("/{id}")
+    @Operation(summary = "Retrieve list of units",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Retrieve details of single unit with given id", content =
+                    @Content(mediaType = "application/json", schema = @Schema(
+                            description = "",
+                            oneOf = {UnitToDisplayOnListDto.class}
+                    ))
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Error when unit with given ID is missing")
+            })
+    public ResponseEntity<?> getUnit(@PathVariable("id") int id) {
         return unitService.getUnit(id);
     }
 
