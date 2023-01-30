@@ -138,7 +138,12 @@ public class EventService {
         }
         /// Set Main Photo
         if (!Objects.isNull(mainPhoto)) {
+
             Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
+            if (mainPhotoFromServer == null) {
+                return ResponseEntity.badRequest()
+                        .body("Illegal format of attachment. WTF ARE U DOING?");
+            }
             if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
                 return ResponseEntity.badRequest()
                         .body("Illegal format of event Photo!");
@@ -149,19 +154,6 @@ public class EventService {
             event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
         }
 
-        /// Set Main Photo
-        if (!Objects.isNull(mainPhoto)) {
-            Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
-            if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
-                return ResponseEntity.badRequest()
-                        .body("Illegal format of event Photo!");
-            }
-            event.setMainPhoto(mainPhotoFromServer);
-            event.getAttachments().add(mainPhotoFromServer);
-
-        } else {
-            event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
-        }
 
         if (!(newEventDto.getHashtags() == null)) {
             for (Hashtag hashtag : event.getHashtags()) {
