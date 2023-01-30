@@ -61,13 +61,11 @@ public class Event {
     @ManyToOne
     private Unit unit;
     @ManyToMany
-    @Size(max = 100)
     private Set<Hashtag> hashtags;
     private Long memberLimit;
     @ManyToOne
     private Category category;
-    @OneToMany
-    @Size(max = 10)
+    @OneToMany(cascade=CascadeType.ALL)
     private Set<Attachment> attachments;
     @OneToOne
     private Attachment mainPhoto;
@@ -79,4 +77,5 @@ public class Event {
     private Location location;
     @Column(nullable = false)
     private Theme theme;
+
 }

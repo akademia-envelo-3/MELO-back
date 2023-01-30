@@ -49,10 +49,10 @@ public class EventUpdater {
         updateHashtags(event, newEventDto);
         updateMemberLimit(event, newEventDto);
         updateOrganizer(event, newEventDto);
-        updateAttachments(event, newEventDto);
+        //updateAttachments(event, newEventDto);
         updateCategory(event, newEventDto);
         updateLocation(event, newEventDto);
-        updateMainPhoto(event, newEventDto);
+        //updateMainPhoto(event, newEventDto);
     }
 
     void updateDate(Event event, NewEventDto newEventDto) {
@@ -129,7 +129,7 @@ public class EventUpdater {
     }
 
 
-    void updateAttachments(Event event, NewEventDto newEventDto) {
+   /* void updateAttachments(Event event, NewEventDto newEventDto) {
         if (newEventDto.getAttachments() == null) {
             if (event.getAttachments() != null || event.getAttachments().size() != 0) {
                 event.getAttachments().clear();
@@ -155,7 +155,7 @@ public class EventUpdater {
                 }
             });
         }
-    }
+    }*/
 
     void updateCategory(Event event, NewEventDto newEventDto) {
         if (newEventDto.getCategoryId() != null) {
@@ -190,7 +190,7 @@ public class EventUpdater {
             event.setMemberLimit(null);
     }
 
-    void updateMainPhoto(Event event, NewEventDto newEventDto) {
+    /*void updateMainPhoto(Event event, NewEventDto newEventDto) {
         event.setMainPhoto(attachmentService.insertOrGetAttachment(newEventDto.getMainPhoto()));
-    }
+    }*/
 }

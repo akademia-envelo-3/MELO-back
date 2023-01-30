@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
@@ -15,6 +17,8 @@ import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
+import pl.envelo.melo.domain.attachment.AttachmentService;
+import pl.envelo.melo.domain.attachment.AttachmentType;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
@@ -61,6 +65,7 @@ public class EventService {
     private HashtagMapper hashtagMapper;
     private EventEditMapper eventEditMapper;
     private AttachmentMapper attachmentMapper;
+    private AttachmentService attachmentService;
     private EventUpdater eventUpdater;
     private EventValidator eventValidator;
     private EmployeeMapper employeeMapper;
@@ -84,9 +89,10 @@ public class EventService {
         return ResponseEntity.ok(result.stream().map(eventMapper::convert).toList());
     }
 
-    public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto) {  //void?
-
+    @Transactional
+    public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto, MultipartFile[] additionalAttachments) {
         Event event = eventMapper.newEvent(newEventDto);
+
         //validation
         if (event.getType().toString().startsWith("LIMITED")) {
             if (event.getMemberLimit() < 1) {
@@ -102,13 +108,6 @@ public class EventService {
             event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get());
         }
 
-        if (!(event.getMainPhoto() == null)) {
-            attachmentRepository.save(event.getMainPhoto());
-        } else {
-            event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
-        }
-
-
         if (!(newEventDto.getCategoryId() == null)) {
             if (categoryRepository.findById(newEventDto.getCategoryId()).isPresent()) {
                 event.setCategory(categoryRepository.findById(newEventDto.getCategoryId()).get());
@@ -117,11 +116,47 @@ public class EventService {
             }
         }
 
-        if (!(newEventDto.getAttachments() == null)) {
-            for (Attachment attachment : event.getAttachments()) {
-                attachmentRepository.save(attachment);
+        if (!Objects.isNull(additionalAttachments)) {
+            /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
+            for (MultipartFile multipartFile : additionalAttachments) {
+                AttachmentType attachmentType = attachmentService.validateAttachmentType(multipartFile);
+                if(Objects.isNull(attachmentType)) {
+                    return ResponseEntity.badRequest()
+                            .body("Illegal format of attachment. WTF ARE U DOING? TURBO ERROR!");
+                }
+            }
+
+
+            for (MultipartFile multipartFile : additionalAttachments) {
+                Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
+                if (attachmentFromServer == null) {
+                    return ResponseEntity.badRequest()
+                            .body("Illegal format of attachment. WTF ARE U DOING?");
+                }
+                if(Objects.isNull(event.getAttachments())) {
+                    event.setAttachments(new HashSet<>());
+                }
+                event.getAttachments().add(attachmentFromServer);
             }
         }
+        /// Set Main Photo
+        if (!Objects.isNull(mainPhoto)) {
+
+            Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
+            if (mainPhotoFromServer == null) {
+                return ResponseEntity.badRequest()
+                        .body("Illegal format of attachment. WTF ARE U DOING?");
+            }
+            if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
+                return ResponseEntity.badRequest()
+                        .body("Illegal format of event Photo!");
+            }
+            event.setMainPhoto(mainPhotoFromServer);
+
+        } else {
+            event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
+        }
+
 
         if (!(newEventDto.getHashtags() == null)) {
             for (Hashtag hashtag : event.getHashtags()) {
