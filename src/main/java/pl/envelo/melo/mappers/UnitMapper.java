@@ -3,14 +3,13 @@ package pl.envelo.melo.mappers;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import pl.envelo.melo.domain.unit.Unit;
+import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.util.Objects;
 
 @Mapper(componentModel = "spring")
-public interface UnitMapper {
-
-
+public interface UnitMapper extends EntityMapper<UnitNewDto, Unit> {
     default Unit map(Integer unitId) {
         if(Objects.isNull(unitId))
             return null;
