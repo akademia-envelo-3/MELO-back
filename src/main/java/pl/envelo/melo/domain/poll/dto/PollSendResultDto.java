@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.poll.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,6 +11,9 @@ import java.util.Set;
 @Setter
 @Getter
 public class PollSendResultDto {
+
+    @NotNull
     private int pollId;
+
     private Set<Integer> pollAnswerId;
 }

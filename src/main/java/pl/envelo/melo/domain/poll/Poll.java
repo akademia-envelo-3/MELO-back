@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.poll;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,11 +22,12 @@ public class Poll {
     @GeneratedValue
     private int id;
     @Column(nullable = false)
-    @Max(value = 1000)
+    @Size(min = PollConst.MIN_QUESTION_CHARACTER_LIMIT, max = PollConst.MAX_QUESTION_CHARACTER_LIMIT)
     private String pollQuestion;
     @Column
     private boolean multichoice;
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "poll")
+    @Size(min = PollConst.MIN_OPTION_COUNT, max = PollConst.MAX_OPTION_COUNT)
     private Set<PollAnswer> pollAnswers;
 
 }

@@ -31,18 +31,6 @@ public class PollService {
     private final NewPollMapper newPollMapper;
     private final PollToDisplayOnListDtoMapper pollToDisplayOnListDtoMapper;
 
-    private static final int MIN_QUESTION_CHARACTER_LIMIT = 2;
-    private static final int MAX_QUESTION_CHARACTER_LIMIT = 1000;
-    private static final int OPTION_CHARACTER_LIMIT = 255;
-    private static final int MIN_OPTION_COUNT = 2;
-    private static final int MAX_OPTION_COUNT = 10;
-    private static final String POLL_RESOURCE = "events/%d/polls/%d";
-    private static final String POLL_QUESTION_OUT_OF_RANGE = "Poll question must have between 2 and 1000 characters";
-    private static final String POLL_OPTION_TOO_LONG = "One of the poll options is exceeding limit of 255 characters";
-    private static final String POLL_OPTION_BLANK = "Poll option must not be blank";
-    private static final String OUT_OF_OPTION_COUNT_BOUNDS = "Poll must have minimum of 2 options and maximum of 10 options";
-    private static final String EVENT_AND_POLL_NOT_CORRELATED = "Event with id %d and poll with id %d are not correlated";
-    private static final String POLL_OPTIONS_NOT_UNIQUE = "Poll options cannot be the same";
 
     public ResponseEntity<List<Integer>> calculatePollResults(int pollId) {
         return null;
@@ -51,39 +39,40 @@ public class PollService {
 
     public ResponseEntity<?> insertNewPoll(NewPollDto newPollDto, int eventId) {
 
+        if (eventRepository.findById(eventId).isEmpty()) {
+            return ResponseEntity.status(404).body(String.format(PollConst.EVENT_NOT_FOUND, eventId));
+        }
+
         PollDto pollDto = newPollMapper.toDto(newPollDto);
 
         if (Objects.isNull(pollDto.getPollQuestion())
-                || pollDto.getPollQuestion().length() < MIN_QUESTION_CHARACTER_LIMIT
-                || pollDto.getPollQuestion().length() > MAX_QUESTION_CHARACTER_LIMIT) {
-            return ResponseEntity.badRequest().body(POLL_QUESTION_OUT_OF_RANGE);
+                || pollDto.getPollQuestion().length() < PollConst.MIN_QUESTION_CHARACTER_LIMIT
+                || pollDto.getPollQuestion().length() > PollConst.MAX_QUESTION_CHARACTER_LIMIT) {
+            return ResponseEntity.badRequest().body(PollConst.POLL_QUESTION_OUT_OF_RANGE);
         }
 
         if (Objects.isNull(pollDto.getPollAnswers())
-                || pollDto.getPollAnswers().size() < MIN_OPTION_COUNT
-                || pollDto.getPollAnswers().size() > MAX_OPTION_COUNT
+                || pollDto.getPollAnswers().size() < PollConst.MIN_OPTION_COUNT
+                || pollDto.getPollAnswers().size() > PollConst.MAX_OPTION_COUNT
         ) {
-            return ResponseEntity.badRequest().body(OUT_OF_OPTION_COUNT_BOUNDS);
+            return ResponseEntity.badRequest().body(PollConst.OUT_OF_OPTION_COUNT_BOUNDS);
         }
 
         for (PollAnswerDto pollAnswerDto : pollDto.getPollAnswers()) {
             String option = pollAnswerDto.getPollAnswer();
             if (option.isBlank()) {
-                return ResponseEntity.badRequest().body(POLL_OPTION_BLANK);
+                return ResponseEntity.badRequest().body(PollConst.POLL_OPTION_BLANK);
             }
-            if (option.length() > OPTION_CHARACTER_LIMIT) {
-                return ResponseEntity.badRequest().body(POLL_OPTION_TOO_LONG);
+            if (option.length() > PollConst.OPTION_CHARACTER_LIMIT) {
+                return ResponseEntity.badRequest().body(PollConst.POLL_OPTION_TOO_LONG);
             }
             option = option.replaceAll("\\s+", " ").trim();
             pollAnswerDto.setPollAnswer(option);
         }
         if (pollDto.getPollAnswers().stream().map(PollAnswerDto::getPollAnswer).distinct().count() != pollDto.getPollAnswers().size()) {
-            return ResponseEntity.badRequest().body(POLL_OPTIONS_NOT_UNIQUE);
+            return ResponseEntity.badRequest().body(PollConst.POLL_OPTIONS_NOT_UNIQUE);
         }
 
-        if (eventRepository.findById(eventId).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
 
         Poll poll = pollMapper.toEntity(pollDto);
         poll = pollRepository.save(poll);
@@ -100,14 +89,14 @@ public class PollService {
 
         event.getPolls().add(poll);
         eventRepository.save(event);
-        return ResponseEntity.created(URI.create(String.format(POLL_RESOURCE, eventId, poll.getId()))).build();
+        return ResponseEntity.status(201).body(newPollDto);
     }
 
     public ResponseEntity<?> getPoll(int eventId, int pollId) {
         if (pollRepository.findById(pollId).isEmpty() || eventRepository.findById(eventId).isEmpty())
             return ResponseEntity.notFound().build();
         if (!eventRepository.findById(eventId).get().getPolls().contains(pollRepository.findById(pollId).get()))
-            return ResponseEntity.badRequest().body(String.format(EVENT_AND_POLL_NOT_CORRELATED, eventId, pollId));
+            return ResponseEntity.badRequest().body(String.format(PollConst.EVENT_AND_POLL_NOT_CORRELATED, eventId, pollId));
         return ResponseEntity.ok(pollMapper.toDto(pollRepository.findById(pollId).get()));
     }
 
