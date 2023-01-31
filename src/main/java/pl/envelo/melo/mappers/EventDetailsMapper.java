@@ -6,16 +6,19 @@ import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.poll.Poll;
+import pl.envelo.melo.domain.poll.dto.PollDto;
 import pl.envelo.melo.domain.poll.dto.PollQuestionDto;
-import pl.envelo.melo.domain.poll.dto.PollTemplateDto;
+import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
 
 import java.util.*;
 
 @Mapper(componentModel = "spring", uses = {HashtagMapper.class, AttachmentMapper.class, EmployeeMapper.class,
-        LocationMapper.class, CategoryMapper.class})
+                                            LocationMapper.class, CategoryMapper.class, PollAnswerMapper.class})
 public interface EventDetailsMapper {
 
     EventDetailsDto convert(Event event);
+
+   //todo fixme bruh
 
     @AfterMapping
     default void update(Event event, @MappingTarget EventDetailsDto eventDetailsDto) {
@@ -32,30 +35,22 @@ public interface EventDetailsMapper {
         }
 
         eventDetailsDto.setConfirmedMembers(confirmedMembers);
+        
+       Set<PollToDisplayOnListDto> pollDtoList = new HashSet<>();
+       Set<Poll> pollSet = event.getPolls();
+        for (Poll poll : pollSet) {
 
-        List<PollTemplateDto> pollTemplateDtoList = new ArrayList<>();
-        List<PollQuestionDto> pollQuestionList = new ArrayList<>();
-        Set<Poll> pollSet = event.getPolls();
-        if (pollSet != null) {
-            for (Poll poll : pollSet) {
+           PollToDisplayOnListDto pollToDisplayOnListDto = new PollToDisplayOnListDto();
+           pollToDisplayOnListDto.setPollId(poll.getId());
+           pollToDisplayOnListDto.setPollQuestion(poll.getPollQuestion());
 
-                PollTemplateDto pollTemplateDto = new PollTemplateDto();
-                PollQuestionDto pollQuestion = new PollQuestionDto();
+           pollToDisplayOnListDto.setFilled(false); // fixme
 
-                pollTemplateDto.setPollQuestion(poll.getPollTemplate().getPollQuestion());
-                pollQuestion.setPollQuestion(poll.getPollTemplate().getPollQuestion());
-
-                pollTemplateDto.setPollOptions(new HashSet<>(poll.getPollTemplate().getPollOptions()));
-                pollTemplateDto.setMultiChoice(poll.getPollTemplate().isMultiChoice());
-
-                pollQuestion.setPollId(poll.getId());
-
-                pollTemplateDtoList.add(pollTemplateDto);
-                pollQuestionList.add(pollQuestion);
-            }
+            pollDtoList.add(pollToDisplayOnListDto);
         }
-        eventDetailsDto.setPolls(pollTemplateDtoList);
-        eventDetailsDto.setPollQuestion(pollQuestionList);
+
+        eventDetailsDto.setPolls(pollDtoList);
+
 
     }
 }

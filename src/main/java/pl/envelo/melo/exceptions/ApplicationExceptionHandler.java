@@ -20,4 +20,13 @@ public class ApplicationExceptionHandler {
         errorMap.put("Location fields", ex.getMessage());
         return errorMap;
     }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public Map<String, String> handleResourceNotFound(ResourceNotFoundException ex){
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("Resource not found", ex.getMessage());
+        return errorMap;
+    }
+
 }

@@ -20,6 +20,7 @@ import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.attachment.AttachmentType;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
+import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.hashtag.Hashtag;
@@ -28,10 +29,9 @@ import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
 import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.notification.NotificationService;
+import pl.envelo.melo.domain.poll.*;
+import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.UnitRepository;
-import pl.envelo.melo.domain.poll.PollAnswerRepository;
-import pl.envelo.melo.domain.poll.PollRepository;
-import pl.envelo.melo.domain.poll.PollTemplateRepository;
 
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
@@ -54,12 +54,13 @@ public class EventService {
     private final AttachmentRepository attachmentRepository;
     private final LocationRepository locationRepository;
     private final LocationService locationService;
+    private final PollService pollService;
     private final UnitRepository unitRepository;
-    private final PollTemplateRepository pollTemplateRepository;
     private final PollRepository pollRepository;
     private final PollAnswerRepository pollAnswerRepository;
     private final CommentRepository commentRepository;
     private final PersonRepository personRepository;
+    private final PollToDisplayOnListDtoMapper pollToDisplayOnListDtoMapper;
     private EventMapper eventMapper;
     private HashtagMapper hashtagMapper;
     private EventEditMapper eventEditMapper;
@@ -70,12 +71,26 @@ public class EventService {
     private EmployeeMapper employeeMapper;
     private EditEventNotificationHandler eventNotificationHandler;
 
-    public ResponseEntity<?> getEvent(int id) {
+    public ResponseEntity<?> getEvent(int id, Integer employeeId) {
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
-            return ResponseEntity.ok(eventDetailsMapper.convert(event));
+            EventDetailsDto eventDetailsDto = eventDetailsMapper.convert(event);
+            if(eventDetailsDto.getPolls() != null) {
+                Set<PollToDisplayOnListDto> pollSet = new HashSet<>();
+
+                event.getPolls().stream()
+                        .map(poll -> {
+                            PollToDisplayOnListDto dto = pollToDisplayOnListDtoMapper.convert(poll);
+                            dto.setFilled(pollService.employeeOnLists(poll, employeeId));
+                            return dto;
+                        })
+                        .forEach(pollSet::add);
+                 eventDetailsDto.setPolls(pollSet);
+            }
+
+            return ResponseEntity.ok(eventDetailsDto);
         } else {
-            return ResponseEntity.status(404).body("Event with this ID do not exist");
+            return ResponseEntity.status(404).body("Event with this ID does not exist");
         }
     }
 
@@ -173,7 +188,6 @@ public class EventService {
         } //todo create UnitMapper and use UnitRepository to find unit in database
 
 
-        System.out.println("test");
         return new ResponseEntity(eventRepository.save(event), HttpStatus.CREATED);
     }
 
