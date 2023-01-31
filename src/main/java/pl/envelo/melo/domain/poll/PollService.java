@@ -73,14 +73,12 @@ public class PollService {
             return ResponseEntity.badRequest().body(PollConst.POLL_OPTIONS_NOT_UNIQUE);
         }
 
-
         Poll poll = pollMapper.toEntity(pollDto);
         poll = pollRepository.save(poll);
 
         for (PollAnswer pollAnswer : poll.getPollAnswers()) {
             pollAnswer.setPoll(poll);
         }
-
 
         Event event = eventRepository.findById(eventId).get();
         if (event.getPolls() == null) {
@@ -93,8 +91,12 @@ public class PollService {
     }
 
     public ResponseEntity<?> getPoll(int eventId, int pollId) {
-        if (pollRepository.findById(pollId).isEmpty() || eventRepository.findById(eventId).isEmpty())
-            return ResponseEntity.notFound().build();
+        if (pollRepository.findById(pollId).isEmpty()) {
+            return ResponseEntity.status(404).body(String.format(PollConst.POLL_NOT_FOUND, pollId));
+        }
+        if(eventRepository.findById(eventId).isEmpty()) {
+            return ResponseEntity.status(404).body(String.format(PollConst.EVENT_NOT_FOUND, eventId));
+        }
         if (!eventRepository.findById(eventId).get().getPolls().contains(pollRepository.findById(pollId).get()))
             return ResponseEntity.badRequest().body(String.format(PollConst.EVENT_AND_POLL_NOT_CORRELATED, eventId, pollId));
         return ResponseEntity.ok(pollMapper.toDto(pollRepository.findById(pollId).get()));

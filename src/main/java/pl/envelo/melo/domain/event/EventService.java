@@ -90,7 +90,7 @@ public class EventService {
 
             return ResponseEntity.ok(eventDetailsDto);
         } else {
-            return ResponseEntity.status(404).body("Event with this ID do not exist");
+            return ResponseEntity.status(404).body("Event with this ID does not exist");
         }
     }
 
