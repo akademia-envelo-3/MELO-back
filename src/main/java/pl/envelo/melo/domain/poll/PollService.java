@@ -31,10 +31,13 @@ public class PollService {
     private final NewPollMapper newPollMapper;
     private final PollToDisplayOnListDtoMapper pollToDisplayOnListDtoMapper;
 
+    private static final int MIN_QUESTION_CHARACTER_LIMIT = 2;
+    private static final int MAX_QUESTION_CHARACTER_LIMIT = 1000;
     private static final int OPTION_CHARACTER_LIMIT = 255;
     private static final int MIN_OPTION_COUNT = 2;
     private static final int MAX_OPTION_COUNT = 10;
     private static final String POLL_RESOURCE = "events/%d/polls/%d";
+    private static final String POLL_QUESTION_OUT_OF_RANGE = "Poll question must have between 2 and 1000 characters";
     private static final String POLL_OPTION_TOO_LONG = "One of the poll options is exceeding limit of 255 characters";
     private static final String POLL_OPTION_BLANK = "Poll option must not be blank";
     private static final String OUT_OF_OPTION_COUNT_BOUNDS = "Poll must have minimum of 2 options and maximum of 10 options";
@@ -49,6 +52,12 @@ public class PollService {
     public ResponseEntity<?> insertNewPoll(NewPollDto newPollDto, int eventId) {
 
         PollDto pollDto = newPollMapper.toDto(newPollDto);
+
+        if (Objects.isNull(pollDto.getPollQuestion())
+                || pollDto.getPollQuestion().length() < MIN_QUESTION_CHARACTER_LIMIT
+                || pollDto.getPollQuestion().length() > MAX_QUESTION_CHARACTER_LIMIT) {
+            return ResponseEntity.badRequest().body(POLL_QUESTION_OUT_OF_RANGE);
+        }
 
         if (Objects.isNull(pollDto.getPollAnswers())
                 || pollDto.getPollAnswers().size() < MIN_OPTION_COUNT

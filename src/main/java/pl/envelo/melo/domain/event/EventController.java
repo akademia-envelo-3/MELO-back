@@ -109,6 +109,7 @@ public class EventController {
                                     array = @ArraySchema(schema = @Schema(implementation = PollDto.class)))
                     }),
                     @ApiResponse(responseCode = "400", description = "Various validation with description: <br />" +
+                            "PollQuestion must be between 2 and 1000 characters.<br />" +
                             "Poll must have between 2 and 10 pollAnswers.<br />" +
                             "PollAnswers cannot be repeatable. <br />Char amount of one pollAnswer must be between 1 and 255.<br />"),
                     @ApiResponse(responseCode = "404", description = "Event ID does not exist in database")

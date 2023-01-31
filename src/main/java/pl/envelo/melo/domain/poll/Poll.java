@@ -1,6 +1,7 @@
 package pl.envelo.melo.domain.poll;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class Poll {
     @GeneratedValue
     private int id;
     @Column(nullable = false)
+    @Max(value = 1000)
     private String pollQuestion;
     @Column
     private boolean multichoice;
