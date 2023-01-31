@@ -8,8 +8,8 @@ import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
+import pl.envelo.melo.mappers.UnitDetailsMapper;
 import pl.envelo.melo.mappers.UnitMapper;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -24,10 +24,14 @@ public class UnitService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeService employeeService;
     private final UnitMapper unitMapper;
+    private final UnitDetailsMapper unitDetailsMapper;
 
-
-    public ResponseEntity<UnitToDisplayOnListDto> getUnit(int id) {
-        return null;
+    public ResponseEntity<?> getUnit(int id) {
+        Optional<Unit> unit = unitRepository.findById(id);
+        if(unit.isPresent()){
+            return ResponseEntity.ok(unitDetailsMapper.convert(unit.get()));
+        }
+        return ResponseEntity.notFound().build();
     }
 
     public ResponseEntity<?> getUnits() {

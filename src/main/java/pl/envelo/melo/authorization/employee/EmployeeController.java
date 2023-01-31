@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.domain.event.Event;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @RestController
+@RequestMapping("v1/users/")
 public class EmployeeController {
 
     private final EmployeeService employeeService;
@@ -33,13 +35,13 @@ public class EmployeeController {
     }
 
 
-    @GetMapping("employee/{id}")
+    @GetMapping("{id}")
     public ResponseEntity<EmployeeDto> getEmployee(@PathVariable int id){
         return employeeService.getEmployee(id);
     }
 
 
-    @GetMapping("/user/{id}/owned-events")
+    @GetMapping("{id}/owned-events")
     public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(@PathVariable int id){
         return (ResponseEntity<Set<EventToDisplayOnListDto>>) employeeService.getSetOfOwnedEvents(id);
     }
@@ -53,8 +55,22 @@ public class EmployeeController {
                     ))
                     )
             })
-    @GetMapping("/user/{id}/joined-units")
+    @GetMapping("/{id}/joined-units")
     public ResponseEntity<?> getJoinedUnitList(@PathVariable("id") int id) {
         return employeeService.getListOfJoinedUnits(id);
+    }
+
+    @GetMapping("/{id}/owned-units")
+    @Operation(summary = "Retrieve list of created units by employee",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Retrieve list of units", content =
+                    @Content(mediaType = "application/json", schema = @Schema(
+                            description = "List of units",
+                            oneOf = {UnitToDisplayOnListDto.class}
+                    ))),
+                    @ApiResponse(responseCode = "404", description = "Employee does not exist")
+            })
+    public ResponseEntity<?> getListOfCreatedUnits(@PathVariable("id") int id){
+        return employeeService.getListOfCreatedUnits(id);
     }
 }

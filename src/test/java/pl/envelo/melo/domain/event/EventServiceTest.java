@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import pl.envelo.melo.EventContextTest;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
+import pl.envelo.melo.domain.event.dto.EventToDisplayOnUnitDetailsList;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.mappers.EventDetailsMapper;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
@@ -23,7 +24,6 @@ class EventServiceTest extends EventContextTest {
     EventDetailsMapper eventDetailsMapper;
     @Autowired
     EventService eventService;
-
 
     @Test
     void getExistEvent() {
@@ -183,5 +183,26 @@ class EventServiceTest extends EventContextTest {
         assertEquals(test2.getId(),event.getOrganizer().getId());
 
 
+    }
+
+    @Test
+    void addEmployeeToEvent() {
+        Employee test = simpleEventMocker.mockEmployee("test");
+        Employee member = simpleEventMocker.mockEmployee("member");
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),
+                EventType.LIMITED_PUBLIC_INTERNAL, test);
+        event.setMemberLimit(3L);
+        eventRepository.save(event);
+        assertEquals(1, event.getMembers().size());
+        ResponseEntity<?> addedMember = eventService.addEmployeeToEvent(member.getId(), event.getId());
+        assertEquals(HttpStatus.OK, addedMember.getStatusCode());
+        assertEquals(2,event.getMembers().size());
+        addedMember = eventService.addEmployeeToEvent(member.getId(), event.getId());
+        assertEquals(HttpStatus.valueOf(400), addedMember.getStatusCode());
+        assertEquals("Employee already on list", addedMember.getBody());
+        Employee member1 = simpleEventMocker.mockEmployee("member1");
+        addedMember = eventService.addEmployeeToEvent(member1.getId(), event.getId());
+        addedMember = eventService.addEmployeeToEvent(member1.getId(), event.getId());
+        assertEquals("Event is full", addedMember.getBody());
     }
 }
