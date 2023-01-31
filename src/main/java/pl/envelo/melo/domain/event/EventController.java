@@ -7,9 +7,14 @@ import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.transaction.Transactional;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -145,9 +150,17 @@ public class EventController {
         return null;
     }
 
-    //    @PostMapping()
-    public ResponseEntity<?> joinEvent(int employeeId, int eventId) {
-        return null;
+    @GetMapping("/{id}/join/{employeeId}")
+    @Operation(summary = "Add employee to event members",
+    responses = {
+            @ApiResponse(responseCode = "200", description = "Employee added to event", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Event.class))),
+            @ApiResponse(responseCode = "400", description = "Event is full or employee already on list", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Event.class))),
+            @ApiResponse(responseCode = "404", description = "Event or employee do not exist")
+    })
+    public ResponseEntity<?> joinEvent(@PathVariable("id") int id, @PathVariable("employeeId") int employeeId) {
+//        int employeeId = 2;//TODO take Id from Token
+            return eventService.addEmployeeToEvent(employeeId,id);
+
     }
 
     //    @PostMapping()
