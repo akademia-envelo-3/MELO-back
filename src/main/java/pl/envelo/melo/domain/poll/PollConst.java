@@ -14,6 +14,7 @@ public class PollConst {
     public static final String OUT_OF_OPTION_COUNT_BOUNDS = "Poll must have minimum of 2 options and maximum of 10 options";
     public static final String EVENT_AND_POLL_NOT_CORRELATED = "Event with id %d and poll with id %d are not correlated";
     public static final String EVENT_NOT_FOUND = "Event with id %d was not found";
+    public static final String POLL_NOT_FOUND = "Poll with id %d was not found";
     public static final String POLL_OPTIONS_NOT_UNIQUE = "Poll options cannot be the same";
 
 }
