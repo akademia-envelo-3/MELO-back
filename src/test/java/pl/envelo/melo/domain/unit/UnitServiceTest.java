@@ -61,8 +61,34 @@ class UnitServiceTest extends EventContextTest{
     void changeOwnership() {
     }
 
-    //@Test
+    @Test
     void addEmployee() {
+        //Dane
+        String ownerName = "owner";
+        String unitName = "pros";
+        String unitDesc = "unit for pros";
+        Employee owner = simpleEventMocker.mockEmployee(ownerName);
+        Employee employee = simpleEventMocker.mockEmployee("Test");
+        Unit unit = new Unit();
+        unit.setName(unitName);
+        unit.setDescription(unitDesc);
+        unit.setOwner(owner);
+        unitRepository.save(unit);
+        //Test
+        assertNull(unit.getMembers());
+        ResponseEntity<?> response = unitService.addEmployee(owner.getId(), unit.getId());
+        assertTrue(response.getBody() instanceof Boolean);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(unit.getMembers().contains(owner));
+        assertEquals(1,unit.getMembers().size());
+        ResponseEntity<?> response2 = unitService.addEmployee(employee.getId(), unit.getId());
+        assertTrue(response2.getBody() instanceof Boolean);
+        assertEquals(HttpStatus.OK, response2.getStatusCode());
+        assertTrue(unit.getMembers().contains(employee));
+        assertEquals(2,unit.getMembers().size());
+        ResponseEntity<?> response3 = unitService.addEmployee(employee.getId(), unit.getId());
+        assertEquals(HttpStatus.valueOf(400), response3.getStatusCode());
+
     }
 
     //@Test
@@ -71,6 +97,7 @@ class UnitServiceTest extends EventContextTest{
 
     @Test
     void insertNewUnit() {
+        //Dane
         String ownerName = "owner";
         String unitName = "pros";
         String unitDesc = "unit for pros";
@@ -79,15 +106,16 @@ class UnitServiceTest extends EventContextTest{
         unit.setName(unitName);
         unit.setDescription(unitDesc);
         ResponseEntity<?> unit1 = unitService.insertNewUnit(unit);
-        assertTrue(unit1.getBody() instanceof UnitToDisplayOnListDto);
-        assertEquals(HttpStatus.OK, unit1.getStatusCode());
-        assertEquals(unitName, ((UnitToDisplayOnListDto) unit1.getBody()).getName());
-        assertEquals(HttpStatus.valueOf(400), unitService.insertNewUnit(unit).getStatusCode());
         String unitName2 = "Prosto     ";
         String unitDesc2 = "unit      for pros";
         UnitNewDto unit2 = new UnitNewDto();
         unit2.setName(unitName2);
         unit2.setDescription(unitDesc2);
+        //Test
+        assertTrue(unit1.getBody() instanceof UnitToDisplayOnListDto);
+        assertEquals(HttpStatus.OK, unit1.getStatusCode());
+        assertEquals(unitName, ((UnitToDisplayOnListDto) unit1.getBody()).getName());
+        assertEquals(HttpStatus.valueOf(400), unitService.insertNewUnit(unit).getStatusCode());
         ResponseEntity<?> unit3 = unitService.insertNewUnit(unit2);
         assertTrue(unit3.getBody() instanceof UnitToDisplayOnListDto);
         assertEquals("prosto", ((UnitToDisplayOnListDto) unit3.getBody()).getName());
@@ -97,4 +125,5 @@ class UnitServiceTest extends EventContextTest{
     //@Test
     void updateUnit() {
     }
+
 }
