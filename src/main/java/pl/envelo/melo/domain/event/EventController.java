@@ -45,6 +45,7 @@ import pl.envelo.melo.domain.poll.PollService;
 import pl.envelo.melo.domain.poll.dto.NewPollDto;
 import pl.envelo.melo.domain.poll.dto.PollAnswerDto;
 import pl.envelo.melo.domain.poll.dto.PollDto;
+import pl.envelo.melo.domain.poll.dto.PollSendResultDto;
 
 import java.util.List;
 import java.util.Objects;
@@ -137,7 +138,7 @@ public class EventController {
         return commentService.insertNewComment(id, commentDto, multipartFiles);
     }
 
-    @PostMapping("/{id}/polls")
+    @PostMapping("/{event-id}/polls")
     @Operation(summary = "Add new poll to event",
             responses = {
                     @ApiResponse(responseCode = "201", description = "Adds new poll to event successfully", content = {
@@ -150,7 +151,7 @@ public class EventController {
                             "PollAnswers cannot be repeatable. <br />Char amount of one pollAnswer must be between 1 and 255.<br />"),
                     @ApiResponse(responseCode = "404", description = "Event ID does not exist in database")
             })
-    public ResponseEntity<?> addPollToEvent(@Valid @RequestBody NewPollDto newPollDto, @PathVariable("id") int id) {
+    public ResponseEntity<?> addPollToEvent(@Valid @RequestBody NewPollDto newPollDto, @PathVariable("event-id") int id) {
         return pollService.insertNewPoll(newPollDto, id);
 
     }
@@ -169,9 +170,9 @@ public class EventController {
         return pollService.getPoll(id, pollId);
     }
 
-    //        @PostMapping()
-    public ResponseEntity<PollAnswer> addPollAnswer(PollAnswerDto pollAnswerDto) {
-        return null;
+    @PostMapping("/{event-id}/polls/vote")
+    public ResponseEntity<?> addPollAnswer(@PathVariable("event-id") int eventId, @RequestBody PollSendResultDto pollSendResultDto) {
+        return pollService.insertNewPollAnswer(eventId, pollSendResultDto); // returns PollResultDto
     }
 
     //    @PostMapping()
