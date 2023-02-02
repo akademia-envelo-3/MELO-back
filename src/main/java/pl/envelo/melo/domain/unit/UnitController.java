@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.unit;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -67,9 +68,15 @@ public class UnitController {
         return unitService.addEmployee(employee, unitId);
     }
 
-
-    public ResponseEntity<?> quitUnit(Employee employee, int unitId) {
-        return unitService.quitUnit(employee, unitId);
+    @Transactional
+    @PatchMapping("/{unitId}/members/{employeeIdToken}")
+    @Operation(summary = "Remove employee from unit members",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Employee was removed"),
+                    @ApiResponse(responseCode = "404"),
+            })
+    public ResponseEntity<?> quitUnit(@PathVariable("employeeIdToken") int employeeIdToken, @PathVariable("unitId") int unitId) {
+        return unitService.quitUnit(employeeIdToken, unitId);
     }
 
 
