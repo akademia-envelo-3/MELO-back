@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
+import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 
@@ -63,8 +64,15 @@ public class UnitController {
     }
 
 
-    public ResponseEntity<?> addEmployee(Employee employee, int unitId) {
-        return unitService.addEmployee(employee, unitId);
+    @GetMapping("/{id}/join/{unitId}")
+    @Operation(summary = "Add employee to unit members",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Employee added to unit"),
+                    @ApiResponse(responseCode = "400", description = "Employee already in unit"),
+                    @ApiResponse(responseCode = "404", description = "Unit or employee do not exist")
+            })
+    public ResponseEntity<?> addEmployee(@PathVariable("id") int employeeId, @PathVariable("unitId") int unitId) {
+        return unitService.addEmployee(employeeId, unitId);
     }
 
 
