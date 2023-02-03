@@ -11,6 +11,5 @@ public class AddGuestToEventDto {
     private String lastName;
     @Email(message = "invalid email")
     private String email;
-    private int eventId;
 
 }

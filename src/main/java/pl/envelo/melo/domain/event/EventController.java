@@ -174,10 +174,13 @@ public class EventController {
         return null;
     }
 
-    //    @PostMapping()
-    public ResponseEntity<?> addGuestToEvent(AddGuestToEventDto addGuestToEventDto) {
+    @PostMapping("/{id}/external")
+    public ResponseEntity<?> addGuestToEvent(@PathVariable("id") int eventId, AddGuestToEventDto addGuestToEventDto) {
+        //TODO create person
         return null;
     }
+
+
 
     //    @PostMapping()
     public ResponseEntity<?> removeGuestFromEvent(int personId, int eventId) {
