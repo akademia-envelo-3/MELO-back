@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.unit;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -49,8 +50,27 @@ public class UnitService {
         return null;
     }
 
-    public ResponseEntity<?> addEmployee(Employee employee, int unitId) {
-        return null;
+
+    public ResponseEntity<?> addEmployee(int employeeId, int unitId) {
+        if(employeeRepository.existsById(employeeId)){
+            Optional<Unit> unit = unitRepository.findById(unitId);
+            if(unit.isPresent()){
+                if(employeeService.addToJoinedUnits(employeeId,unit.get())){
+                    if(unit.get().getMembers()==null){
+                        Set<Employee> members = new HashSet<>();
+                        members.add(employeeRepository.findById(employeeId).get());
+                        unit.get().setMembers(members);
+                    }else {
+                        unit.get().getMembers().add(employeeRepository.findById(employeeId).get());
+                    }
+                    unitRepository.save(unit.get());
+                    return ResponseEntity.ok(true);
+                }
+                return ResponseEntity.status(400).body("Employee already in unit");
+            }
+            return ResponseEntity.status(404).body("Unit does not exist");
+        }
+        return ResponseEntity.status(404).body("Employee is not in database");
     }
 
     public ResponseEntity<?> quitUnit(Employee employee, int unitId) {
