@@ -87,7 +87,6 @@ public class EventService {
                         .forEach(pollSet::add);
                  eventDetailsDto.setPolls(pollSet);
             }
-
             return ResponseEntity.ok(eventDetailsDto);
         } else {
             return ResponseEntity.status(404).body("Event with this ID does not exist");

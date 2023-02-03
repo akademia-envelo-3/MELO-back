@@ -42,10 +42,7 @@ import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.poll.PollAnswer;
 import pl.envelo.melo.domain.poll.PollService;
-import pl.envelo.melo.domain.poll.dto.NewPollDto;
-import pl.envelo.melo.domain.poll.dto.PollAnswerDto;
-import pl.envelo.melo.domain.poll.dto.PollDto;
-import pl.envelo.melo.domain.poll.dto.PollSendResultDto;
+import pl.envelo.melo.domain.poll.dto.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -143,7 +140,7 @@ public class EventController {
             responses = {
                     @ApiResponse(responseCode = "201", description = "Adds new poll to event successfully", content = {
                             @Content(mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = PollDto.class)))
+                                    array = @ArraySchema(schema = @Schema(implementation = NewPollDto.class)))
                     }),
                     @ApiResponse(responseCode = "400", description = "Various validation with description: <br />" +
                             "PollQuestion must be between 2 and 1000 characters.<br />" +
@@ -156,21 +153,36 @@ public class EventController {
 
     }
 
-    @GetMapping("/{id}/polls/{poll-id}")
+    @GetMapping("/{event-id}/polls/{poll-id}")
     @Operation(summary = "Retrieve information about poll in event with given ID's",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Displays poll with given ID in event with given ID successfully.", content = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Displays poll with given ID in event with given ID succesfully.<br />" +
+                            "id + pollAnswer when Employee haven't voted yet.<br />" +
+                            "result + pollAnswer when Employee already voted.", content = {
                             @Content(mediaType = "application/json",
                                     array = @ArraySchema(schema = @Schema(implementation = PollDto.class)))
                     }),
                     @ApiResponse(responseCode = "400", description = "Poll and Event with given ID are not correlated to each other."),
                     @ApiResponse(responseCode = "404", description = "Event ID and/or Poll ID does not exist in database")
             })
-    public ResponseEntity<?> getPollFromEvent(@PathVariable("id") int id, @PathVariable("poll-id") int pollId) {
+    public ResponseEntity<?> getPollFromEvent(@PathVariable("event-id") int id, @PathVariable("poll-id") int pollId) {
         return pollService.getPoll(id, pollId);
     }
 
     @PostMapping("/{event-id}/polls/vote")
+    @Operation(summary = "Vote in poll",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Added new vote to poll", content = {
+                            @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = PollResultDto.class)))
+                    }),
+                    @ApiResponse(responseCode = "400", description = "Various validation with description: <br />" +
+                            "Employee already voted in this Poll.<br />" +
+                            "PollAnswer must have at least one value.<br />" +
+                            "This Poll is not multichoice, you can only put 1 PollAnswer.<br />"),
+                    @ApiResponse(responseCode = "404", description = "Employee was not found in database.")
+            })
     public ResponseEntity<?> addPollAnswer(@PathVariable("event-id") int eventId, @RequestBody PollSendResultDto pollSendResultDto) {
         return pollService.insertNewPollAnswer(eventId, pollSendResultDto); // returns PollResultDto
     }

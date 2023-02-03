@@ -1,13 +1,11 @@
 package pl.envelo.melo.domain.poll;
 
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
-import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.poll.dto.*;
@@ -22,16 +20,12 @@ public class PollService {
     private final PollAnswerRepository pollAnswerRepository;
     private final EventRepository eventRepository;
     private final PollMapper pollMapper;
+    private final PollResultMapper pollResultMapper;
     private final NewPollMapper newPollMapper;
     private final PollToDisplayOnListDtoMapper pollToDisplayOnListDtoMapper;
     private final EmployeeService employeeService;
     private final EmployeeMapper employeeMapper;
     private final EmployeeRepository employeeRepository;
-
-
-    public ResponseEntity<List<Integer>> calculatePollResults(int pollId) {
-        return null;
-    }
 
 
     public ResponseEntity<?> insertNewPoll(NewPollDto newPollDto, int eventId) {
@@ -88,8 +82,16 @@ public class PollService {
     }
 
     public ResponseEntity<?> getPoll(int eventId, int pollId) {
-        if (checkPollValidation(eventId, pollId).getStatusCode().equals(200)) {
-            return ResponseEntity.ok(pollMapper.toDto(pollRepository.findById(pollId).get()));
+        int employeeId = 1;
+
+        if (checkPollValidation(eventId, pollId).getStatusCode().is2xxSuccessful()) {
+            Event event = eventRepository.findById(eventId).get();
+            Poll poll = pollRepository.findById(pollId).get();
+            if (event.getPolls().contains(poll) && poll.getPollAnswers().stream().flatMap(pollAnswer -> pollAnswer.getEmployee()
+                    .stream()).anyMatch(e -> e.getId() == employeeId)) {
+                return ResponseEntity.status(300).body(pollResultMapper.toDto(poll));
+            }
+            return ResponseEntity.ok(pollMapper.toDto(poll));
         } else return checkPollValidation(eventId, pollId);
     }
 
@@ -105,7 +107,6 @@ public class PollService {
         return ResponseEntity.status(200).build();
     }
 
-    // todo needs to be checked
     public ResponseEntity<Set<PollToDisplayOnListDto>> listAllPollsForEvent(int eventId) {
         if (eventRepository.findById(eventId).isPresent()) {
             Event event = eventRepository.findById(eventId).get();
@@ -128,20 +129,9 @@ public class PollService {
             return ResponseEntity.status(404).body("Employee was not found in database");
         }
 
-
         if (poll.getPollAnswers().stream().anyMatch(e ->
                 e.getEmployee().stream().anyMatch(emp -> emp.getId() == employeeId))) {
             return ResponseEntity.status(400).body("Employee already voted in this Poll.");
-        }
-
-
-        Set<PollAnswer> pollAnswerSet = new HashSet<>();
-        for (Integer pollAnswerId : pollSendResultDto.getPollAnswerId()) {
-            PollAnswer pollAnswer = pollAnswerRepository.findById(pollAnswerId).orElse(null);
-            if (pollAnswer == null) {
-                return ResponseEntity.status(404).body(PollConst.POLL_ANSWER_NOT_ASSOCIATED_WITH_POLL);
-            }
-            pollAnswerSet.add(pollAnswer);
         }
 
         if (pollSendResultDto.getPollAnswerId().isEmpty()) {
@@ -152,19 +142,28 @@ public class PollService {
             return ResponseEntity.status(400).body("This Poll is not multichoice, you can only put 1 PollAnswer.");
         }
 
+        Set<PollAnswer> pollAnswerSet = new HashSet<>();
 
-        for (PollAnswer pollAnswer : pollAnswerSet) {
+        for (Integer pollAnswerId : pollSendResultDto.getPollAnswerId()) {
+            PollAnswer pollAnswer = poll.getPollAnswers().stream()
+                    .filter(pollAnswer1 -> pollAnswerId.equals(pollAnswer1.getId()))
+                    .findFirst()
+                    .orElse(null);
+            if (pollAnswer == null) {
+                return ResponseEntity.status(404).body(PollConst.POLL_ANSWER_NOT_ASSOCIATED_WITH_POLL);
+            }
             pollAnswer.getEmployee().add(employee);
-            pollAnswerRepository.save(pollAnswer);
+            pollAnswerSet.add(pollAnswer);
         }
-        return ResponseEntity.status(200).body("Votes saved successfully");
-        //todo return pollAnswerResultDto
-        //todo new endpoint to get Poll PollAnswerResultDto.
+
+        poll.getPollAnswers().addAll(pollAnswerSet);
+        pollAnswerSet.forEach(pollAnswerRepository::save);
+
+        return ResponseEntity.status(201).body(pollResultMapper.toDto(poll));
     }
 
 
     public Boolean employeeOnLists(Poll poll, Integer employeeId) {
-//        int id = employee.getId();
         return poll.getPollAnswers().stream()
                 .flatMap(pollAnswer -> pollAnswer.getEmployee().stream())
                 .anyMatch(employee -> employeeId.equals(employee.getId()));
