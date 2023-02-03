@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
+import pl.envelo.melo.domain.notification.NotificationService;
+import pl.envelo.melo.domain.notification.NotificationType;
+import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.mappers.UnitDetailsMapper;
@@ -26,6 +29,7 @@ public class UnitService {
     private final EmployeeService employeeService;
     private final UnitMapper unitMapper;
     private final UnitDetailsMapper unitDetailsMapper;
+    private final NotificationService notificationService;
 
     public ResponseEntity<?> getUnit(int id) {
         Optional<Unit> unit = unitRepository.findById(id);
@@ -46,8 +50,31 @@ public class UnitService {
         return null;
     }
 
-    public ResponseEntity<Unit> changeOwnership(int newEmployeeId) {
-        return null;
+    public ResponseEntity<?> changeOwnershipByAdmin(int unitId, int nextOwnerId) {
+        Optional<Unit> unit = unitRepository.findById(unitId);
+        Optional<Employee> nextOwner = employeeRepository.findById(nextOwnerId);
+        if(unit.isEmpty() || nextOwner.isEmpty())
+            return ResponseEntity.status(404).body("Atleast one of the provided entity ids does not exist in the database");
+
+        Employee currentOwner = unit.get().getOwner();
+        unit.get().setOwner(nextOwner.get());
+        employeeService.removeFromOwnedUnits(currentOwner.getId(), unit.get());
+        employeeService.addToOwnedUnits(nextOwnerId, unit.get());
+        employeeService.addToJoinedUnits(nextOwnerId,unit.get());
+        unitRepository.save(unit.get());
+        sendOwnershipNotification(currentOwner.getId(),unit.get().getId(), true);
+        sendOwnershipNotification(nextOwnerId,unit.get().getId(), false);
+        return ResponseEntity.ok().build();
+    }
+    private void sendOwnershipNotification(int employeeId, int unitId, boolean revoke){
+        UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
+        unitNotificationDto.setUnitId(unitId);
+        unitNotificationDto.setEmployeeId(employeeId);
+        if(revoke)
+            unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_REVOKED);
+        else
+            unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_GRANTED);
+        notificationService.insertUnitNotification(unitNotificationDto);
     }
 
 

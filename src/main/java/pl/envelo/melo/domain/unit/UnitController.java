@@ -58,9 +58,9 @@ public class UnitController {
         return unitService.getUnitEmployees();
     }
 
-
-    public ResponseEntity<Unit> changeOwnership(int newEmployeeId) {
-        return unitService.changeOwnership(newEmployeeId);
+    @PatchMapping("{id}/owner")
+    public ResponseEntity<?> changeOwnershipByAdmin(@PathVariable("id") int unitId, @RequestParam("new-owner") int newOwner) {
+        return unitService.changeOwnershipByAdmin(unitId, newOwner);
     }
 
 
