@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
+import pl.envelo.melo.domain.notification.NotificationService;
+import pl.envelo.melo.domain.notification.NotificationType;
+import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.mappers.UnitDetailsMapper;
@@ -26,6 +29,7 @@ public class UnitService {
     private final EmployeeService employeeService;
     private final UnitMapper unitMapper;
     private final UnitDetailsMapper unitDetailsMapper;
+    private final NotificationService notificationService;
 
     public ResponseEntity<?> getUnit(int id) {
         Optional<Unit> unit = unitRepository.findById(id);
@@ -68,11 +72,24 @@ public class UnitService {
             if (!unit.get().getMembers().contains(newOwner.get())) {
                 unit.get().getMembers().add(newOwner.get());
             }
+            sendOwnershipNotification(oldOwner.get().getId(),unit.get().getId(), true);
+            sendOwnershipNotification(newEmployeeId,unit.get().getId(), false);
             return ResponseEntity.status(200).body("The owner of the unit with id "
                     + unitId + " has been correctly changed to "
                     + newOwner.get().getUser().getPerson().getFirstName() + " "
                     + newOwner.get().getUser().getPerson().getLastName());
         }
+    }
+
+    private void sendOwnershipNotification(int employeeId, int unitId, boolean revoke){
+        UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
+        unitNotificationDto.setUnitId(unitId);
+        unitNotificationDto.setEmployeeId(employeeId);
+        if(revoke)
+            unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_REVOKED);
+        else
+            unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_GRANTED);
+        notificationService.insertUnitNotification(unitNotificationDto);
     }
 
 
