@@ -145,5 +145,7 @@ class UnitServiceTest extends EventContextTest{
         assertEquals(1, firstOwner.getJoinedUnits().size());
         assertEquals(1, nextOwner.getJoinedUnits().size());
         assertEquals(1, nextOwner.getOwnedUnits().size());
+        assertTrue(unit.getMembers().contains(nextOwner));
+        assertTrue(unit.getMembers().contains(firstOwner));
     }
 }

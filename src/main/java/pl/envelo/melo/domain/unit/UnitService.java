@@ -14,10 +14,8 @@ import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.mappers.UnitDetailsMapper;
 import pl.envelo.melo.mappers.UnitMapper;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,16 +53,25 @@ public class UnitService {
         Optional<Employee> nextOwner = employeeRepository.findById(nextOwnerId);
         if(unit.isEmpty() || nextOwner.isEmpty())
             return ResponseEntity.status(404).body("Atleast one of the provided entity ids does not exist in the database");
-
+        if(unit.get().getOwner().getId() == nextOwnerId)
+            return ResponseEntity.ok().build();
         Employee currentOwner = unit.get().getOwner();
         unit.get().setOwner(nextOwner.get());
         employeeService.removeFromOwnedUnits(currentOwner.getId(), unit.get());
         employeeService.addToOwnedUnits(nextOwnerId, unit.get());
         employeeService.addToJoinedUnits(nextOwnerId,unit.get());
+        addMemberToUnit(nextOwner.get(), unit.get());
         unitRepository.save(unit.get());
         sendOwnershipNotification(currentOwner.getId(),unit.get().getId(), true);
         sendOwnershipNotification(nextOwnerId,unit.get().getId(), false);
         return ResponseEntity.ok().build();
+    }
+    private boolean addMemberToUnit(Employee employee, Unit unit){
+        if(Objects.isNull(employee) || Objects.isNull(unit))
+            return false;
+        if(Objects.isNull(unit.getMembers()))
+            unit.setMembers(new HashSet<>());
+        return unit.getMembers().add(employee);
     }
     private void sendOwnershipNotification(int employeeId, int unitId, boolean revoke){
         UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
