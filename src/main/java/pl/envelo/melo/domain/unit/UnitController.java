@@ -64,7 +64,7 @@ public class UnitController {
     }
 
 
-    @GetMapping("/{id}/join/{unitId}")
+    @GetMapping("/{unitId}/join/{id}")
     @Operation(summary = "Add employee to unit members",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Employee added to unit"),
