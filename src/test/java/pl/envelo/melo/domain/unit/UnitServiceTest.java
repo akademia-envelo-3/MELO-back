@@ -9,8 +9,10 @@ import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -125,5 +127,25 @@ class UnitServiceTest extends EventContextTest{
     //@Test
     void updateUnit() {
     }
-
+    @Test
+    void changeOwnershipByAdmin() {
+        Employee firstOwner = simpleEventMocker.mockEmployee("test");
+        Employee nextOwner = simpleEventMocker.mockEmployee("test");
+        Unit unit = new Unit();
+        unit.setName("TEST");
+        unit.setDescription("TEST");
+        unit.setOwner(firstOwner);
+        firstOwner.setJoinedUnits(new HashSet<>(Set.of(unit)));
+        firstOwner.setOwnedUnits(new HashSet<>(Set.of(unit)));
+        unitRepository.save(unit);
+        assertEquals(firstOwner, unit.getOwner());
+        unitService.changeOwnershipByAdmin(unit.getId(), nextOwner.getId());
+        assertEquals(nextOwner, unit.getOwner());
+        assertEquals(0, firstOwner.getOwnedUnits().size());
+        assertEquals(1, firstOwner.getJoinedUnits().size());
+        assertEquals(1, nextOwner.getJoinedUnits().size());
+        assertEquals(1, nextOwner.getOwnedUnits().size());
+        assertTrue(unit.getMembers().contains(nextOwner));
+        assertTrue(unit.getMembers().contains(firstOwner));
+    }
 }
