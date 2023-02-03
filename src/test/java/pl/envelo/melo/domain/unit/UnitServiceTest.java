@@ -9,8 +9,10 @@ import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -57,8 +59,38 @@ class UnitServiceTest extends EventContextTest{
     void getUnitEmployees() {
     }
 
-    //@Test
+    @Test
     void changeOwnership() {
+        String ownerName = "owner";
+        String unitName = "pros";
+        String unitDesc = "unit for pros";
+        Employee owner = simpleEventMocker.mockEmployee(ownerName);
+        Employee employee = simpleEventMocker.mockEmployee("Test");
+        Unit unit = new Unit();
+        unit.setName(unitName);
+        unit.setDescription(unitDesc);
+        unit.setOwner(owner);
+        Set<Employee> members = new HashSet<>();
+        members.add(owner);
+        unit.setMembers(members);
+
+        Set<Unit> joinedUnits = new HashSet<>();
+        joinedUnits.add(unit);
+        owner.setJoinedUnits(joinedUnits);
+
+        unitRepository.save(unit);
+
+        ResponseEntity<?> response = unitService.changeOwnership(employee.getId(),owner.getId(),unit.getId());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(2,unit.getMembers().size());
+        assertEquals(unit.getOwner().getId(),employee.getId());
+        assertTrue(employee.getJoinedUnits().contains(unit));
+        assertTrue(owner.getJoinedUnits().contains(unit));
+
+        response = unitService.changeOwnership(owner.getId(),owner.getId(),unit.getId());
+        assertEquals(HttpStatus.BAD_REQUEST,response.getStatusCode());
+
+
     }
 
     @Test
