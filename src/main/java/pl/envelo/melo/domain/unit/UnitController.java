@@ -68,8 +68,13 @@ public class UnitController {
         return unitService.changeOwnership(newEmployeeId,currentTokenId,unitId);
     }
 
-
-    @GetMapping("/{id}/join/{unitId}")
+    @PatchMapping("{id}/owner")
+    public ResponseEntity<?> changeOwnershipByAdmin(@PathVariable("id") int unitId, @RequestParam("new-owner") int newOwner) {
+        return unitService.changeOwnershipByAdmin(unitId, newOwner);
+    }
+     
+     
+    @GetMapping("/{unitId}/join/{id}")
     @Operation(summary = "Add employee to unit members",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Employee added to unit"),

@@ -158,4 +158,25 @@ class UnitServiceTest extends EventContextTest{
     void updateUnit() {
     }
 
+    @Test
+    void changeOwnershipByAdmin() {
+        Employee firstOwner = simpleEventMocker.mockEmployee("test");
+        Employee nextOwner = simpleEventMocker.mockEmployee("test");
+        Unit unit = new Unit();
+        unit.setName("TEST");
+        unit.setDescription("TEST");
+        unit.setOwner(firstOwner);
+        firstOwner.setJoinedUnits(new HashSet<>(Set.of(unit)));
+        firstOwner.setOwnedUnits(new HashSet<>(Set.of(unit)));
+        unitRepository.save(unit);
+        assertEquals(firstOwner, unit.getOwner());
+        unitService.changeOwnershipByAdmin(unit.getId(), nextOwner.getId());
+        assertEquals(nextOwner, unit.getOwner());
+        assertEquals(0, firstOwner.getOwnedUnits().size());
+        assertEquals(1, firstOwner.getJoinedUnits().size());
+        assertEquals(1, nextOwner.getJoinedUnits().size());
+        assertEquals(1, nextOwner.getOwnedUnits().size());
+        assertTrue(unit.getMembers().contains(nextOwner));
+        assertTrue(unit.getMembers().contains(firstOwner));
+    }
 }
