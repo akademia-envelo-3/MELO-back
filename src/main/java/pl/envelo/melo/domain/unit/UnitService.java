@@ -143,16 +143,19 @@ public class UnitService {
             return ResponseEntity.status(404).body("Unit with given ID is not present in database");
         }
         NotificationType notification = null;
-        if (!unitNewDto.getName().toLowerCase().equals(unit.getName()) &&
+        unitNewDto.setName(unitNewDto.getName().replaceAll("( +)", " ").trim().toLowerCase());
+        unitNewDto.setDescription(unitNewDto.getDescription().replaceAll("( +)", " ").trim());
+
+        if (!unitNewDto.getName().equals(unit.getName()) &&
                 !unitNewDto.getDescription().equals(unit.getDescription())) {
-            unit.setName(unitNewDto.getName().replaceAll("( +)", " ").trim().toLowerCase());
-            unit.setDescription(unitNewDto.getDescription().replaceAll("( +)", " ").trim());
+            unit.setName(unitNewDto.getName());
+            unit.setDescription(unitNewDto.getDescription());
             notification = NotificationType.UNIT_UPDATED;
-        } else if (!unitNewDto.getName().toLowerCase().equals(unit.getName())) {
-            unit.setName(unitNewDto.getName().replaceAll("( +)", " ").trim().toLowerCase());
+        } else if (!unitNewDto.getName().equals(unit.getName())) {
+            unit.setName(unitNewDto.getName());
             notification = NotificationType.UNIT_NAME_UPDATED;
         } else if (!unitNewDto.getDescription().equals(unit.getDescription())) {
-            unit.setDescription(unitNewDto.getDescription().replaceAll("( +)", " ").trim());
+            unit.setDescription(unitNewDto.getDescription());
             notification = NotificationType.UNIT_DESCRIPTION_UPDATED;
         } else {
             return ResponseEntity.status(400).body("Unit name and description in database is the same that you're trying to send.");

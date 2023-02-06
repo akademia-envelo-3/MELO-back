@@ -94,7 +94,7 @@ public class UnitController {
 
     @PatchMapping("/{unit-id}")
     @Operation(summary = "Edit unit")
-    public ResponseEntity<?> updateUnit(@RequestParam("id") int id, @RequestBody @Valid UnitNewDto unitNewDto) {
+    public ResponseEntity<?> updateUnit(@RequestParam("unit-id") int id, @RequestBody @Valid UnitNewDto unitNewDto) {
         return unitService.updateUnit(id, unitNewDto);
     }
 
