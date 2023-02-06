@@ -93,7 +93,11 @@ public class UnitController {
     }
 
     @PatchMapping("/{unit-id}")
-    @Operation(summary = "Edit unit")
+    @Operation(summary = "Edit unit",responses = {
+            @ApiResponse(responseCode = "200", description = "Unit edited successfully.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitToDisplayOnListDto.class))),
+            @ApiResponse(responseCode = "404", description = "Unit with given ID is not present in database."),
+            @ApiResponse(responseCode = "400", description = "Name and description that you provided are the same as in database.")
+    })
     public ResponseEntity<?> updateUnit(@RequestParam("unit-id") int id, @RequestBody @Valid UnitNewDto unitNewDto) {
         return unitService.updateUnit(id, unitNewDto);
     }

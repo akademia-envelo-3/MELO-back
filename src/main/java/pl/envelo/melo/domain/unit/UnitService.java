@@ -172,6 +172,7 @@ public class UnitService {
         unitNotificationDto.setNotificationType(notificationType);
 
         for (Employee employee : unit.getMembers()) {
+            // System.out.println("Wysyłam powiadomienie "+notificationType+" do Employee id="+employee.getId());
             unitNotificationDto.setEmployeeId(employee.getId());
             notificationService.insertUnitNotification(unitNotificationDto);
         }
