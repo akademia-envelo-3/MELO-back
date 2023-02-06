@@ -30,14 +30,14 @@ public class UnitService {
 
     public ResponseEntity<?> getUnit(int id) {
         Optional<Unit> unit = unitRepository.findById(id);
-        if(unit.isPresent()){
+        if (unit.isPresent()) {
             return ResponseEntity.ok(unitDetailsMapper.convert(unit.get()));
         }
         return ResponseEntity.notFound().build();
     }
 
     public ResponseEntity<?> getUnits() {
-        return ResponseEntity.ok(unitRepository.findAll().stream().map(e->{
+        return ResponseEntity.ok(unitRepository.findAll().stream().map(e -> {
             UnitToDisplayOnListDto dto = unitMapper.convert(e);
             return dto;
         }).collect(Collectors.toList()));
@@ -50,33 +50,35 @@ public class UnitService {
     public ResponseEntity<?> changeOwnershipByAdmin(int unitId, int nextOwnerId) {
         Optional<Unit> unit = unitRepository.findById(unitId);
         Optional<Employee> nextOwner = employeeRepository.findById(nextOwnerId);
-        if(unit.isEmpty() || nextOwner.isEmpty())
+        if (unit.isEmpty() || nextOwner.isEmpty())
             return ResponseEntity.status(404).body("Atleast one of the provided entity ids does not exist in the database");
-        if(unit.get().getOwner().getId() == nextOwnerId)
+        if (unit.get().getOwner().getId() == nextOwnerId)
             return ResponseEntity.ok().build();
         Employee currentOwner = unit.get().getOwner();
         unit.get().setOwner(nextOwner.get());
         employeeService.removeFromOwnedUnits(currentOwner.getId(), unit.get());
         employeeService.addToOwnedUnits(nextOwnerId, unit.get());
-        employeeService.addToJoinedUnits(nextOwnerId,unit.get());
+        employeeService.addToJoinedUnits(nextOwnerId, unit.get());
         addMemberToUnit(nextOwner.get(), unit.get());
         unitRepository.save(unit.get());
-        sendOwnershipNotification(currentOwner.getId(),unit.get().getId(), true);
-        sendOwnershipNotification(nextOwnerId,unit.get().getId(), false);
+        sendOwnershipNotification(currentOwner.getId(), unit.get().getId(), true);
+        sendOwnershipNotification(nextOwnerId, unit.get().getId(), false);
         return ResponseEntity.ok().build();
     }
-    private boolean addMemberToUnit(Employee employee, Unit unit){
-        if(Objects.isNull(employee) || Objects.isNull(unit))
+
+    private boolean addMemberToUnit(Employee employee, Unit unit) {
+        if (Objects.isNull(employee) || Objects.isNull(unit))
             return false;
-        if(Objects.isNull(unit.getMembers()))
+        if (Objects.isNull(unit.getMembers()))
             unit.setMembers(new HashSet<>());
         return unit.getMembers().add(employee);
     }
-    private void sendOwnershipNotification(int employeeId, int unitId, boolean revoke){
+
+    private void sendOwnershipNotification(int employeeId, int unitId, boolean revoke) {
         UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
         unitNotificationDto.setUnitId(unitId);
         unitNotificationDto.setEmployeeId(employeeId);
-        if(revoke)
+        if (revoke)
             unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_REVOKED);
         else
             unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_GRANTED);
@@ -85,15 +87,15 @@ public class UnitService {
 
 
     public ResponseEntity<?> addEmployee(int employeeId, int unitId) {
-        if(employeeRepository.existsById(employeeId)){
+        if (employeeRepository.existsById(employeeId)) {
             Optional<Unit> unit = unitRepository.findById(unitId);
-            if(unit.isPresent()){
-                if(employeeService.addToJoinedUnits(employeeId,unit.get())){
-                    if(unit.get().getMembers()==null){
+            if (unit.isPresent()) {
+                if (employeeService.addToJoinedUnits(employeeId, unit.get())) {
+                    if (unit.get().getMembers() == null) {
                         Set<Employee> members = new HashSet<>();
                         members.add(employeeRepository.findById(employeeId).get());
                         unit.get().setMembers(members);
-                    }else {
+                    } else {
                         unit.get().getMembers().add(employeeRepository.findById(employeeId).get());
                     }
                     unitRepository.save(unit.get());
@@ -111,13 +113,13 @@ public class UnitService {
     }
 
     public ResponseEntity<?> insertNewUnit(UnitNewDto unitNewDto) {
-        int employeeId =1;//TODO Wyciągnąc z tokena
+        int employeeId = 1;//TODO Wyciągnąc z tokena
         Unit unit = unitMapper.toEntity(unitNewDto);
         unit.setName(unit.getName().replaceAll("( +)", " ").trim().toLowerCase());
-        if(employeeRepository.findById(employeeId).isEmpty()){
+        if (employeeRepository.findById(employeeId).isEmpty()) {
             return ResponseEntity.status(404).body("Employee is not in Database");
         }
-        if(unitRepository.findByName(unit.getName().toLowerCase()).isPresent()){
+        if (unitRepository.findByName(unit.getName().toLowerCase()).isPresent()) {
             return ResponseEntity.status(400).body("Unit with this name already exist");
         }
         unit.setDescription(unit.getDescription().replaceAll("( +)", " ").trim());
@@ -127,53 +129,46 @@ public class UnitService {
         members.add(employee);
         unit.setMembers(members);
         unitRepository.save(unit);
-        employeeService.addToOwnedUnits(employee.getId(),unit);
+        employeeService.addToOwnedUnits(employee.getId(), unit);
         employeeRepository.save(employee);
         UnitToDisplayOnListDto unitReturn = unitMapper.convert(unitRepository.findById(unit.getId()).get());
         return ResponseEntity.ok(unitReturn);
     }
 
-    public ResponseEntity<?> updateUnit(UnitToDisplayOnListDto unitToDisplayOnListDto) {
+    public ResponseEntity<?> updateUnit(int unitId, UnitNewDto unitNewDto) {
         Unit unit;
-        if(unitRepository.findById(unitToDisplayOnListDto.getUnitId()).isPresent()) {
-            unit = unitRepository.findById(unitToDisplayOnListDto.getUnitId()).get();
+        if (unitRepository.findById(unitId).isPresent()) {
+            unit = unitRepository.findById(unitId).get();
         } else {
             return ResponseEntity.status(404).body("Unit with given ID is not present in database");
         }
         NotificationType notification = null;
-        if(!unitToDisplayOnListDto.getName().equals(unit.getName()) &&
-                !unitToDisplayOnListDto.getDescription().equals(unit.getDescription())) {
-            unit.setName(unitToDisplayOnListDto.getName());
-            unit.setDescription(unitToDisplayOnListDto.getDescription());
+        if (!unitNewDto.getName().toLowerCase().equals(unit.getName()) &&
+                !unitNewDto.getDescription().equals(unit.getDescription())) {
+            unit.setName(unitNewDto.getName().replaceAll("( +)", " ").trim().toLowerCase());
+            unit.setDescription(unitNewDto.getDescription().replaceAll("( +)", " ").trim());
             notification = NotificationType.UNIT_UPDATED;
-        }
-        if(!unitToDisplayOnListDto.getName().equals(unit.getName())) {
-            unit.setName(unitToDisplayOnListDto.getName());
+        } else if (!unitNewDto.getName().toLowerCase().equals(unit.getName())) {
+            unit.setName(unitNewDto.getName().replaceAll("( +)", " ").trim().toLowerCase());
             notification = NotificationType.UNIT_NAME_UPDATED;
-        }
-        if(!unitToDisplayOnListDto.getDescription().equals(unit.getDescription())) {
-            unit.setDescription(unitToDisplayOnListDto.getDescription());
+        } else if (!unitNewDto.getDescription().equals(unit.getDescription())) {
+            unit.setDescription(unitNewDto.getDescription().replaceAll("( +)", " ").trim());
             notification = NotificationType.UNIT_DESCRIPTION_UPDATED;
+        } else {
+            return ResponseEntity.status(400).body("Unit name and description in database is the same that you're trying to send.");
         }
 
-        if(notification!=null) {
-            sendUnitChangeNotification(unit, notification);
-            return ResponseEntity.ok(unitMapper.convert(unitRepository.save(unit)));
-        }
-        return ResponseEntity.status(400).body("Unit name and description in database is the same that you're trying to send.");
+        sendUnitChangeNotification(unit, notification);
+        return ResponseEntity.ok(unitMapper.convert(unitRepository.save(unit)));
+
     }
 
-    private void sendUnitChangeNotification(Unit unit, NotificationType notificationType){
-        if(unit.getMembers().isEmpty()) {
-            return;
-        }
-
+    private void sendUnitChangeNotification(Unit unit, NotificationType notificationType) {
         UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
         unitNotificationDto.setUnitId(unit.getId());
         unitNotificationDto.setNotificationType(notificationType);
 
-
-        for(Employee employee : unit.getMembers()) {
+        for (Employee employee : unit.getMembers()) {
             unitNotificationDto.setEmployeeId(employee.getId());
             notificationService.insertUnitNotification(unitNotificationDto);
         }
