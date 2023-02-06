@@ -1,14 +1,12 @@
 package pl.envelo.melo.authorization.user;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import pl.envelo.melo.authorization.admin.Admin;
-import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.person.Person;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -19,9 +17,7 @@ import java.util.Objects;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
-    private String password;
+    private UUID id;
     @NotNull
     @OneToOne(optional = false)
     private Person person;
