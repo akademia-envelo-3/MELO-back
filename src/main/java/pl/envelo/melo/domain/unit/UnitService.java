@@ -1,6 +1,5 @@
 package pl.envelo.melo.domain.unit;
 
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -134,7 +133,50 @@ public class UnitService {
         return ResponseEntity.ok(unitReturn);
     }
 
-    public ResponseEntity<Unit> updateUnit(UnitToDisplayOnListDto unitToDisplayOnListDto) {
-        return null;
+    public ResponseEntity<?> updateUnit(UnitToDisplayOnListDto unitToDisplayOnListDto) {
+        Unit unit;
+        if(unitRepository.findById(unitToDisplayOnListDto.getUnitId()).isPresent()) {
+            unit = unitRepository.findById(unitToDisplayOnListDto.getUnitId()).get();
+        } else {
+            return ResponseEntity.status(404).body("Unit with given ID is not present in database");
+        }
+        NotificationType notification = null;
+        if(!unitToDisplayOnListDto.getName().equals(unit.getName()) &&
+                !unitToDisplayOnListDto.getDescription().equals(unit.getDescription())) {
+            unit.setName(unitToDisplayOnListDto.getName());
+            unit.setDescription(unitToDisplayOnListDto.getDescription());
+            notification = NotificationType.UNIT_UPDATED;
+        }
+        if(!unitToDisplayOnListDto.getName().equals(unit.getName())) {
+            unit.setName(unitToDisplayOnListDto.getName());
+            notification = NotificationType.UNIT_NAME_UPDATED;
+        }
+        if(!unitToDisplayOnListDto.getDescription().equals(unit.getDescription())) {
+            unit.setDescription(unitToDisplayOnListDto.getDescription());
+            notification = NotificationType.UNIT_DESCRIPTION_UPDATED;
+        }
+
+        if(notification!=null) {
+            sendUnitChangeNotification(unit, notification);
+            return ResponseEntity.ok(unitMapper.convert(unitRepository.save(unit)));
+        }
+        return ResponseEntity.status(400).body("Unit name and description in database is the same that you're trying to send.");
     }
+
+    private void sendUnitChangeNotification(Unit unit, NotificationType notificationType){
+        if(unit.getMembers().isEmpty()) {
+            return;
+        }
+
+        UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
+        unitNotificationDto.setUnitId(unit.getId());
+        unitNotificationDto.setNotificationType(notificationType);
+
+
+        for(Employee employee : unit.getMembers()) {
+            unitNotificationDto.setEmployeeId(employee.getId());
+            notificationService.insertUnitNotification(unitNotificationDto);
+        }
+    }
+
 }

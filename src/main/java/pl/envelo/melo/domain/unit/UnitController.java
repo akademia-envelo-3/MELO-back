@@ -92,7 +92,9 @@ public class UnitController {
         return unitService.insertNewUnit(unitDto);
     }
 
-    public ResponseEntity<Unit> updateUnit(UnitToDisplayOnListDto unitToDisplayOnListDto) {
+    @PatchMapping("/{unit-id}")
+    @Operation(summary = "Edit unit")
+    public ResponseEntity<?> updateUnit(@RequestBody @Valid UnitToDisplayOnListDto unitToDisplayOnListDto) {
         return unitService.updateUnit(unitToDisplayOnListDto);
     }
 
