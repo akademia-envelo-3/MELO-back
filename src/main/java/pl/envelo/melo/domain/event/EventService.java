@@ -18,12 +18,14 @@ import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.attachment.AttachmentType;
+import pl.envelo.melo.domain.category.Category;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.hashtag.Hashtag;
+import pl.envelo.melo.domain.hashtag.HashtagDto;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
@@ -31,6 +33,7 @@ import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.poll.*;
 import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
+import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitRepository;
 
 import pl.envelo.melo.mappers.*;
@@ -75,7 +78,7 @@ public class EventService {
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
             EventDetailsDto eventDetailsDto = eventDetailsMapper.convert(event);
-            if(eventDetailsDto.getPolls() != null) {
+            if (eventDetailsDto.getPolls() != null) {
                 Set<PollToDisplayOnListDto> pollSet = new HashSet<>();
 
                 event.getPolls().stream()
@@ -85,7 +88,7 @@ public class EventService {
                             return dto;
                         })
                         .forEach(pollSet::add);
-                 eventDetailsDto.setPolls(pollSet);
+                eventDetailsDto.setPolls(pollSet);
             }
 
             return ResponseEntity.ok(eventDetailsDto);
@@ -105,90 +108,97 @@ public class EventService {
 
     @Transactional
     public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto, MultipartFile[] additionalAttachments) {
-        Event event = eventMapper.newEvent(newEventDto);
 
-        //validation
-        if (event.getType().toString().startsWith("LIMITED")) {
-            if (event.getMemberLimit() < 1) {
+        if (newEventDto != null) {
+            Event event = eventMapper.newEvent(newEventDto);
+            Optional<Employee> employee = employeeRepository.findById(newEventDto.getOrganizerId());
+            Optional<Category> category = categoryRepository.findById(newEventDto.getCategoryId());
+            Optional<Unit> unit = unitRepository.findById(newEventDto.getUnitId());
+
+            if (!employee.isPresent()) {
+                return ResponseEntity.status(404).body("Employee with id " + newEventDto.getOrganizerId() + " does not exist");
+            } else if (event.getType().toString().startsWith("LIMITED") && event.getMemberLimit() < 1) {
                 return ResponseEntity.status(400).body("Event with limited eventType must have higher memberLimit than 0.");
+            } else if (!category.isPresent()) {
+                return ResponseEntity.status(404).body("The specified category does not exist, first submit a request to create a category to admin");
             }
-        }
-
-        if (newEventDto.getLocation() != null) {
-            event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
-        }
-
-        if (employeeRepository.existsById(newEventDto.getOrganizerId())) {
-            event.setOrganizer(employeeRepository.findById(newEventDto.getOrganizerId()).get());
-        }
-
-        if (!(newEventDto.getCategoryId() == null)) {
-            if (categoryRepository.findById(newEventDto.getCategoryId()).isPresent()) {
-                event.setCategory(categoryRepository.findById(newEventDto.getCategoryId()).get());
-            } else {
-                event.setCategory(null); // todo set category
-            }
-        }
-
-        if (!Objects.isNull(additionalAttachments)) {
-            /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
-            for (MultipartFile multipartFile : additionalAttachments) {
-                AttachmentType attachmentType = attachmentService.validateAttachmentType(multipartFile);
-                if(Objects.isNull(attachmentType)) {
-                    return ResponseEntity.badRequest()
-                            .body("Illegal format of attachment. WTF ARE U DOING? TURBO ERROR!");
+            else {
+                if (newEventDto.getLocation() != null) {
+                    event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
                 }
-            }
-
-
-            for (MultipartFile multipartFile : additionalAttachments) {
-                Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
-                if (attachmentFromServer == null) {
-                    return ResponseEntity.badRequest()
-                            .body("Illegal format of attachment. WTF ARE U DOING?");
+                if (unit.isPresent()){
+                    event.setUnit(unit.get());
+                } else {
+                    event.setUnit(null);
                 }
-                if(Objects.isNull(event.getAttachments())) {
-                    event.setAttachments(new HashSet<>());
+                Set<Hashtag> hashtags = new HashSet<>();
+                if (newEventDto.getHashtags() != null){
+                    Set<HashtagDto> hashtagsDto = newEventDto.getHashtags();
+                    for (HashtagDto hashtagDto : hashtagsDto) {
+                        System.out.println(hashtagDto.getContent());
+                    //    hashtagService.insertNewHashtag(hashtagDto);
+                        hashtags.add(hashtagMapper.toEntity(hashtagDto));
+                    }
+                    event.setHashtags(hashtags);
+                } else {
+                    event.setHashtags(hashtags);
                 }
-                event.getAttachments().add(attachmentFromServer);
+
+                event.setOrganizer(employee.get());
+                Set<Person> members = new HashSet<>();
+                members.add(employee.get().getUser().getPerson());
+                event.setMembers(members);
+
+                if (!Objects.isNull(additionalAttachments)) {
+                    /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
+                    for (MultipartFile multipartFile : additionalAttachments) {
+                        AttachmentType attachmentType = attachmentService.validateAttachmentType(multipartFile);
+                        if (Objects.isNull(attachmentType)) {
+                            return ResponseEntity.badRequest()
+                                    .body("Illegal format of attachment. WTF ARE U DOING? TURBO ERROR!");
+                        }
+                    }
+
+
+                    for (MultipartFile multipartFile : additionalAttachments) {
+                        Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
+                        if (attachmentFromServer == null) {
+                            return ResponseEntity.badRequest()
+                                    .body("Illegal format of attachment. WTF ARE U DOING?");
+                        }
+                        if (Objects.isNull(event.getAttachments())) {
+                            event.setAttachments(new HashSet<>());
+                        }
+                        event.getAttachments().add(attachmentFromServer);
+                    }
+                }
+                /// Set Main Photo
+                if (!Objects.isNull(mainPhoto)) {
+
+                    Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
+                    if (mainPhotoFromServer == null) {
+                        return ResponseEntity.badRequest()
+                                .body("Illegal format of attachment. WTF ARE U DOING?");
+                    }
+                    if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
+                        return ResponseEntity.badRequest()
+                                .body("Illegal format of event Photo!");
+                    }
+                    event.setMainPhoto(mainPhotoFromServer);
+
+                } else {
+                    event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
+                }
+
+                eventRepository.save(event);
+                employeeService.addToJoinedEvents(employee.get().getId(),event);
+                employeeService.addToOwnedEvents(employee.get().getId(),event);
+
+                return  ResponseEntity.status(201).body("Event created");
             }
-        }
-        /// Set Main Photo
-        if (!Objects.isNull(mainPhoto)) {
 
-            Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
-            if (mainPhotoFromServer == null) {
-                return ResponseEntity.badRequest()
-                        .body("Illegal format of attachment. WTF ARE U DOING?");
-            }
-            if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
-                return ResponseEntity.badRequest()
-                        .body("Illegal format of event Photo!");
-            }
-            event.setMainPhoto(mainPhotoFromServer);
-
-        } else {
-            event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
-        }
-
-
-        if (!(newEventDto.getHashtags() == null)) {
-            for (Hashtag hashtag : event.getHashtags()) {
-                hashtagRepository.save(hashtag);
-                //todo swap with hashtagService method when present
-            }
-        }
-
-        if (!(newEventDto.getUnitId() == null)) {
-            if (unitRepository.findById(newEventDto.getUnitId()).isPresent()) {
-                event.setUnit(unitRepository.findById(newEventDto.getUnitId()).get());
-            } else {
-                event.setUnit(null);
-            }
-        } //todo create UnitMapper and use UnitRepository to find unit in database
-
-
-        return new ResponseEntity(eventRepository.save(event), HttpStatus.CREATED);
+        } else
+            return ResponseEntity.status(404).body("all data is needed to create an event");
     }
 
     public ResponseEntity<EmployeeDto> getEventOrganizer(int id) {
@@ -203,10 +213,10 @@ public class EventService {
             return ResponseEntity.status(404).body("Event with Id " + eventId + " does not exist");
         } else if (!employeeRepository.existsById(employeeId)) {
             return ResponseEntity.status(404).body("Employee with Id " + employeeId + " does not exist");
-        }else if (currentTokenId != eventRepository.findById(eventId).get().getOrganizer().getId()){
+        } else if (currentTokenId != eventRepository.findById(eventId).get().getOrganizer().getId()) {
             return ResponseEntity.status(401).body("You are not the organizer of the event you " +
-                                                        "do not have the authority to make changes");
-        }else if (employeeId == eventRepository.findById(eventId).get().getOrganizer().getId()){
+                    "do not have the authority to make changes");
+        } else if (employeeId == eventRepository.findById(eventId).get().getOrganizer().getId()) {
             return ResponseEntity.status(400).body("You are event organizer already");
         } else {
             employee = employeeRepository.getReferenceById(employeeId);
