@@ -175,9 +175,9 @@ public class EventController {
     }
 
     @PostMapping("/{id}/external")
-    public ResponseEntity<?> addGuestToEvent(@PathVariable("id") int eventId, AddGuestToEventDto addGuestToEventDto) {
-        //TODO create person
-        return null;
+    public ResponseEntity<?> addGuestToEvent(@Valid @RequestBody AddGuestToEventDto addGuestToEventDto, @PathVariable("id") int eventId ) {
+        return eventService.sendConfirmationMail(eventId,addGuestToEventDto);
+//        return null;
     }
 
 

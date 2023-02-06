@@ -42,35 +42,40 @@ import java.util.*;
 @Service
 @AllArgsConstructor
 public class EventService {
-
+    //Services
     private final HashtagService hashtagService;
     private final NotificationService notificationService;
-    private EventDetailsMapper eventDetailsMapper;
+    private final EmployeeService employeeService;
+    private final LocationService locationService;
+    private final PollService pollService;
+    private AttachmentService attachmentService;
+    private MailService mailService;
+    //Repositories
     private final EventRepository eventRepository;
     private final EmployeeRepository employeeRepository;
-    private final EmployeeService employeeService;
     private final HashtagRepository hashtagRepository;
     private final CategoryRepository categoryRepository;
     private final AttachmentRepository attachmentRepository;
     private final LocationRepository locationRepository;
-    private final LocationService locationService;
-    private final PollService pollService;
     private final UnitRepository unitRepository;
     private final PollRepository pollRepository;
     private final PollAnswerRepository pollAnswerRepository;
     private final CommentRepository commentRepository;
     private final PersonRepository personRepository;
+    private final MailTokenRepository mailTokenRepository;
+    //Mappers
+    private EventDetailsMapper eventDetailsMapper;
     private final PollToDisplayOnListDtoMapper pollToDisplayOnListDtoMapper;
     private EventMapper eventMapper;
     private HashtagMapper hashtagMapper;
     private EventEditMapper eventEditMapper;
     private AttachmentMapper attachmentMapper;
-    private AttachmentService attachmentService;
-    private EventUpdater eventUpdater;
-    private EventValidator eventValidator;
     private EmployeeMapper employeeMapper;
+    private AddGuestToEventMapper addGuestToEventMapper;
+    //Other
+    private EventValidator eventValidator;
     private EditEventNotificationHandler eventNotificationHandler;
-
+    private EventUpdater eventUpdater;
     public ResponseEntity<?> getEvent(int id, Integer employeeId) {
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
@@ -322,4 +327,28 @@ public class EventService {
     public ResponseEntity<Person> removePersonFromEvent(int PersonId, int EventId) { //void?
         return null;
     }
-}
+
+    public ResponseEntity<?> sendConfirmationMail(int eventId, AddGuestToEventDto addGuestToEventDto){
+        Person person = addGuestToEventMapper.toEntity(addGuestToEventDto);
+        if(personRepository.findByEmail(person.getEmail()).isPresent()){
+            Person per =personRepository.findByEmail(person.getEmail()).get();
+            if(per.getFirstName().equals(person.getFirstName())&&per.getLastName().equals(person.getLastName())){
+                person=per;
+            }
+        }else{
+            personRepository.save(person);
+        }
+        if(!eventRepository.findById(eventId).isPresent()){
+            return ResponseEntity.status(404).body("Event does not exist");
+        }
+        Event event = eventRepository.findById(eventId).get();
+        MailToken mailToken = new MailToken();
+        mailToken.setEvent(event);
+        mailToken.setPerson(person);
+        mailTokenRepository.save(mailToken);
+        String msg = "link+token=" + mailToken.getToken().toString();
+        if(mailService.sendMail(person.getEmail(),event.getName(),msg)){
+            return ResponseEntity.ok("Email was send");
+        }
+        return ResponseEntity.status(404).body("No");
+    }
