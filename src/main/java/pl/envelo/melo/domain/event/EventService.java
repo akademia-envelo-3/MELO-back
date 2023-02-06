@@ -283,7 +283,7 @@ public class EventService {
             }
             return ResponseEntity.status(404).body("Event does not exist");
         } else {
-            return ResponseEntity.status(404).body("Employee is not in Database");
+            return ResponseEntity.status(404).body("Employee is not in database");
         }
     }
 
