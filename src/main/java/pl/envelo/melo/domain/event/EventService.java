@@ -342,6 +342,11 @@ public class EventService {
             return ResponseEntity.status(404).body("Event does not exist");
         }
         Event event = eventRepository.findById(eventId).get();
+        if (event.getType().toString().startsWith("LIMITED")) {
+            if (event.getMembers().size() >= event.getMemberLimit().intValue()) {
+                return ResponseEntity.status(400).body("Event is full");
+            }
+        }
         MailToken mailToken = new MailToken();
         mailToken.setEvent(event);
         mailToken.setPerson(person);

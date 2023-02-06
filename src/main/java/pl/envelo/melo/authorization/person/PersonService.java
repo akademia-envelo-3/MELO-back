@@ -38,6 +38,11 @@ public class PersonService {
                 }
                 return ResponseEntity.ok("Person removed successful");
             }
+            if (event.getType().toString().startsWith("LIMITED")) {
+                if (event.getMembers().size() >= event.getMemberLimit().intValue()) {
+                    return ResponseEntity.status(400).body("Event is full");
+                }
+            }
             event.getMembers().add(person);
             eventRepository.save(event);
             return ResponseEntity.ok(addGuestToEventMapper.toDto(person));
