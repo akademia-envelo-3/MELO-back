@@ -161,16 +161,16 @@ public class EventController {
                             "id + pollAnswer when Employee haven't voted yet.<br />" +
                             "result + pollAnswer when Employee already voted.", content = {
                             @Content(mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = PollDto.class)))
+                                    schema = @Schema(implementation = PollDto.class))
                     }),
                     @ApiResponse(responseCode = "400", description = "Poll and Event with given ID are not correlated to each other."),
                     @ApiResponse(responseCode = "404", description = "Event ID and/or Poll ID does not exist in database")
             })
-    public ResponseEntity<?> getPollFromEvent(@PathVariable("event-id") int id, @PathVariable("poll-id") int pollId) {
-        return pollService.getPoll(id, pollId);
+    public ResponseEntity<?> getPollFromEvent(@PathVariable("event-id") int eventId, @PathVariable("poll-id") int pollId, @RequestParam("employee-id") int employeeId) {
+        return pollService.getPoll(eventId, pollId, employeeId);
     }
 
-    @PostMapping("/{event-id}/polls/vote")
+    @PostMapping("/{event-id}/polls/vote/{emp-id}")
     @Operation(summary = "Vote in poll",
             responses = {
                     @ApiResponse(responseCode = "201", description = "Added new vote to poll", content = {
@@ -183,8 +183,8 @@ public class EventController {
                             "This Poll is not multichoice, you can only put 1 PollAnswer.<br />"),
                     @ApiResponse(responseCode = "404", description = "Employee was not found in database.")
             })
-    public ResponseEntity<?> addPollAnswer(@PathVariable("event-id") int eventId, @RequestBody PollSendResultDto pollSendResultDto) {
-        return pollService.insertNewPollAnswer(eventId, pollSendResultDto); // returns PollResultDto
+    public ResponseEntity<?> addPollAnswer(@PathVariable("event-id") int eventId, @PathVariable("emp-id") int empId, @RequestBody PollSendResultDto pollSendResultDto) {
+        return pollService.insertNewPollAnswer(eventId, empId, pollSendResultDto); // returns PollResultDto
     }
 
     //    @PostMapping()

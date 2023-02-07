@@ -81,15 +81,14 @@ public class PollService {
         return ResponseEntity.status(201).body(newPollDto);
     }
 
-    public ResponseEntity<?> getPoll(int eventId, int pollId) {
-        int employeeId = 1;
-
+    public ResponseEntity<?> getPoll(int eventId, int pollId, int empId) {
+        int employeeId = empId;
         if (checkPollValidation(eventId, pollId).getStatusCode().is2xxSuccessful()) {
             Event event = eventRepository.findById(eventId).get();
             Poll poll = pollRepository.findById(pollId).get();
             if (event.getPolls().contains(poll) && poll.getPollAnswers().stream().flatMap(pollAnswer -> pollAnswer.getEmployee()
                     .stream()).anyMatch(e -> e.getId() == employeeId)) {
-                return ResponseEntity.status(300).body(pollResultMapper.toDto(poll));
+                return ResponseEntity.status(200).body(pollResultMapper.toDto(poll));
             }
             return ResponseEntity.ok(pollMapper.toDto(poll));
         } else return checkPollValidation(eventId, pollId);
@@ -107,17 +106,17 @@ public class PollService {
         return ResponseEntity.status(200).build();
     }
 
-    public ResponseEntity<Set<PollToDisplayOnListDto>> listAllPollsForEvent(int eventId) {
+    public ResponseEntity<Set<Poll>> listAllPollsForEvent(int eventId) {
         if (eventRepository.findById(eventId).isPresent()) {
             Event event = eventRepository.findById(eventId).get();
             Set<Poll> pollSet = event.getPolls();
-            return ResponseEntity.ok(pollToDisplayOnListDtoMapper.convert(pollSet));
+            return ResponseEntity.ok(pollSet);
         }
         return ResponseEntity.notFound().build();
     }
 
-    public ResponseEntity<?> insertNewPollAnswer(int eventId, PollSendResultDto pollSendResultDto) {
-        int employeeId = 1; //employee token
+    public ResponseEntity<?> insertNewPollAnswer(int eventId, int empId, PollSendResultDto pollSendResultDto) {
+        int employeeId = empId; //employee token
         Poll poll;
 
         if (checkPollValidation(eventId, pollSendResultDto.getPollId()).getStatusCode().is2xxSuccessful()) {
