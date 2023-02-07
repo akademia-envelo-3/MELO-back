@@ -56,6 +56,7 @@ public class UnitService {
     public ResponseEntity<?> quitUnit(int employeeIdToken, int unitId) {
         Optional<Unit> unit = unitRepository.findById(unitId);
         Optional<Employee> employee = employeeRepository.findById(employeeIdToken);
+        
         if (unit.isPresent()){
             if (unit.get().getOwner().getId() == employeeIdToken){
                 return ResponseEntity.status(400).body("Unit organizer cant be remove from his unit");
