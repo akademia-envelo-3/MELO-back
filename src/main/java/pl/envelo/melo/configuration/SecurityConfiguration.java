@@ -19,8 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 @EnableMethodSecurity
-@Configuration
+@Configuration("securityConfiguration")
 public class SecurityConfiguration {
+    @Value("${melo.admin-role}")
+    private String adminRole;
+    @Value("${melo.employee-role}")
+    private String employeeRole;
     @Value("${melo.client-id}")
     private String appResource;
     @Value("${server.servlet.context-path}")
@@ -41,7 +45,6 @@ public class SecurityConfiguration {
                 .oauth2ResourceServer().jwt();
         http.csrf().disable();
         http.headers().frameOptions().disable();
-
         return http.build();
     }
 
@@ -61,5 +64,12 @@ public class SecurityConfiguration {
             return authorities;
         });
         return jwtAuthenticationConverter;
+    }
+    public String getAdminRole() {
+        return adminRole;
+    }
+
+    public String getEmployeeRole() {
+        return employeeRole;
     }
 }

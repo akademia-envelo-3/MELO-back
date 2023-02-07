@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,22 +24,25 @@ import java.util.List;
 @RequestMapping("category")
 public class CategoryController {
     private final CategoryService categoryService;
+
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole())")
     @PostMapping("")
     @Operation(summary = "Add new category",
-    responses = {
-            @ApiResponse(responseCode = "200", description = "If given category name already existed, but its status was hidden=TRUE - changes it to FALSE and returns new status", content =
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "If given category name already existed, but its status was hidden=TRUE - changes it to FALSE and returns new status", content =
                     @Content(mediaType = "application/json", schema = @Schema(defaultValue = "true/false"))
-            ),
-            @ApiResponse(responseCode = "201", description = "Adds new category if given name is not present in database", content = {
-                    @Content(mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = Category.class)))
-            }),
-            @ApiResponse(responseCode = "404", description = "If category already exists")
-    })
+                    ),
+                    @ApiResponse(responseCode = "201", description = "Adds new category if given name is not present in database", content = {
+                            @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = Category.class)))
+                    }),
+                    @ApiResponse(responseCode = "404", description = "If category already exists")
+            })
     public ResponseEntity<?> addNewCategory(@RequestBody @Valid CategoryDto categoryDto) {
         return categoryService.insertNewCategory(categoryDto);
     }
 
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping("{id}")
     @Operation(summary = "Change category name with given ID",
             responses = {
@@ -52,6 +56,7 @@ public class CategoryController {
         return categoryService.editCategoryName(id, categoryDto);
     }
 
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping("{id}")
     @Operation(summary = "Get category with given ID",
             responses = {
@@ -64,7 +69,7 @@ public class CategoryController {
         return categoryService.getCategory(id);
     }
 
-
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole())")
     @PatchMapping("{id}")
     @Operation(summary = "Change \"hidden\" status for category with given ID",
             responses = {
@@ -77,17 +82,17 @@ public class CategoryController {
         return categoryService.changeStatusCategory(id);
     }
 
-//    @PatchMapping("{id}")
+    //    @PatchMapping("{id}")
 //    public ResponseEntity<?> activateCategory(@PathVariable("id") int id) {
 //        return categoryService.changeStatusCategory(id);
 //    }
-
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping("")
     @Operation(summary = "Show list of all categories", description = "tokenId: <br />0 - admin, <br />1 - employee",
-    responses = {
-            @ApiResponse(responseCode = "200", description = "Shows list of all categories", content =
-            @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
-    })
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Shows list of all categories", content =
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
+            })
     public ResponseEntity<List<Category>> showAllCategory(@RequestParam("tokenId") int tokenId) {
         return categoryService.listAllCategory(tokenId);
     }

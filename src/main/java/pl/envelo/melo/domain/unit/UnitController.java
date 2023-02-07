@@ -27,6 +27,8 @@ import java.util.List;
 public class UnitController {
     private final UnitService unitService;
     private final AuthorizationService authorizationService;
+
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}")
     @Operation(summary = "Retrieve list of units",
             responses = {
@@ -43,6 +45,7 @@ public class UnitController {
         return unitService.getUnit(id);
     }
 
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping
     @Operation(summary = "Retrieve list of units",
             responses = {
@@ -62,21 +65,23 @@ public class UnitController {
         return unitService.getUnitEmployees();
     }
 
+    @PreAuthorize("hasAuthority( @securityConfiguration.getEmployeeRole())")
     @Transactional
     @PatchMapping("/{unitId}/owner{oldOwnerId}/")
     @Operation(summary = "Change unit owner from current to another employee")
     public ResponseEntity<?> changeOwnership(@PathVariable("unitId") int unitId,
-                                                @PathVariable("oldOwnerId") int currentTokenId,
-                                                @RequestBody int newEmployeeId) {
-        return unitService.changeOwnership(newEmployeeId,currentTokenId,unitId);
+                                             @PathVariable("oldOwnerId") int currentTokenId,
+                                             @RequestBody int newEmployeeId) {
+        return unitService.changeOwnership(newEmployeeId, currentTokenId, unitId);
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
     @PatchMapping("{id}/owner")
     public ResponseEntity<?> changeOwnershipByAdmin(@PathVariable("id") int unitId, @RequestParam("new-owner") int newOwner) {
         return unitService.changeOwnershipByAdmin(unitId, newOwner);
     }
-     
-     
+
+    @PreAuthorize("hasAuthority( @securityConfiguration.getEmployeeRole())")
     @GetMapping("/{unitId}/join/{id}")
     @Operation(summary = "Add employee to unit members",
             responses = {
@@ -88,6 +93,7 @@ public class UnitController {
         return unitService.addEmployee(employeeId, unitId);
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @Transactional
     @PatchMapping("/{unitId}/members/{employeeIdToken}")
     @Operation(summary = "Remove employee from unit members",
@@ -99,14 +105,14 @@ public class UnitController {
         return unitService.quitUnit(employeeIdToken, unitId);
     }
 
-
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping("")
     @Operation(summary = "Add new unit",
-    responses = {
-            @ApiResponse(responseCode = "200", description = "New unit is created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitToDisplayOnListDto.class))),
-            @ApiResponse(responseCode = "404"),
-            @ApiResponse(responseCode = "400", description = "Wrong data")
-    })
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "New unit is created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitToDisplayOnListDto.class))),
+                    @ApiResponse(responseCode = "404"),
+                    @ApiResponse(responseCode = "400", description = "Wrong data")
+            })
     public ResponseEntity<?> addNewUnit(@RequestBody @Valid UnitNewDto unitDto) {
         return unitService.insertNewUnit(unitDto);
     }

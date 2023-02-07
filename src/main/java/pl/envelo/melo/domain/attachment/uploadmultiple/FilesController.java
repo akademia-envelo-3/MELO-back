@@ -9,6 +9,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +31,7 @@ public class FilesController {
 
     @Autowired
     FilesStorageService storageService;
-
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping("/upload")
     public ResponseEntity<ResponseMessage> uploadFiles(@RequestParam("files") MultipartFile[] files) {
         String message = "";
@@ -49,7 +50,7 @@ public class FilesController {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(message));
         }
     }
-
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("/files")
     public ResponseEntity<List<FileInfo>> getListFiles() {
         List<FileInfo> fileInfos = storageService.loadAll().map(path -> {
@@ -62,6 +63,7 @@ public class FilesController {
 
         return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
     }
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("/files/{filename:.+}")
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
         Resource file = storageService.load(filename);
