@@ -10,6 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface PollRepository extends JpaRepository<Poll, Integer> {
-//    public Optional<Event> findByIdAndFetchPollsEagerly(int eventId);
+
 
 }
