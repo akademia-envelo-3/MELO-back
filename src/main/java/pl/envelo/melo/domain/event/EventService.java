@@ -1,7 +1,13 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.*;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -11,27 +17,32 @@ import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
-import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
+import pl.envelo.melo.authorization.mailtoken.MailService;
+import pl.envelo.melo.authorization.mailtoken.MailToken;
+import pl.envelo.melo.authorization.mailtoken.MailTokenRepository;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
+import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
+import pl.envelo.melo.domain.event.dto.EventDetailsDto;
+import pl.envelo.melo.domain.hashtag.Hashtag;
+import pl.envelo.melo.domain.hashtag.HashtagService;
+import pl.envelo.melo.domain.location.LocationRepository;
+import pl.envelo.melo.domain.location.LocationService;
+import pl.envelo.melo.domain.notification.NotificationService;
+import pl.envelo.melo.domain.poll.PollAnswerRepository;
+import pl.envelo.melo.domain.poll.PollRepository;
+import pl.envelo.melo.domain.poll.PollService;
+import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
+import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.attachment.AttachmentType;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
-import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
-import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
-import pl.envelo.melo.domain.hashtag.HashtagService;
-import pl.envelo.melo.domain.location.LocationRepository;
-import pl.envelo.melo.domain.location.LocationService;
-import pl.envelo.melo.domain.notification.NotificationService;
-import pl.envelo.melo.domain.poll.*;
-import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
-import pl.envelo.melo.domain.unit.UnitRepository;
 
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
@@ -320,40 +331,73 @@ public class EventService {
         }
     }
 
-    public ResponseEntity<Person> addPersonToEvent(int PersonId, int EventId) { //void?
-        return null;
-    }
+    public ResponseEntity<?> toggleParticipation(UUID token){
+        Optional<MailToken> mailToken = mailTokenRepository.findById(token);
+        if(!mailToken.isPresent()){
+            return ResponseEntity.status(404).body("Token is not in database");
+        }
+        Event event = mailToken.get().getEvent();
+        if(eventRepository.findById(event.getId()).isPresent()){
+            Person person = mailToken.get().getPerson();
+            String email = person.getEmail();
+            if(event.getMembers().contains(person)){
+                event.getMembers().remove(person);
+                mailTokenRepository.delete(mailToken.get());
+                if(event.getMembers().contains(person)){
+                    return ResponseEntity.status(400).body("Person is still on list");
+                }
+                if(mailTokenRepository.existsById(mailToken.get().getToken())){
+                    return ResponseEntity.status(400).body("MailToken still exist");
+                }
+                return ResponseEntity.ok("Person removed successful");
+            }
+            if (event.getType().toString().startsWith("LIMITED")) {
+                if (event.getMembers().size() >= event.getMemberLimit().intValue()) {
+                    return ResponseEntity.status(400).body("Event is full");
+                }
+            }
+            event.getMembers().add(person);
+            eventRepository.save(event);
+            mailTokenRepository.delete(mailToken.get());
+            return sendResignationTokenMail(event,person);
+        }
 
-    public ResponseEntity<Person> removePersonFromEvent(int PersonId, int EventId) { //void?
-        return null;
+        return ResponseEntity.status(404).body("Event does not exist");
     }
 
     public ResponseEntity<?> sendConfirmationMail(int eventId, AddGuestToEventDto addGuestToEventDto){
         Person person = addGuestToEventMapper.toEntity(addGuestToEventDto);
-        if(personRepository.findByEmail(person.getEmail()).isPresent()){
-            Person per =personRepository.findByEmail(person.getEmail()).get();
-            if(per.getFirstName().equals(person.getFirstName())&&per.getLastName().equals(person.getLastName())){
-                person=per;
-            }
-        }else{
-            personRepository.save(person);
-        }
         if(!eventRepository.findById(eventId).isPresent()){
             return ResponseEntity.status(404).body("Event does not exist");
         }
         Event event = eventRepository.findById(eventId).get();
+
+        Optional<List<MailToken>> mailTokenList = mailTokenRepository.findAllByEvent(event);
+        if(mailTokenList.isPresent()){
+            Person finalPerson = person;
+            if(mailTokenList.get().stream().anyMatch(mailToken -> Objects.equals(mailToken.getPerson().getEmail(), finalPerson.getEmail()))){
+                return ResponseEntity.status(400).body("Token was already created");
+            }
+        }
+        if(!event.getType().toString().contains("PUBLIC")){
+            return ResponseEntity.status(400).body("Event is not public, guest can't be added.");
+        }
         if (event.getType().toString().startsWith("LIMITED")) {
             if (event.getMembers().size() >= event.getMemberLimit().intValue()) {
                 return ResponseEntity.status(400).body("Event is full");
             }
         }
-        MailToken mailToken = new MailToken();
-        mailToken.setEvent(event);
-        mailToken.setPerson(person);
-        mailTokenRepository.save(mailToken);
-        String msg = "link+token=" + mailToken.getToken().toString();
-        if(mailService.sendMail(person.getEmail(),event.getName(),msg)){
+        personRepository.save(person);
+        if(mailService.sendMailWithToken(person,event, true)){
             return ResponseEntity.ok("Email was send");
         }
-        return ResponseEntity.status(404).body("No");
+        return ResponseEntity.status(404).body("Email was not send");
     }
+    public ResponseEntity<?> sendResignationTokenMail(Event event, Person person){
+        if(mailService.sendMailWithToken(person,event, false )){
+            return ResponseEntity.ok("Email was send");
+        }
+        return ResponseEntity.status(404).body("Email was not send");
+    }
+
+}

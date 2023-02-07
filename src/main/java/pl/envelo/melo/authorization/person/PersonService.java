@@ -14,41 +14,4 @@ import pl.envelo.melo.mappers.AddGuestToEventMapper;
 public class PersonService {
 
     private final PersonRepository personRepository;
-    private final EventRepository eventRepository;
-    private final MailTokenRepository mailTokenRepository;
-    private final AddGuestToEventMapper addGuestToEventMapper;
-
-
-    public ResponseEntity<?> insertOrDeleteGuest(int eventId, MailToken mailToken){
-        if(!mailTokenRepository.existsById(mailToken.getToken())){
-            return ResponseEntity.status(404).body("Token is not in database");
-        }
-        if(eventRepository.findById(eventId).isPresent()){
-            Event event = eventRepository.findById(eventId).get();
-            Person person = mailToken.getPerson();
-            String email = person.getEmail();
-            if(event.getMembers().contains(person)||event.getMembers().stream().anyMatch(person1 -> person1.getEmail().equals(email))){
-                event.getMembers().remove(person);
-                mailTokenRepository.delete(mailToken);
-                if(event.getMembers().contains(person)||event.getMembers().stream().anyMatch(person1 -> person1.getEmail().equals(email))){
-                    return ResponseEntity.status(400).body("Person is still on list");
-                }
-                if(mailTokenRepository.existsById(mailToken.getToken())){
-                    return ResponseEntity.status(400).body("MailToken still exist");
-                }
-                return ResponseEntity.ok("Person removed successful");
-            }
-            if (event.getType().toString().startsWith("LIMITED")) {
-                if (event.getMembers().size() >= event.getMemberLimit().intValue()) {
-                    return ResponseEntity.status(400).body("Event is full");
-                }
-            }
-            event.getMembers().add(person);
-            eventRepository.save(event);
-            return ResponseEntity.ok(addGuestToEventMapper.toDto(person));
-        }
-
-        return ResponseEntity.status(404).body("Event does not exist");
-
-    }
 }

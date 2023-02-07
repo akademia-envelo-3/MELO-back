@@ -3,41 +3,22 @@ package pl.envelo.melo.domain.event;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.transaction.Transactional;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeService;
-import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonService;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
-import pl.envelo.melo.domain.attachment.AttachmentService;
-import pl.envelo.melo.domain.category.Category;
-import pl.envelo.melo.domain.category.CategoryService;
-import pl.envelo.melo.domain.comment.Comment;
-import pl.envelo.melo.domain.comment.CommentService;
-import pl.envelo.melo.domain.comment.dto.CommentDto;
-import pl.envelo.melo.domain.event.dto.EventDetailsDto;
-import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
-import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.poll.PollAnswer;
@@ -45,9 +26,16 @@ import pl.envelo.melo.domain.poll.PollService;
 import pl.envelo.melo.domain.poll.dto.NewPollDto;
 import pl.envelo.melo.domain.poll.dto.PollAnswerDto;
 import pl.envelo.melo.domain.poll.dto.PollDto;
+import pl.envelo.melo.domain.attachment.AttachmentService;
+import pl.envelo.melo.domain.category.CategoryService;
+import pl.envelo.melo.domain.comment.CommentService;
+import pl.envelo.melo.domain.comment.dto.CommentDto;
+import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
+import pl.envelo.melo.domain.event.dto.NewEventDto;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
@@ -109,12 +97,12 @@ public class EventController {
     //@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(encoding = @Encoding(name = "eventData", contentType = "application/json")))
     //W razie problemów na froncie, pokombinować z enkodowaniem. v2.0 Swaggera, nie wspiera, więc poniższe rozwiązanie wymaga w Swaggerze, uploadu JSON w formie
     //pliku .json. W PostMan można wysłać zarówno plik jak i json "tekstowy" z parametrem Content-Type application/json.
-    public ResponseEntity<?> addEvent(@RequestPart(value = "eventData") @Parameter(schema =@Schema(type = "string", format = "binary")) NewEventDto newEventDto,
-                                       @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
-                                       @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments) {
+    public ResponseEntity<?> addEvent(@RequestPart(value = "eventData") @Parameter(schema = @Schema(type = "string", format = "binary")) NewEventDto newEventDto,
+                                      @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
+                                      @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments) {
 
-        if(!Objects.isNull(additionalAttachments)) {
-            if(additionalAttachments.length > 10) {
+        if (!Objects.isNull(additionalAttachments)) {
+            if (additionalAttachments.length > 10) {
                 return ResponseEntity.badRequest()
                         .body("You can upload max 10 attachments to Your Event");
             }
@@ -123,13 +111,13 @@ public class EventController {
 
     }
 
-    @PostMapping(value = "/{id}/comments" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{id}/comments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> addCommentToEvent(@PathVariable int id,
-                                                     @RequestPart(value = "commentData" , required = false)
-                                                     @Parameter(schema =@Schema(type = "string", format = "binary")) CommentDto commentDto,
-                                                     @RequestPart(value = "attachments", required = false) MultipartFile[] multipartFiles) {
-        if(!Objects.isNull(multipartFiles)) {
-            if(multipartFiles.length > 10) {
+                                               @RequestPart(value = "commentData", required = false)
+                                               @Parameter(schema = @Schema(type = "string", format = "binary")) CommentDto commentDto,
+                                               @RequestPart(value = "attachments", required = false) MultipartFile[] multipartFiles) {
+        if (!Objects.isNull(multipartFiles)) {
+            if (multipartFiles.length > 10) {
                 return ResponseEntity.badRequest()
                         .body("You can upload max 10 attachments to each Comment");
             }
@@ -174,29 +162,49 @@ public class EventController {
         return null;
     }
 
+
     @PostMapping("/{id}/external")
-    public ResponseEntity<?> addGuestToEvent(@Valid @RequestBody AddGuestToEventDto addGuestToEventDto, @PathVariable("id") int eventId ) {
-        return eventService.sendConfirmationMail(eventId,addGuestToEventDto);
-//        return null;
+    @Operation(summary = "Send mail to guest with link to confirm participation on event ",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Mail was send"),
+                    @ApiResponse(responseCode = "400", description = "Various validation with description: <br />" +
+                            "Token was already created.<br />" +
+                            "Event is not public, guest can't be added.<br />" +
+                            "Event is full. <br />"+"Char amount of one pollAnswer must be between 1 and 255.<br />"),
+                    @ApiResponse(responseCode = "404", description = "Event does not exist.<br/>"+
+                            "Email was not send")
+            })
+    public ResponseEntity<?> addGuestToEvent(@Valid @RequestBody AddGuestToEventDto addGuestToEventDto, @PathVariable("id") int eventId) {
+        return eventService.sendConfirmationMail(eventId, addGuestToEventDto);
     }
 
 
-
-    //    @PostMapping()
-    public ResponseEntity<?> removeGuestFromEvent(int personId, int eventId) {
-        return null;
+    @GetMapping("/participation")
+    @Operation(summary = "Adding or removing guest from event.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Guest was added"),
+                    @ApiResponse(responseCode = "400", description = "Various validation with description: <br />" +
+                            "Person is still on list.<br />" +
+                            "MailToken still exist.<br />" +
+                            "Event is full. <br />"),
+                    @ApiResponse(responseCode = "404", description = "Event does not exist.<br/>"+
+                            "Email was not send.<br/>"+
+                            "Token is not in database")
+            })
+    public ResponseEntity<?> toggleParticipation(@Valid @RequestParam("token") UUID token) {
+        return eventService.toggleParticipation(token);
     }
 
     @GetMapping("/{id}/join/{employeeId}")
     @Operation(summary = "Add employee to event members",
-    responses = {
-            @ApiResponse(responseCode = "200", description = "Employee added to event", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Event.class))),
-            @ApiResponse(responseCode = "400", description = "Event is full or employee already on list", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Event.class))),
-            @ApiResponse(responseCode = "404", description = "Event or employee do not exist")
-    })
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Employee added to event", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Event.class))),
+                    @ApiResponse(responseCode = "400", description = "Event is full or employee already on list", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Event.class))),
+                    @ApiResponse(responseCode = "404", description = "Event or employee do not exist")
+            })
     public ResponseEntity<?> joinEvent(@PathVariable("id") int id, @PathVariable("employeeId") int employeeId) {
 //        int employeeId = 2;//TODO take Id from Token
-            return eventService.addEmployeeToEvent(employeeId,id);
+        return eventService.addEmployeeToEvent(employeeId, id);
 
     }
 
