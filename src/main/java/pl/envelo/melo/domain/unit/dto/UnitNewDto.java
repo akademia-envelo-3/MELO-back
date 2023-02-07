@@ -5,14 +5,15 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.envelo.melo.domain.unit.Unit;
+import pl.envelo.melo.domain.unit.UnitConst;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class UnitNewDto {
-    @NotNull
-    @Size(min = 2, max = 255, message = "wrong unit name size (must be between 2 and 255)")
+    @Size(min = UnitConst.MIN_NAME_CHAR_AMOUNT, max = UnitConst.MAX_NAME_CHAR_AMOUNT, message = "wrong unit name size (must be between 2 and 255)")
     private String name;
-    @Size(max = 4000, message = "too long description (max 4000 characters)")
+    @Size(max = UnitConst.MAX_DESCRIPTION_CHAR_AMOUNT, message = "too long description (max 4000 characters)")
     private String description;
 }

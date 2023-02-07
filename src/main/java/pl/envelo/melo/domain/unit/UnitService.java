@@ -9,6 +9,7 @@ import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
+import pl.envelo.melo.domain.poll.PollConst;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.mappers.UnitDetailsMapper;
@@ -57,11 +58,11 @@ public class UnitService {
             return ResponseEntity.status(404).body("Unit does not exist");
         } else if (!oldOwner.isPresent()) {
             return ResponseEntity.status(404).body("Your id " + currentTokentId + " doesn't exist in data base");
-        } else if(!newOwner.isPresent()){
+        } else if (!newOwner.isPresent()) {
             return ResponseEntity.status(404).body("Chosen employee with id " + newEmployeeId + " doesn't exist in data base");
-        } else if (unit.get().getOwner().getId() != oldOwner.get().getId()){
-                return ResponseEntity.status(400).body("You are not the organizer of the event you " +
-                                                        "do not have the authority to make changes");
+        } else if (unit.get().getOwner().getId() != oldOwner.get().getId()) {
+            return ResponseEntity.status(400).body("You are not the organizer of the event you " +
+                    "do not have the authority to make changes");
         } else {
             employeeService.removeFromOwnedUnits(currentTokentId, unit.get());
             unit.get().setOwner(newOwner.get());
@@ -70,8 +71,8 @@ public class UnitService {
             if (!unit.get().getMembers().contains(newOwner.get())) {
                 unit.get().getMembers().add(newOwner.get());
             }
-            sendOwnershipNotification(oldOwner.get().getId(),unit.get().getId(), true);
-            sendOwnershipNotification(newEmployeeId,unit.get().getId(), false);
+            sendOwnershipNotification(oldOwner.get().getId(), unit.get().getId(), true);
+            sendOwnershipNotification(newEmployeeId, unit.get().getId(), false);
             return ResponseEntity.status(200).body("The owner of the unit with id "
                     + unitId + " has been correctly changed to "
                     + newOwner.get().getUser().getPerson().getFirstName() + " "
@@ -144,25 +145,22 @@ public class UnitService {
     public ResponseEntity<?> quitUnit(int employeeIdToken, int unitId) {
         Optional<Unit> unit = unitRepository.findById(unitId);
         Optional<Employee> employee = employeeRepository.findById(employeeIdToken);
-        
-        if (unit.isPresent()){
-            if (unit.get().getOwner().getId() == employeeIdToken){
+
+        if (unit.isPresent()) {
+            if (unit.get().getOwner().getId() == employeeIdToken) {
                 return ResponseEntity.status(400).body("Unit organizer cant be remove from his unit");
             }
-            if (employee.isPresent() && unit.get().getMembers().contains(employee.get())){
+            if (employee.isPresent() && unit.get().getMembers().contains(employee.get())) {
                 unit.get().getMembers().remove(employee.get());
                 employeeService.removeFromJoinedUnits(employeeIdToken, unit.get());
-                return ResponseEntity.ok("Employee whit Id "+ employeeIdToken +
+                return ResponseEntity.ok("Employee whit Id " + employeeIdToken +
                         " was correctly removed from the members of the unit");
-            }
-            else if (employee.isEmpty()){
-                return ResponseEntity.status(404).body("Employee whit Id "+ employeeIdToken + " does not exist");
-            }
-            else
+            } else if (employee.isEmpty()) {
+                return ResponseEntity.status(404).body("Employee whit Id " + employeeIdToken + " does not exist");
+            } else
                 return ResponseEntity.status(404).body("Employee is not a member of the unit");
-        }
-        else
-            return ResponseEntity.status(404).body("Unit whit Id "+ unitId + " does not exist");
+        } else
+            return ResponseEntity.status(404).body("Unit whit Id " + unitId + " does not exist");
     }
 
     public ResponseEntity<?> insertNewUnit(UnitNewDto unitNewDto) {
@@ -182,8 +180,8 @@ public class UnitService {
         members.add(employee);
         unit.setMembers(members);
         unitRepository.save(unit);
-        employeeService.addToOwnedUnits(employee.getId(),unit);
-        employeeService.addToJoinedUnits(employee.getId(),unit);
+        employeeService.addToOwnedUnits(employee.getId(), unit);
+        employeeService.addToJoinedUnits(employee.getId(), unit);
         employeeRepository.save(employee);
         UnitToDisplayOnListDto unitReturn = unitMapper.convert(unitRepository.findById(unit.getId()).get());
         return ResponseEntity.ok(unitReturn);
@@ -196,29 +194,36 @@ public class UnitService {
         } else {
             return ResponseEntity.status(404).body("Unit with given ID is not present in database");
         }
-        NotificationType notification = null;
-        unitNewDto.setName(unitNewDto.getName().replaceAll("( +)", " ").trim().toLowerCase());
-        unitNewDto.setDescription(unitNewDto.getDescription().replaceAll("( +)", " ").trim());
 
-        if (!unitNewDto.getName().equals(unit.getName()) &&
-                !unitNewDto.getDescription().equals(unit.getDescription())) {
-            unit.setName(unitNewDto.getName());
-            unit.setDescription(unitNewDto.getDescription());
-            notification = NotificationType.UNIT_UPDATED;
-        } else if (!unitNewDto.getName().equals(unit.getName())) {
-            unit.setName(unitNewDto.getName());
-            notification = NotificationType.UNIT_NAME_UPDATED;
-        } else if (!unitNewDto.getDescription().equals(unit.getDescription())) {
-            unit.setDescription(unitNewDto.getDescription());
-            notification = NotificationType.UNIT_DESCRIPTION_UPDATED;
-        } else {
-            return ResponseEntity.status(400).body("Unit name and description in database is the same that you're trying to send.");
+        NotificationType notification = null;
+        if (!Objects.isNull(unitNewDto.getName())) {
+            unitNewDto.setName(unitNewDto.getName().replaceAll("( +)", " ").trim().toLowerCase());
+            if (!unitNewDto.getName().equals(unit.getName())) {
+                unit.setName(unitNewDto.getName());
+                notification = NotificationType.UNIT_NAME_UPDATED;
+            } else {
+                return ResponseEntity.status(400).body("Unit name in database is the same you're trying to send.");
+            }
+        }
+        if (!Objects.isNull(unitNewDto.getDescription())) {
+            unitNewDto.setDescription(unitNewDto.getDescription().replaceAll("( +)", " ").trim());
+            if (!unitNewDto.getDescription().equals(unit.getDescription())) {
+                unit.setDescription(unitNewDto.getDescription());
+                if (!Objects.isNull(notification)) {
+                    notification = NotificationType.UNIT_UPDATED;
+                } else {
+                    notification = NotificationType.UNIT_DESCRIPTION_UPDATED;
+                }
+            } else {
+                return ResponseEntity.status(400).body("Unit description in database is the same you're trying to send.");
+            }
         }
 
         sendUnitChangeNotification(unit, notification);
         return ResponseEntity.ok(unitMapper.convert(unitRepository.save(unit)));
 
     }
+
 
     private void sendUnitChangeNotification(Unit unit, NotificationType notificationType) {
         UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
