@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,16 +23,23 @@ import java.util.Map;
 public class SecurityConfiguration {
     @Value("${melo.client-id}")
     private String appResource;
+    @Value("${server.servlet.context-path}")
+    private String contextPath;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests()
-                .anyRequest().permitAll().and()
+                .requestMatchers(  "/swagger-ui/**").permitAll()
+                .requestMatchers( "/api-docs/**").permitAll()
+                .requestMatchers( new AntPathRequestMatcher("/h2-console/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher( "/participation/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/external/**")).permitAll()
+                .and()
+                .authorizeHttpRequests().anyRequest().fullyAuthenticated()
+                .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and().oauth2ResourceServer().jwt();
+                .and()
+                .oauth2ResourceServer().jwt();
         http.csrf().disable();
-        //http.csrf().ignoringRequestMatchers("/api/h2-console/**");
-        //http.csrf().ignoringRequestMatchers("/api/swagger-ui/**");
-        //http.csrf().ignoringRequestMatchers("/api/api-docs/**");
         http.headers().frameOptions().disable();
 
         return http.build();
