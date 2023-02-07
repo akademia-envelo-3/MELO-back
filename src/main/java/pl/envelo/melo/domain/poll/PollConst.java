@@ -17,5 +17,4 @@ public class PollConst {
     public static final String POLL_NOT_FOUND = "Poll with id %d was not found";
     public static final String POLL_OPTIONS_NOT_UNIQUE = "Poll options cannot be the same";
 
-
 }

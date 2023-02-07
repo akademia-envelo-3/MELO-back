@@ -140,8 +140,28 @@ public class UnitService {
         return ResponseEntity.status(404).body("Employee is not in database");
     }
 
-    public ResponseEntity<?> quitUnit(Employee employee, int unitId) {
-        return null;
+    public ResponseEntity<?> quitUnit(int employeeIdToken, int unitId) {
+        Optional<Unit> unit = unitRepository.findById(unitId);
+        Optional<Employee> employee = employeeRepository.findById(employeeIdToken);
+        
+        if (unit.isPresent()){
+            if (unit.get().getOwner().getId() == employeeIdToken){
+                return ResponseEntity.status(400).body("Unit organizer cant be remove from his unit");
+            }
+            if (employee.isPresent() && unit.get().getMembers().contains(employee.get())){
+                unit.get().getMembers().remove(employee.get());
+                employeeService.removeFromJoinedUnits(employeeIdToken, unit.get());
+                return ResponseEntity.ok("Employee whit Id "+ employeeIdToken +
+                        " was correctly removed from the members of the unit");
+            }
+            else if (employee.isEmpty()){
+                return ResponseEntity.status(404).body("Employee whit Id "+ employeeIdToken + " does not exist");
+            }
+            else
+                return ResponseEntity.status(404).body("Employee is not a member of the unit");
+        }
+        else
+            return ResponseEntity.status(404).body("Unit whit Id "+ unitId + " does not exist");
     }
 
     public ResponseEntity<?> insertNewUnit(UnitNewDto unitNewDto) {
@@ -162,6 +182,7 @@ public class UnitService {
         unit.setMembers(members);
         unitRepository.save(unit);
         employeeService.addToOwnedUnits(employee.getId(),unit);
+        employeeService.addToJoinedUnits(employee.getId(),unit);
         employeeRepository.save(employee);
         UnitToDisplayOnListDto unitReturn = unitMapper.convert(unitRepository.findById(unit.getId()).get());
         return ResponseEntity.ok(unitReturn);

@@ -85,9 +85,15 @@ public class UnitController {
         return unitService.addEmployee(employeeId, unitId);
     }
 
-
-    public ResponseEntity<?> quitUnit(Employee employee, int unitId) {
-        return unitService.quitUnit(employee, unitId);
+    @Transactional
+    @PatchMapping("/{unitId}/members/{employeeIdToken}")
+    @Operation(summary = "Remove employee from unit members",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Employee was removed"),
+                    @ApiResponse(responseCode = "404"),
+            })
+    public ResponseEntity<?> quitUnit(@PathVariable("employeeIdToken") int employeeIdToken, @PathVariable("unitId") int unitId) {
+        return unitService.quitUnit(employeeIdToken, unitId);
     }
 
 
