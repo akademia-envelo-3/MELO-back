@@ -48,6 +48,39 @@ public class UnitService {
         return null;
     }
 
+
+    public ResponseEntity<?> changeOwnership(int newEmployeeId, int currentTokentId, int unitId) {
+        Optional<Unit> unit = unitRepository.findById(unitId);
+        Optional<Employee> oldOwner = employeeRepository.findById(currentTokentId);
+        Optional<Employee> newOwner = employeeRepository.findById(newEmployeeId);
+
+        if (!unit.isPresent()) {
+            return ResponseEntity.status(404).body("Unit does not exist");
+        } else if (!oldOwner.isPresent()) {
+            return ResponseEntity.status(404).body("Your id " + currentTokentId + " doesn't exist in data base");
+        } else if(!newOwner.isPresent()){
+            return ResponseEntity.status(404).body("Chosen employee with id " + newEmployeeId + " doesn't exist in data base");
+        } else if (unit.get().getOwner().getId() != oldOwner.get().getId()){
+                return ResponseEntity.status(400).body("You are not the organizer of the event you " +
+                                                        "do not have the authority to make changes");
+        } else {
+            employeeService.removeFromOwnedUnits(currentTokentId, unit.get());
+            unit.get().setOwner(newOwner.get());
+            employeeService.addToJoinedUnits(newEmployeeId, unit.get());
+            employeeService.addToOwnedUnits(newEmployeeId, unit.get());
+            if (!unit.get().getMembers().contains(newOwner.get())) {
+                unit.get().getMembers().add(newOwner.get());
+            }
+            sendOwnershipNotification(oldOwner.get().getId(),unit.get().getId(), true);
+            sendOwnershipNotification(newEmployeeId,unit.get().getId(), false);
+            return ResponseEntity.status(200).body("The owner of the unit with id "
+                    + unitId + " has been correctly changed to "
+                    + newOwner.get().getUser().getPerson().getFirstName() + " "
+                    + newOwner.get().getUser().getPerson().getLastName());
+        }
+    }
+
+
     public ResponseEntity<?> changeOwnershipByAdmin(int unitId, int nextOwnerId) {
         Optional<Unit> unit = unitRepository.findById(unitId);
         Optional<Employee> nextOwner = employeeRepository.findById(nextOwnerId);

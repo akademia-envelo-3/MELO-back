@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.unit;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -58,12 +59,21 @@ public class UnitController {
         return unitService.getUnitEmployees();
     }
 
+    @Transactional
+    @PatchMapping("/{unitId}/owner{oldOwnerId}/")
+    @Operation(summary = "Change unit owner from current to another employee")
+    public ResponseEntity<?> changeOwnership(@PathVariable("unitId") int unitId,
+                                                @PathVariable("oldOwnerId") int currentTokenId,
+                                                @RequestBody int newEmployeeId) {
+        return unitService.changeOwnership(newEmployeeId,currentTokenId,unitId);
+    }
+
     @PatchMapping("{id}/owner")
     public ResponseEntity<?> changeOwnershipByAdmin(@PathVariable("id") int unitId, @RequestParam("new-owner") int newOwner) {
         return unitService.changeOwnershipByAdmin(unitId, newOwner);
     }
-
-
+     
+     
     @GetMapping("/{unitId}/join/{id}")
     @Operation(summary = "Add employee to unit members",
             responses = {
