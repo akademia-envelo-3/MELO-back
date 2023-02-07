@@ -9,12 +9,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 
+import java.security.Principal;
 import java.util.List;
 
 @RequestMapping("/v1/units")
@@ -22,9 +25,8 @@ import java.util.List;
 @Tag(name = "Unit Controller")
 @AllArgsConstructor
 public class UnitController {
-
     private final UnitService unitService;
-
+    private final AuthorizationService authorizationService;
     @GetMapping("/{id}")
     @Operation(summary = "Retrieve list of units",
             responses = {
@@ -36,7 +38,8 @@ public class UnitController {
                     ),
                     @ApiResponse(responseCode = "404", description = "Error when unit with given ID is missing")
             })
-    public ResponseEntity<?> getUnit(@PathVariable("id") int id) {
+    public ResponseEntity<?> getUnit(@PathVariable("id") int id, Principal principal) {
+        System.out.println(authorizationService.inflateUser(principal));
         return unitService.getUnit(id);
     }
 

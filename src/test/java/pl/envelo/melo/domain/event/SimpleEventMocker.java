@@ -61,7 +61,6 @@ public class SimpleEventMocker {
 
         User user = new User();
         user.setPerson(personRepository.save(person));
-        user.setPassword(name);
 
         Employee employee = new Employee();
         employee.setUser(userRepository.save(user));
