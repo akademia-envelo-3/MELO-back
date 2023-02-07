@@ -47,6 +47,39 @@ public class UnitService {
         return null;
     }
 
+
+    public ResponseEntity<?> changeOwnership(int newEmployeeId, int currentTokentId, int unitId) {
+        Optional<Unit> unit = unitRepository.findById(unitId);
+        Optional<Employee> oldOwner = employeeRepository.findById(currentTokentId);
+        Optional<Employee> newOwner = employeeRepository.findById(newEmployeeId);
+
+        if (!unit.isPresent()) {
+            return ResponseEntity.status(404).body("Unit does not exist");
+        } else if (!oldOwner.isPresent()) {
+            return ResponseEntity.status(404).body("Your id " + currentTokentId + " doesn't exist in data base");
+        } else if(!newOwner.isPresent()){
+            return ResponseEntity.status(404).body("Chosen employee with id " + newEmployeeId + " doesn't exist in data base");
+        } else if (unit.get().getOwner().getId() != oldOwner.get().getId()){
+                return ResponseEntity.status(400).body("You are not the organizer of the event you " +
+                                                        "do not have the authority to make changes");
+        } else {
+            employeeService.removeFromOwnedUnits(currentTokentId, unit.get());
+            unit.get().setOwner(newOwner.get());
+            employeeService.addToJoinedUnits(newEmployeeId, unit.get());
+            employeeService.addToOwnedUnits(newEmployeeId, unit.get());
+            if (!unit.get().getMembers().contains(newOwner.get())) {
+                unit.get().getMembers().add(newOwner.get());
+            }
+            sendOwnershipNotification(oldOwner.get().getId(),unit.get().getId(), true);
+            sendOwnershipNotification(newEmployeeId,unit.get().getId(), false);
+            return ResponseEntity.status(200).body("The owner of the unit with id "
+                    + unitId + " has been correctly changed to "
+                    + newOwner.get().getUser().getPerson().getFirstName() + " "
+                    + newOwner.get().getUser().getPerson().getLastName());
+        }
+    }
+
+
     public ResponseEntity<?> changeOwnershipByAdmin(int unitId, int nextOwnerId) {
         Optional<Unit> unit = unitRepository.findById(unitId);
         Optional<Employee> nextOwner = employeeRepository.findById(nextOwnerId);
@@ -108,8 +141,28 @@ public class UnitService {
         return ResponseEntity.status(404).body("Employee is not in database");
     }
 
-    public ResponseEntity<?> quitUnit(Employee employee, int unitId) {
-        return null;
+    public ResponseEntity<?> quitUnit(int employeeIdToken, int unitId) {
+        Optional<Unit> unit = unitRepository.findById(unitId);
+        Optional<Employee> employee = employeeRepository.findById(employeeIdToken);
+        
+        if (unit.isPresent()){
+            if (unit.get().getOwner().getId() == employeeIdToken){
+                return ResponseEntity.status(400).body("Unit organizer cant be remove from his unit");
+            }
+            if (employee.isPresent() && unit.get().getMembers().contains(employee.get())){
+                unit.get().getMembers().remove(employee.get());
+                employeeService.removeFromJoinedUnits(employeeIdToken, unit.get());
+                return ResponseEntity.ok("Employee whit Id "+ employeeIdToken +
+                        " was correctly removed from the members of the unit");
+            }
+            else if (employee.isEmpty()){
+                return ResponseEntity.status(404).body("Employee whit Id "+ employeeIdToken + " does not exist");
+            }
+            else
+                return ResponseEntity.status(404).body("Employee is not a member of the unit");
+        }
+        else
+            return ResponseEntity.status(404).body("Unit whit Id "+ unitId + " does not exist");
     }
 
     public ResponseEntity<?> insertNewUnit(UnitNewDto unitNewDto) {
@@ -129,7 +182,8 @@ public class UnitService {
         members.add(employee);
         unit.setMembers(members);
         unitRepository.save(unit);
-        employeeService.addToOwnedUnits(employee.getId(), unit);
+        employeeService.addToOwnedUnits(employee.getId(),unit);
+        employeeService.addToJoinedUnits(employee.getId(),unit);
         employeeRepository.save(employee);
         UnitToDisplayOnListDto unitReturn = unitMapper.convert(unitRepository.findById(unit.getId()).get());
         return ResponseEntity.ok(unitReturn);

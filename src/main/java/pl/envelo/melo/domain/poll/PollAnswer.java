@@ -27,4 +27,5 @@ public class PollAnswer {
     private Poll poll;
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Employee> employee;
+
 }
