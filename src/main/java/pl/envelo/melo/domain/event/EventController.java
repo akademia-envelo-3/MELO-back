@@ -72,7 +72,7 @@ public class EventController {
 
 
     @PostMapping("/{id}")
-    public ResponseEntity<?> editEvent(@RequestParam("id") int id, @RequestBody NewEventDto newEventDto) {
+    public ResponseEntity<?> editEvent(@PathVariable("id") int id, @RequestBody NewEventDto newEventDto) {
         return eventService.updateEvent(id, newEventDto);
     }
 
