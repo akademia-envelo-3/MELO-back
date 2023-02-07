@@ -94,6 +94,7 @@ public class UnitService {
         unit.setMembers(members);
         unitRepository.save(unit);
         employeeService.addToOwnedUnits(employee.getId(),unit);
+        employeeService.addToJoinedUnits(employee.getId(),unit);
         employeeRepository.save(employee);
         UnitToDisplayOnListDto unitReturn = unitMapper.convert(unitRepository.findById(unit.getId()).get());
         return ResponseEntity.ok(unitReturn);
