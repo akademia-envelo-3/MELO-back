@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.unit;
 
+import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,8 +60,38 @@ class UnitServiceTest extends EventContextTest{
     void getUnitEmployees() {
     }
 
-    //@Test
+    @Test
     void changeOwnership() {
+        String ownerName = "owner";
+        String unitName = "pros";
+        String unitDesc = "unit for pros";
+        Employee owner = simpleEventMocker.mockEmployee(ownerName);
+        Employee employee = simpleEventMocker.mockEmployee("Test");
+        Unit unit = new Unit();
+        unit.setName(unitName);
+        unit.setDescription(unitDesc);
+        unit.setOwner(owner);
+        Set<Employee> members = new HashSet<>();
+        members.add(owner);
+        unit.setMembers(members);
+
+        Set<Unit> joinedUnits = new HashSet<>();
+        joinedUnits.add(unit);
+        owner.setJoinedUnits(joinedUnits);
+
+        unitRepository.save(unit);
+
+        ResponseEntity<?> response = unitService.changeOwnership(employee.getId(),owner.getId(),unit.getId());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(2,unit.getMembers().size());
+        assertEquals(unit.getOwner().getId(),employee.getId());
+        assertTrue(employee.getJoinedUnits().contains(unit));
+        assertTrue(owner.getJoinedUnits().contains(unit));
+
+        response = unitService.changeOwnership(owner.getId(),owner.getId(),unit.getId());
+        assertEquals(HttpStatus.BAD_REQUEST,response.getStatusCode());
+
+
     }
 
     @Test
@@ -93,8 +124,56 @@ class UnitServiceTest extends EventContextTest{
 
     }
 
-    //@Test
+    @Test
     void quitUnit() {
+        String ownerName = "owner";
+        String unitName = "pros";
+        String unitDesc = "unit for pros";
+        String nextUnitName = "noobs";
+        String nextUnitDesc = "unit for noobs";
+        Employee owner = simpleEventMocker.mockEmployee(ownerName);
+        Employee test = simpleEventMocker.mockEmployee("test");
+        Set<Employee> members = new HashSet<>();
+        members.add(owner);
+        members.add(test);
+
+        Unit unit = new Unit();
+        unit.setName(unitName);
+        unit.setDescription(unitDesc);
+        unit.setOwner(owner);
+        unit.setMembers(members);
+        unitRepository.save(unit);
+
+        Set<Unit> joinedUnits = new HashSet<>();
+        joinedUnits.add(unit);
+
+        owner.setJoinedUnits(joinedUnits);
+        test.setJoinedUnits(joinedUnits);
+
+        assertEquals(unit.getMembers().size(),2);
+        assertTrue(unit.getMembers().contains(owner));
+        assertTrue(unit.getMembers().contains(test));
+        assertFalse(owner.getJoinedUnits().isEmpty());
+        assertFalse(test.getJoinedUnits().isEmpty());
+        assertEquals(unit.getOwner(),owner);
+
+        ResponseEntity<?> responseEntity = unitService.quitUnit(test.getId(),unit.getId());
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+        assertEquals(unit.getMembers().size(),1);
+        assertFalse(unit.getMembers().contains(test));
+        assertTrue(unit.getMembers().contains(owner));
+        assertTrue(test.getJoinedUnits().isEmpty());
+
+        responseEntity = unitService.quitUnit(owner.getId(),unit.getId());
+
+        assertEquals(HttpStatus.BAD_REQUEST,responseEntity.getStatusCode());
+
+        assertEquals(unit.getMembers().size(),1);
+        assertTrue(unit.getMembers().contains(owner));
+        assertEquals(unit.getOwner(),owner);
+
     }
 
     @Test
@@ -127,6 +206,7 @@ class UnitServiceTest extends EventContextTest{
     //@Test
     void updateUnit() {
     }
+
     @Test
     void changeOwnershipByAdmin() {
         Employee firstOwner = simpleEventMocker.mockEmployee("test");

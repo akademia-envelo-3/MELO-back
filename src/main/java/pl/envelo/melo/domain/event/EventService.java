@@ -91,19 +91,17 @@ public class EventService {
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
             EventDetailsDto eventDetailsDto = eventDetailsMapper.convert(event);
-            if(eventDetailsDto.getPolls() != null) {
+            if (eventDetailsDto.getPolls() != null) {
                 Set<PollToDisplayOnListDto> pollSet = new HashSet<>();
-
-                event.getPolls().stream()
+                pollService.listAllPollsForEvent(id).getBody().stream()
                         .map(poll -> {
                             PollToDisplayOnListDto dto = pollToDisplayOnListDtoMapper.convert(poll);
                             dto.setFilled(pollService.employeeOnLists(poll, employeeId));
                             return dto;
                         })
                         .forEach(pollSet::add);
-                 eventDetailsDto.setPolls(pollSet);
+                eventDetailsDto.setPolls(pollSet);
             }
-
             return ResponseEntity.ok(eventDetailsDto);
         } else {
             return ResponseEntity.status(404).body("Event with this ID does not exist");
@@ -150,7 +148,7 @@ public class EventService {
             /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
             for (MultipartFile multipartFile : additionalAttachments) {
                 AttachmentType attachmentType = attachmentService.validateAttachmentType(multipartFile);
-                if(Objects.isNull(attachmentType)) {
+                if (Objects.isNull(attachmentType)) {
                     return ResponseEntity.badRequest()
                             .body("Illegal format of attachment. WTF ARE U DOING? TURBO ERROR!");
                 }
@@ -163,7 +161,7 @@ public class EventService {
                     return ResponseEntity.badRequest()
                             .body("Illegal format of attachment. WTF ARE U DOING?");
                 }
-                if(Objects.isNull(event.getAttachments())) {
+                if (Objects.isNull(event.getAttachments())) {
                     event.setAttachments(new HashSet<>());
                 }
                 event.getAttachments().add(attachmentFromServer);
@@ -219,10 +217,10 @@ public class EventService {
             return ResponseEntity.status(404).body("Event with Id " + eventId + " does not exist");
         } else if (!employeeRepository.existsById(employeeId)) {
             return ResponseEntity.status(404).body("Employee with Id " + employeeId + " does not exist");
-        }else if (currentTokenId != eventRepository.findById(eventId).get().getOrganizer().getId()){
+        } else if (currentTokenId != eventRepository.findById(eventId).get().getOrganizer().getId()) {
             return ResponseEntity.status(401).body("You are not the organizer of the event you " +
-                                                        "do not have the authority to make changes");
-        }else if (employeeId == eventRepository.findById(eventId).get().getOrganizer().getId()){
+                    "do not have the authority to make changes");
+        } else if (employeeId == eventRepository.findById(eventId).get().getOrganizer().getId()) {
             return ResponseEntity.status(400).body("You are event organizer already");
         } else {
             employee = employeeRepository.getReferenceById(employeeId);
