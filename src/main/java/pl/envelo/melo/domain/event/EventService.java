@@ -1,10 +1,6 @@
 package pl.envelo.melo.domain.event;
 
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.Multipart;
-import jakarta.mail.Transport;
-import jakarta.mail.internet.*;
+
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -377,7 +373,7 @@ public class EventService {
                 return ResponseEntity.status(400).body("Token was already created");
             }
         }
-        if(!event.getType().toString().contains("PUBLIC")){
+        if(!event.getType().toString().contains("EXTERNAL")){
             return ResponseEntity.status(400).body("Event is not public, guest can't be added.");
         }
         if (event.getType().toString().startsWith("LIMITED")) {
