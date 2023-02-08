@@ -374,7 +374,7 @@ public class EventService {
             }
         }
         if(!event.getType().toString().contains("EXTERNAL")){
-            return ResponseEntity.status(400).body("Event is not public, guest can't be added.");
+            return ResponseEntity.status(400).body("Event is not external, guest can't be added.");
         }
         if (event.getType().toString().startsWith("LIMITED")) {
             if (event.getMembers().size() >= event.getMemberLimit().intValue()) {
@@ -383,15 +383,15 @@ public class EventService {
         }
         personRepository.save(person);
         if(mailService.sendMailWithToken(person,event, true)){
-            return ResponseEntity.ok("Email was send");
+            return ResponseEntity.ok("Email was sent");
         }
-        return ResponseEntity.status(404).body("Email was not send");
+        return ResponseEntity.status(404).body("Email was not sent");
     }
     public ResponseEntity<?> sendResignationTokenMail(Event event, Person person){
         if(mailService.sendMailWithToken(person,event, false )){
-            return ResponseEntity.ok("Email was send");
+            return ResponseEntity.ok("Email was sent");
         }
-        return ResponseEntity.status(404).body("Email was not send");
+        return ResponseEntity.status(404).body("Email was not sent");
     }
 
 }
