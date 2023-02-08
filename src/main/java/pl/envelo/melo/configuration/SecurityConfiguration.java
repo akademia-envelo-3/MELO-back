@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,12 +25,16 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests()
-                .anyRequest().permitAll()
-                .and().csrf().disable()
+
+                .anyRequest().permitAll().and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().oauth2ResourceServer().jwt();
+        http.csrf().disable();
+        //http.csrf().ignoringRequestMatchers("/api/h2-console/**");
+        //http.csrf().ignoringRequestMatchers("/api/swagger-ui/**");
+        //http.csrf().ignoringRequestMatchers("/api/api-docs/**");
         http.headers().frameOptions().disable();
-        http.cors().disable();
+
         return http.build();
     }
 

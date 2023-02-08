@@ -78,8 +78,7 @@ public class EventService {
             EventDetailsDto eventDetailsDto = eventDetailsMapper.convert(event);
             if (eventDetailsDto.getPolls() != null) {
                 Set<PollToDisplayOnListDto> pollSet = new HashSet<>();
-
-                event.getPolls().stream()
+                pollService.listAllPollsForEvent(id).getBody().stream()
                         .map(poll -> {
                             PollToDisplayOnListDto dto = pollToDisplayOnListDtoMapper.convert(poll);
                             dto.setFilled(pollService.employeeOnLists(poll, employeeId));
@@ -88,7 +87,6 @@ public class EventService {
                         .forEach(pollSet::add);
                 eventDetailsDto.setPolls(pollSet);
             }
-
             return ResponseEntity.ok(eventDetailsDto);
         } else {
             return ResponseEntity.status(404).body("Event with this ID does not exist");

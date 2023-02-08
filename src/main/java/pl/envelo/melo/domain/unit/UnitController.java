@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.unit;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -8,12 +9,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 
+import java.security.Principal;
 import java.util.List;
 
 @RequestMapping("/v1/units")
@@ -21,9 +25,8 @@ import java.util.List;
 @Tag(name = "Unit Controller")
 @AllArgsConstructor
 public class UnitController {
-
     private final UnitService unitService;
-
+    private final AuthorizationService authorizationService;
     @GetMapping("/{id}")
     @Operation(summary = "Retrieve list of units",
             responses = {
@@ -35,7 +38,8 @@ public class UnitController {
                     ),
                     @ApiResponse(responseCode = "404", description = "Error when unit with given ID is missing")
             })
-    public ResponseEntity<?> getUnit(@PathVariable("id") int id) {
+    public ResponseEntity<?> getUnit(@PathVariable("id") int id, Principal principal) {
+        System.out.println(authorizationService.inflateUser(principal));
         return unitService.getUnit(id);
     }
 
@@ -58,12 +62,21 @@ public class UnitController {
         return unitService.getUnitEmployees();
     }
 
+    @Transactional
+    @PatchMapping("/{unitId}/owner{oldOwnerId}/")
+    @Operation(summary = "Change unit owner from current to another employee")
+    public ResponseEntity<?> changeOwnership(@PathVariable("unitId") int unitId,
+                                                @PathVariable("oldOwnerId") int currentTokenId,
+                                                @RequestBody int newEmployeeId) {
+        return unitService.changeOwnership(newEmployeeId,currentTokenId,unitId);
+    }
+
     @PatchMapping("{id}/owner")
     public ResponseEntity<?> changeOwnershipByAdmin(@PathVariable("id") int unitId, @RequestParam("new-owner") int newOwner) {
         return unitService.changeOwnershipByAdmin(unitId, newOwner);
     }
-
-
+     
+     
     @GetMapping("/{unitId}/join/{id}")
     @Operation(summary = "Add employee to unit members",
             responses = {
@@ -75,9 +88,15 @@ public class UnitController {
         return unitService.addEmployee(employeeId, unitId);
     }
 
-
-    public ResponseEntity<?> quitUnit(Employee employee, int unitId) {
-        return unitService.quitUnit(employee, unitId);
+    @Transactional
+    @PatchMapping("/{unitId}/members/{employeeIdToken}")
+    @Operation(summary = "Remove employee from unit members",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Employee was removed"),
+                    @ApiResponse(responseCode = "404"),
+            })
+    public ResponseEntity<?> quitUnit(@PathVariable("employeeIdToken") int employeeIdToken, @PathVariable("unitId") int unitId) {
+        return unitService.quitUnit(employeeIdToken, unitId);
     }
 
 

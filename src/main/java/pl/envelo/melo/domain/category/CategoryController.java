@@ -23,8 +23,6 @@ import java.util.List;
 @RequestMapping("category")
 public class CategoryController {
     private final CategoryService categoryService;
-
-
     @PostMapping("")
     @Operation(summary = "Add new category",
     responses = {
