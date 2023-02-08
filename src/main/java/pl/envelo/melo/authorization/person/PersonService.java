@@ -1,21 +1,17 @@
 package pl.envelo.melo.authorization.person;
 
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
+import pl.envelo.melo.authorization.mailtoken.MailToken;
+import pl.envelo.melo.authorization.mailtoken.MailTokenRepository;
+import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
+import pl.envelo.melo.mappers.AddGuestToEventMapper;
 
 @Service
+@AllArgsConstructor
 public class PersonService {
 
-    private PersonRepository personRepository;
-    private EventRepository eventRepository;
-
-    public PersonService(PersonRepository personRepository, EventRepository eventRepository){
-        this.personRepository = personRepository;
-        this.eventRepository = eventRepository;
-    }
-
-    public AddGuestToEventDto insertGuest(AddGuestToEventDto addGuestToEventDto){
-        return null;
-    }
+    private final PersonRepository personRepository;
 }
