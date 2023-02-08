@@ -2,7 +2,6 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -11,7 +10,6 @@ import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
-import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
@@ -121,27 +119,14 @@ public class EventService {
                 return ResponseEntity.status(400).body("Event with limited eventType must have higher memberLimit than 0.");
             } else if (!category.isPresent()) {
                 return ResponseEntity.status(404).body("The specified category does not exist, first submit a request to create a category to admin");
-            }
-            else {
+            } else {
                 if (newEventDto.getLocation() != null) {
                     event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
                 }
-                if (unit.isPresent()){
+                if (unit.isPresent()) {
                     event.setUnit(unit.get());
                 } else {
                     event.setUnit(null);
-                }
-                Set<Hashtag> hashtags = new HashSet<>();
-                if (newEventDto.getHashtags() != null){
-                    Set<HashtagDto> hashtagsDto = newEventDto.getHashtags();
-                    for (HashtagDto hashtagDto : hashtagsDto) {
-                        System.out.println(hashtagDto.getContent());
-                    //    hashtagService.insertNewHashtag(hashtagDto);
-                        hashtags.add(hashtagMapper.toEntity(hashtagDto));
-                    }
-                    event.setHashtags(hashtags);
-                } else {
-                    event.setHashtags(hashtags);
                 }
 
                 event.setOrganizer(employee.get());
@@ -158,7 +143,6 @@ public class EventService {
                                     .body("Illegal format of attachment. WTF ARE U DOING? TURBO ERROR!");
                         }
                     }
-
 
                     for (MultipartFile multipartFile : additionalAttachments) {
                         Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
@@ -190,11 +174,22 @@ public class EventService {
                     event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
                 }
 
-                eventRepository.save(event);
-                employeeService.addToJoinedEvents(employee.get().getId(),event);
-                employeeService.addToOwnedEvents(employee.get().getId(),event);
+                Set<Hashtag> hashtags = new HashSet<>();
 
-                return  ResponseEntity.status(201).body("Event created");
+                Set<HashtagDto> hashtagDtos = findHashtagFromEvent(newEventDto.getName(), newEventDto.getDescription());
+                for (HashtagDto hashtagDto : hashtagDtos) {
+                    System.out.println("Set hashtagów z metody find: " + hashtagDto.getContent());
+                    Optional<Hashtag> hashtag = hashtagRepository.findByContent(hashtagDto.getContent());
+                       hashtags.add(hashtagService.insertNewHashtag(hashtagDto));
+                       System.out.println(" tylko insert: " + hashtagDto.getContent());
+                }
+
+                event.setHashtags(hashtags);
+                eventRepository.save(event);
+                employeeService.addToJoinedEvents(employee.get().getId(), event);
+                employeeService.addToOwnedEvents(employee.get().getId(), event);
+
+                return ResponseEntity.status(201).body("Event created");
             }
 
         } else
@@ -331,5 +326,19 @@ public class EventService {
 
     public ResponseEntity<Person> removePersonFromEvent(int PersonId, int EventId) { //void?
         return null;
+    }
+
+    private Set<HashtagDto> findHashtagFromEvent(String eventName, String eventDescription) {
+        Set<HashtagDto> hashtagSet = new HashSet<>();
+        String text = eventName + "    " + eventDescription;
+        String[] textArray = text.split(" ");
+        System.out.println(text);
+        for (String s : textArray) {
+            if (s.startsWith("#")) {
+                s = s.replaceFirst("#","").toLowerCase();
+                hashtagSet.add(new HashtagDto(s));
+            }
+        }
+        return hashtagSet;
     }
 }

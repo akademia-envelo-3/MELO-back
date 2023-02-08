@@ -16,16 +16,19 @@ public class HashtagService {
     private final HashtagRepository hashtagRepository;
     private final HashtagMapper hashtagMapper;
 
-    public ResponseEntity<HashtagDto> insertNewHashtag(HashtagDto hashtagDto) {
+    public Hashtag insertNewHashtag(HashtagDto hashtagDto) {
         Hashtag hashtag = hashtagMapper.toEntity(hashtagDto);
-        if(hashtagRepository.existsByContent(hashtag.getContent())){
-            hashtag = hashtagRepository.findByContent(hashtag.getContent()).get();
+        if(hashtagRepository.existsByContent(hashtag.getContent().toLowerCase())){
+            hashtag = hashtagRepository.findByContent(hashtag.getContent().toLowerCase()).get();
             incrementHashtagGlobalCount(hashtag.getId());
+            System.out.println("insertNewHashtag if exist: " + hashtag.getContent());
         }
         else{
+            hashtag.setGlobalUsageCount(1);
+            System.out.println("insertNewHashtag if does not exist: " + hashtag.getContent());
             hashtagRepository.save(hashtag);
         }
-        return ResponseEntity.ok(hashtagMapper.toDto(hashtag));
+        return hashtag;
     }
 
     public ResponseEntity<?> incrementHashtagGlobalCount(int id) {
@@ -34,6 +37,7 @@ public class HashtagService {
             Hashtag hashtag = hashtagRepository.getById(id);
             hashtag.setGlobalUsageCount(hashtag.getGlobalUsageCount()+1);
             hashtagRepository.save(hashtag);
+            System.out.println("incrementHashtagGlobalCount: " + hashtag.getContent());
             return ResponseEntity.ok(hashtag);
         }
         else {

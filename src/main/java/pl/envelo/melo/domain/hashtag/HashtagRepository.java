@@ -12,6 +12,7 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Integer> {
     Hashtag getById(Integer id);
 
     boolean existsByContent(String content);
+//    boolean isHidden(Integer id);
 
     //Hashtag findByContent(String content);
 }

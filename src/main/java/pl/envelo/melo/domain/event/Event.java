@@ -58,10 +58,7 @@ public class Event {
     private Set<Employee> invited;
     @ManyToOne
     private Unit unit;
-    @ManyToMany(cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE
-    })
+    @ManyToMany
     private Set<Hashtag> hashtags;
     private Long memberLimit;
     @ManyToOne
