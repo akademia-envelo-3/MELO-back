@@ -37,6 +37,7 @@ public class UnitService {
         return ResponseEntity.notFound().build();
     }
 
+
     public ResponseEntity<?> getUnits(String text) {
         List<Unit> units;
         if (text == null || text.isEmpty()) {
@@ -47,10 +48,7 @@ public class UnitService {
 
         return ResponseEntity.ok(units.stream()
                 .sorted((u1, u2) -> Integer.compare(u2.getMembers().size(), u1.getMembers().size()))
-                .map(e -> {
-                    UnitToDisplayOnListDto dto = unitMapper.convert(e);
-                    return dto;
-                }).collect(Collectors.toList()));
+                .map(unitMapper::convert).collect(Collectors.toList()));
     }
 
     public ResponseEntity<List<Employee>> getUnitEmployees() {

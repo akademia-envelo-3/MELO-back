@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface UnitRepository extends JpaRepository<Unit, Integer> {
     Optional<Unit> findByName(String name);
 
-    List<Unit> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String text, String text2);
+    List<Unit> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description);
 }
