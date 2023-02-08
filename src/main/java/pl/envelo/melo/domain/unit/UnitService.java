@@ -37,11 +37,18 @@ public class UnitService {
         return ResponseEntity.notFound().build();
     }
 
-    public ResponseEntity<?> getUnits() {
-        return ResponseEntity.ok(unitRepository.findAll().stream().map(e -> {
-            UnitToDisplayOnListDto dto = unitMapper.convert(e);
-            return dto;
-        }).collect(Collectors.toList()));
+
+    public ResponseEntity<?> getUnits(String text) {
+        List<Unit> units;
+        if (text == null || text.isEmpty()) {
+            units = unitRepository.findAll();
+        } else {
+            units = unitRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(text, text);
+        }
+
+        return ResponseEntity.ok(units.stream()
+                .sorted((u1, u2) -> Integer.compare(u2.getMembers().size(), u1.getMembers().size()))
+                .map(unitMapper::convert).collect(Collectors.toList()));
     }
 
     public ResponseEntity<List<Employee>> getUnitEmployees() {

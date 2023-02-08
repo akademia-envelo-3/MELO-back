@@ -54,8 +54,8 @@ public class UnitController {
                     ))
                     )
             })
-    public ResponseEntity<?> getUnits() {
-        return unitService.getUnits();
+    public ResponseEntity<?> getUnits(@RequestParam(required = false, name = "search") String text) {
+        return unitService.getUnits(text);
     }
 
 
