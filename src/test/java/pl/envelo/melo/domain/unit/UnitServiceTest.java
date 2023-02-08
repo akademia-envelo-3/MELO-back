@@ -39,7 +39,7 @@ class UnitServiceTest extends EventContextTest{
         unit.setDescription(unitDesc);
         unit.setOwner(owner);
         unitRepository.save(unit);
-        ResponseEntity<?> response = unitService.getUnits();
+        ResponseEntity<?> response = unitService.getUnits("");
         assertTrue(response.getBody() instanceof List<?>);
         assertEquals(1, ((List<?>) response.getBody()).size());
         Unit nextUnit = new Unit();
@@ -47,7 +47,7 @@ class UnitServiceTest extends EventContextTest{
         nextUnit.setDescription(nextUnitDesc);
         nextUnit.setOwner(owner);
         unitRepository.save(nextUnit);
-        response = unitService.getUnits();
+        response = unitService.getUnits("");
         assertTrue(response.getBody() instanceof List<?>);
         assertEquals(2, ((List<?>)response.getBody()).size());
         assertTrue(((List<?>) response.getBody()).stream().findFirst().isPresent());
