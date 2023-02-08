@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-@EnableMethodSecurity
+//@EnableMethodSecurity
 @Configuration
 public class SecurityConfiguration {
     @Value("${melo.client-id}")
@@ -33,7 +33,6 @@ public class SecurityConfiguration {
         //http.csrf().ignoringRequestMatchers("/api/swagger-ui/**");
         //http.csrf().ignoringRequestMatchers("/api/api-docs/**");
         http.headers().frameOptions().disable();
-
         return http.build();
     }
 

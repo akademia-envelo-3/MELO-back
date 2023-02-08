@@ -27,6 +27,7 @@ import java.util.List;
 public class UnitController {
     private final UnitService unitService;
     private final AuthorizationService authorizationService;
+
     @GetMapping("/{id}")
     @Operation(summary = "Retrieve list of units",
             responses = {
@@ -66,17 +67,17 @@ public class UnitController {
     @PatchMapping("/{unitId}/owner{oldOwnerId}/")
     @Operation(summary = "Change unit owner from current to another employee")
     public ResponseEntity<?> changeOwnership(@PathVariable("unitId") int unitId,
-                                                @PathVariable("oldOwnerId") int currentTokenId,
-                                                @RequestBody int newEmployeeId) {
-        return unitService.changeOwnership(newEmployeeId,currentTokenId,unitId);
+                                             @PathVariable("oldOwnerId") int currentTokenId,
+                                             @RequestBody int newEmployeeId) {
+        return unitService.changeOwnership(newEmployeeId, currentTokenId, unitId);
     }
 
     @PatchMapping("{id}/owner")
     public ResponseEntity<?> changeOwnershipByAdmin(@PathVariable("id") int unitId, @RequestParam("new-owner") int newOwner) {
         return unitService.changeOwnershipByAdmin(unitId, newOwner);
     }
-     
-     
+
+
     @GetMapping("/{unitId}/join/{id}")
     @Operation(summary = "Add employee to unit members",
             responses = {
@@ -102,17 +103,25 @@ public class UnitController {
 
     @PostMapping("")
     @Operation(summary = "Add new unit",
-    responses = {
-            @ApiResponse(responseCode = "200", description = "New unit is created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitToDisplayOnListDto.class))),
-            @ApiResponse(responseCode = "404"),
-            @ApiResponse(responseCode = "400", description = "Wrong data")
-    })
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "New unit is created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitToDisplayOnListDto.class))),
+                    @ApiResponse(responseCode = "404"),
+                    @ApiResponse(responseCode = "400", description = "Wrong data")
+            })
     public ResponseEntity<?> addNewUnit(@RequestBody @Valid UnitNewDto unitDto) {
         return unitService.insertNewUnit(unitDto);
     }
 
-    public ResponseEntity<Unit> updateUnit(UnitToDisplayOnListDto unitToDisplayOnListDto) {
-        return unitService.updateUnit(unitToDisplayOnListDto);
+    @PatchMapping("/{unit-id}")
+    @Operation(summary = "Edit unit", responses = {
+            @ApiResponse(responseCode = "200", description = "Unit edited successfully.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitToDisplayOnListDto.class))),
+            @ApiResponse(responseCode = "404", description = "Unit with given ID is not present in database."),
+            @ApiResponse(responseCode = "400", description = "Name and description that you provided are the same as in database. <br />" +
+                    "Name must be between 2 and 255 characters. <br />" +
+                    "Description must not exceed 4000 characters.<br />")
+    })
+    public ResponseEntity<?> updateUnit(@PathVariable("unit-id") int id, @RequestBody @Valid UnitNewDto unitNewDto) {
+        return unitService.updateUnit(id, unitNewDto);
     }
 
 
