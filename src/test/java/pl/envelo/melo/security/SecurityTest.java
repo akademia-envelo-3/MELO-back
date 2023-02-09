@@ -101,6 +101,16 @@ public class SecurityTest {
                 ).andExpect(status().is(200))
                 .andExpect(jsonPath("$", is(AuthFailed.PRINCIPAL_NOT_ALLOWED.name())));
     }
+    @Test
+    void userMailTest() throws Exception{
+        mockMvc.perform(get("/test/security/mail").header("Authorization", "Bearer " + getToken(superAdminLogin,superAdminPassword))
+                ).andExpect(status().is(200));
+    }
+    @Test
+    void userUUIDTest() throws Exception{
+        mockMvc.perform(get("/test/security/uuid").header("Authorization", "Bearer " + getToken(superAdminLogin,superAdminPassword))
+        ).andExpect(status().is(200));
+    }
     private String getToken(String username, String password){
         HttpClient httpClient = HttpClient.newHttpClient();
         String params = Map.of(
