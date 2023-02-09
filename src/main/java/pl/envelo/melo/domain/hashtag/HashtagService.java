@@ -21,11 +21,9 @@ public class HashtagService {
         if(hashtagRepository.existsByContent(hashtag.getContent().toLowerCase())){
             hashtag = hashtagRepository.findByContent(hashtag.getContent().toLowerCase()).get();
             incrementHashtagGlobalCount(hashtag.getId());
-            System.out.println("insertNewHashtag if exist: " + hashtag.getContent());
         }
         else{
             hashtag.setGlobalUsageCount(1);
-            System.out.println("insertNewHashtag if does not exist: " + hashtag.getContent());
             hashtagRepository.save(hashtag);
         }
         return hashtag;
@@ -37,7 +35,6 @@ public class HashtagService {
             Hashtag hashtag = hashtagRepository.getById(id);
             hashtag.setGlobalUsageCount(hashtag.getGlobalUsageCount()+1);
             hashtagRepository.save(hashtag);
-            System.out.println("incrementHashtagGlobalCount: " + hashtag.getContent());
             return ResponseEntity.ok(hashtag);
         }
         else {

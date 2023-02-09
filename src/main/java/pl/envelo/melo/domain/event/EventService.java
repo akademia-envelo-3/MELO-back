@@ -148,10 +148,20 @@ public class EventService {
                     event.setUnit(null);
                 }
 
+                Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
+                validationResult.forEach((k, v) -> System.out.println(k + " " + v));
+                if (validationResult.size() != 0) {
+                    return ResponseEntity.badRequest().body(validationResult);
+                }
+
                 event.setOrganizer(employee.get());
                 Set<Person> members = new HashSet<>();
                 members.add(employee.get().getUser().getPerson());
                 event.setMembers(members);
+                event.setCategory(category.get());
+                event.setStartTime(newEventDto.getStartTime());
+                event.setEndTime(newEventDto.getEndTime());
+                event.setMemberLimit(newEventDto.getMemberLimit());
 
                 if (!Objects.isNull(additionalAttachments)) {
                     /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
@@ -197,10 +207,8 @@ public class EventService {
 
                 Set<HashtagDto> hashtagDtos = findHashtagFromEvent(newEventDto.getName(), newEventDto.getDescription());
                 for (HashtagDto hashtagDto : hashtagDtos) {
-                    System.out.println("Set hashtagów z metody find: " + hashtagDto.getContent());
                     Optional<Hashtag> hashtag = hashtagRepository.findByContent(hashtagDto.getContent());
                        hashtags.add(hashtagService.insertNewHashtag(hashtagDto));
-                       System.out.println(" tylko insert: " + hashtagDto.getContent());
                 }
 
                 event.setHashtags(hashtags);
@@ -415,7 +423,7 @@ public class EventService {
         }
         return hashtagSet;
     }
-}
+
 
     public ResponseEntity<?> sendResignationTokenMail(Event event, Person person){
         if(mailService.sendMailWithToken(person,event, false )){
