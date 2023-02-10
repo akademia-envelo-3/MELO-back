@@ -27,7 +27,6 @@ import java.util.List;
 public class UnitController {
     private final UnitService unitService;
     private final AuthorizationService authorizationService;
-
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}")
     @Operation(summary = "Retrieve list of units",
@@ -56,8 +55,8 @@ public class UnitController {
                     ))
                     )
             })
-    public ResponseEntity<?> getUnits() {
-        return unitService.getUnits();
+    public ResponseEntity<?> getUnits(@RequestParam(required = false, name = "search") String text) {
+        return unitService.getUnits(text);
     }
 
 
@@ -117,8 +116,16 @@ public class UnitController {
         return unitService.insertNewUnit(unitDto);
     }
 
-    public ResponseEntity<Unit> updateUnit(UnitToDisplayOnListDto unitToDisplayOnListDto) {
-        return unitService.updateUnit(unitToDisplayOnListDto);
+    @PatchMapping("/{unit-id}")
+    @Operation(summary = "Edit unit", responses = {
+            @ApiResponse(responseCode = "200", description = "Unit edited successfully.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitToDisplayOnListDto.class))),
+            @ApiResponse(responseCode = "404", description = "Unit with given ID is not present in database."),
+            @ApiResponse(responseCode = "400", description = "Name and description that you provided are the same as in database. <br />" +
+                    "Name must be between 2 and 255 characters. <br />" +
+                    "Description must not exceed 4000 characters.<br />")
+    })
+    public ResponseEntity<?> updateUnit(@PathVariable("unit-id") int id, @RequestBody @Valid UnitNewDto unitNewDto) {
+        return unitService.updateUnit(id, unitNewDto);
     }
 
 

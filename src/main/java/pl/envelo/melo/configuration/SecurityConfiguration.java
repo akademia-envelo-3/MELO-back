@@ -3,6 +3,7 @@ package pl.envelo.melo.configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -12,6 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,22 +31,27 @@ public class SecurityConfiguration {
     private String appResource;
     @Value("${server.servlet.context-path}")
     private String contextPath;
+    @Value("${melo.api.version}")
+    private String apiVersion;
+    @Value("${melo.events.path}")
+    private String eventsPath;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests()
                 .requestMatchers(  "/swagger-ui/**").permitAll()
                 .requestMatchers( "/api-docs/**").permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher( "/participation/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/external/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher( "/"+apiVersion+eventsPath+"/participation/**")).permitAll()
+                .requestMatchers(new RegexRequestMatcher("/"+apiVersion+eventsPath+"/\\d+/external", HttpMethod.GET.name())).permitAll()
                 .and()
                 .authorizeHttpRequests().anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
+                .csrf().disable()
+                .headers().frameOptions().disable()
+                .and()
                 .oauth2ResourceServer().jwt();
-        http.csrf().disable();
-        http.headers().frameOptions().disable();
         return http.build();
     }
 
