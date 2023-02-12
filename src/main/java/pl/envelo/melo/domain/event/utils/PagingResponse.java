@@ -1,6 +1,5 @@
 package pl.envelo.melo.domain.event.utils;
 
-import com.mak.springbootefficientsearchapi.entity.Car;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
