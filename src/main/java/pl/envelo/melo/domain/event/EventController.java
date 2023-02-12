@@ -11,6 +11,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import net.kaczmarzyk.spring.data.jpa.domain.Between;
+import net.kaczmarzyk.spring.data.jpa.domain.Equal;
+import net.kaczmarzyk.spring.data.jpa.domain.In;
+import net.kaczmarzyk.spring.data.jpa.domain.Like;
+import net.kaczmarzyk.spring.data.jpa.web.annotation.And;
+import net.kaczmarzyk.spring.data.jpa.web.annotation.Spec;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +30,8 @@ import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonService;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
+import pl.envelo.melo.domain.event.utils.PagingHeaders;
+import pl.envelo.melo.domain.event.utils.PagingResponse;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.poll.PollAnswer;
@@ -56,11 +68,41 @@ public class EventController {
     private final PersonService personService;
 
 
+
+    @Transactional
     @GetMapping()
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<List<Event>> get(
+            @And({
+                    @Spec(path = "name", params = "name", spec = Like.class),
+                    @Spec(path = "organizer", params = "organizer", spec = Like.class),
+                    @Spec(path = "hashtags", params = "hashtags", spec = In.class),
+                    @Spec(path = "type", params = "type", spec = Like.class),
+                    //@Spec(path = "createDate", params = "createDate", spec = Equal.class),
+                    @Spec(path = "createDate", params = {"startTime", "endTime"}, spec = Between.class)
+            }) Specification<Event> spec,
+            Sort sort,
+            @RequestHeader HttpHeaders headers) {
+        final PagingResponse response = eventService.get(spec, headers, sort);
+        return new ResponseEntity<>(response.getElements(), returnHttpHeaders(response), HttpStatus.OK);
+    }
+
+    public HttpHeaders returnHttpHeaders(PagingResponse response) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(PagingHeaders.COUNT.getName(), String.valueOf(response.getCount()));
+        headers.set(PagingHeaders.PAGE_SIZE.getName(), String.valueOf(response.getPageSize()));
+        headers.set(PagingHeaders.PAGE_OFFSET.getName(), String.valueOf(response.getPageOffset()));
+        headers.set(PagingHeaders.PAGE_NUMBER.getName(), String.valueOf(response.getPageNumber()));
+        headers.set(PagingHeaders.PAGE_TOTAL.getName(), String.valueOf(response.getPageTotal()));
+        return headers;
+    }
+
+
+    /*@GetMapping()
     public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
         return eventService.listAllEvents();
     }
-
+*/
 
     @PostMapping("/{id}")
     public ResponseEntity<?> editEvent(@RequestParam("id") int id, @RequestBody NewEventDto newEventDto) {
