@@ -4,6 +4,12 @@ package pl.envelo.melo.domain.event;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +26,8 @@ import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
+import pl.envelo.melo.domain.event.utils.PagingHeaders;
+import pl.envelo.melo.domain.event.utils.PagingResponse;
 import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
@@ -103,6 +111,50 @@ public class EventService {
             return ResponseEntity.status(404).body("Event with this ID does not exist");
         }
     }
+
+    ////////
+    public PagingResponse get(Specification<Event> spec, HttpHeaders headers, Sort sort) {
+        if (isRequestPaged(headers)) {
+            return get(spec, buildPageRequest(headers, sort));
+        } else {
+            List<Event> entities = get(spec, sort);
+            return new PagingResponse((long) entities.size(), 0L, 0L, 0L, 0L, entities);
+        }
+    }
+
+    private boolean isRequestPaged(HttpHeaders headers) {
+        return headers.containsKey(PagingHeaders.PAGE_NUMBER.getName()) && headers.containsKey(PagingHeaders.PAGE_SIZE.getName());
+    }
+
+    private Pageable buildPageRequest(HttpHeaders headers, Sort sort) {
+        int page = Integer.parseInt(Objects.requireNonNull(headers.get(PagingHeaders.PAGE_NUMBER.getName())).get(0));
+        int size = Integer.parseInt(Objects.requireNonNull(headers.get(PagingHeaders.PAGE_SIZE.getName())).get(0));
+        return PageRequest.of(page, size, sort);
+    }
+
+    /**
+     * get elements using Criteria.
+     *
+     * @param spec     *
+     * @param pageable pagination data
+     * @return retrieve elements with pagination
+     */
+    public PagingResponse get(Specification<Event> spec, Pageable pageable) {
+        Page<Event> page = eventRepository.findAll(spec, pageable);
+        List<Event> content = page.getContent();
+        return new PagingResponse(page.getTotalElements(), (long) page.getNumber(), (long) page.getNumberOfElements(), pageable.getOffset(), (long) page.getTotalPages(), content);
+    }
+
+    /**
+     * get elements using Criteria.
+     *
+     * @param spec *
+     * @return elements
+     */
+    public List<Event> get(Specification<Event> spec, Sort sort) {
+        return eventRepository.findAll(spec, sort);
+    }
+    ////////
 
     public ResponseEntity<List<EventToDisplayOnListDto>> listAllEvents() {
         List<Event> result = eventRepository.findAllByStartTimeAfterAndType(LocalDateTime.now(), EventType.LIMITED_EXTERNAL);
