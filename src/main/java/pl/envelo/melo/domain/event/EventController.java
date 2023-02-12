@@ -75,11 +75,12 @@ public class EventController {
     public ResponseEntity<List<Event>> get(
             @And({
                     @Spec(path = "name", params = "name", spec = Like.class),
-                    @Spec(path = "organizer", params = "organizer", spec = Like.class),
-                    @Spec(path = "hashtags", params = "hashtags", spec = In.class),
-                    @Spec(path = "type", params = "type", spec = Like.class),
-                    //@Spec(path = "createDate", params = "createDate", spec = Equal.class),
-                    @Spec(path = "createDate", params = {"startTime", "endTime"}, spec = Between.class)
+                    @Spec(path = "organizer.id", params = "organizer", spec = Equal.class),
+                    @Spec(path = "hashtags.content", params = "hashtags", spec = In.class),
+                    @Spec(path = "type", params = "type", spec = Equal.class),
+                    @Spec(path = "startTime", params = "startTime", spec = Like.class),
+                    @Spec(path = "createDate", params = {"startTime", "endTime"}, spec = Between.class),
+                    @Spec(path = "category.name", params = "category", spec = Equal.class)
             }) Specification<Event> spec,
             Sort sort,
             @RequestHeader HttpHeaders headers) {
