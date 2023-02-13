@@ -16,16 +16,17 @@ public class HashtagService {
     private final HashtagRepository hashtagRepository;
     private final HashtagMapper hashtagMapper;
 
-    public ResponseEntity<HashtagDto> insertNewHashtag(HashtagDto hashtagDto) {
+    public Hashtag insertNewHashtag(HashtagDto hashtagDto) {
         Hashtag hashtag = hashtagMapper.toEntity(hashtagDto);
-        if(hashtagRepository.existsByContent(hashtag.getContent())){
-            hashtag = hashtagRepository.findByContent(hashtag.getContent()).get();
+        if(hashtagRepository.existsByContent(hashtag.getContent().toLowerCase())){
+            hashtag = hashtagRepository.findByContent(hashtag.getContent().toLowerCase()).get();
             incrementHashtagGlobalCount(hashtag.getId());
         }
         else{
+            hashtag.setGlobalUsageCount(1);
             hashtagRepository.save(hashtag);
         }
-        return ResponseEntity.ok(hashtagMapper.toDto(hashtag));
+        return hashtag;
     }
 
     public ResponseEntity<?> incrementHashtagGlobalCount(int id) {
@@ -41,8 +42,16 @@ public class HashtagService {
         }
     }
 
-    public ResponseEntity<Hashtag> decrementHashtagGlobalCount(int id) {
-        return null;
+    public ResponseEntity<?> decrementHashtagGlobalCount(int id) {
+        if (hashtagRepository.existsById(id)){
+            Hashtag hashtag = hashtagRepository.getById(id);
+            hashtag.setGlobalUsageCount(hashtag.getGlobalUsageCount()-1);
+            hashtagRepository.save(hashtag);
+            return ResponseEntity.ok(hashtag);
+        }
+        else {
+            return ResponseEntity.status(404).body("Hashtag by this ID do not exist");
+        }
     }
 
     public ResponseEntity<?> setHashtagHiddenFlag(int id, boolean hide) {
