@@ -190,7 +190,6 @@ public class EventController {
         return pollService.insertNewPollAnswer(eventId, empId, pollSendResultDto); // returns PollResultDto
     }
 
-    @PreAuthorize("permitAll()")
     @PostMapping("/{id}/external")
     @Operation(summary = "Send mail to guest with link to confirm participation on event ",
             responses = {
@@ -206,7 +205,6 @@ public class EventController {
         return eventService.sendConfirmationMail(eventId, addGuestToEventDto);
     }
 
-    @PreAuthorize("permitAll()")
     @GetMapping("/participation")
     @Operation(summary = "Adding or removing guest from event.",
             responses = {

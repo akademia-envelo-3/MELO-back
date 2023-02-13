@@ -42,7 +42,7 @@ public class CategoryController {
         return categoryService.insertNewCategory(categoryDto);
     }
 
-    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getEmployeeRole())")
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole())")
     @PostMapping("{id}")
     @Operation(summary = "Change category name with given ID",
             responses = {
