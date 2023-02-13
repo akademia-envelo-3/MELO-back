@@ -25,7 +25,7 @@ import java.util.List;
 public class CategoryController {
     private final CategoryService categoryService;
 
-    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole())")
+    @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
     @PostMapping("")
     @Operation(summary = "Add new category",
             responses = {
@@ -42,7 +42,7 @@ public class CategoryController {
         return categoryService.insertNewCategory(categoryDto);
     }
 
-    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole())")
+    @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
     @PostMapping("{id}")
     @Operation(summary = "Change category name with given ID",
             responses = {
@@ -69,7 +69,7 @@ public class CategoryController {
         return categoryService.getCategory(id);
     }
 
-    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole())")
+    @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
     @PatchMapping("{id}")
     @Operation(summary = "Change \"hidden\" status for category with given ID",
             responses = {
