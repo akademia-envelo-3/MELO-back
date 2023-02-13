@@ -29,7 +29,7 @@ public class UnitController {
     private final AuthorizationService authorizationService;
 
     @GetMapping("/{id}")
-    @Operation(summary = "Retrieve list of units",
+    @Operation(summary = "Retrieve unit",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Retrieve details of single unit with given id", content =
                     @Content(mediaType = "application/json", schema = @Schema(

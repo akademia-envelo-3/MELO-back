@@ -1,6 +1,8 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
@@ -21,8 +23,8 @@ import pl.envelo.melo.mappers.AttachmentMapper;
 import pl.envelo.melo.mappers.HashtagMapper;
 import pl.envelo.melo.mappers.LocationMapper;
 
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -55,65 +57,112 @@ public class EventUpdater {
         //updateMainPhoto(event, newEventDto);
     }
 
-    void updateDate(Event event, NewEventDto newEventDto) {
-        event.setStartTime(newEventDto.getStartTime());
-        event.setEndTime(newEventDto.getEndTime());
+    public boolean updateName(Event event, NewEventDto newEventDto) {
+        if (event.getName().toLowerCase().trim().equals(newEventDto.getName().toLowerCase().trim())) {
+            return false;
+        }
+        event.setName(newEventDto.getName());
+        return true;
     }
 
-    void updatePeriodic(Event event, NewEventDto newEventDto) {
+    public boolean updateDescription(Event event, NewEventDto newEventDto) {
+        if (event.getDescription().equals(newEventDto.getDescription())) {//TODO Trimowanie?
+            return false;
+        }
+        event.setDescription(newEventDto.getDescription());
+        return true;
+    }
+
+    public Optional<?> updateDate(Event event, NewEventDto newEventDto) {
+        Map<String, String> errors = new HashMap<>();
+        if (event.getStartTime().compareTo(LocalDateTime.now()) <= 0) {
+            errors.put("forbidden error", "You cannot edit archived event");
+        }
+        if (newEventDto.getStartTime() == null && newEventDto.getEndTime() != null) {
+            if (event.getEndTime().equals(newEventDto.getEndTime())) {
+                errors.put("endTime error", "New EndTime is the same as old.");
+            } else if (event.getStartTime().compareTo(newEventDto.getEndTime()) >= 0) {
+                errors.put("endTime error", "You must set endTime to be after startTime");
+            } else {
+                event.setEndTime(newEventDto.getEndTime());
+            }
+        } else if (newEventDto.getStartTime() != null && newEventDto.getEndTime() == null) {
+            if (event.getStartTime().equals(newEventDto.getStartTime())) {
+                errors.put("startTime error", "New StartTime is the same as old.");
+            } else if (event.getEndTime().compareTo(newEventDto.getStartTime()) <= 0) {
+                errors.put("startTime error", "You must set startTime to be before endTime");
+            } else {
+                event.setStartTime(newEventDto.getStartTime());
+            }
+        } else if (newEventDto.getStartTime() != null && newEventDto.getEndTime() != null) {
+            if (event.getEndTime().equals(newEventDto.getEndTime())) {
+                errors.put("endTime error", "New EndTime is the same as old.");
+            }
+            if (event.getStartTime().equals(newEventDto.getStartTime())) {
+                errors.put("startTime error", "New StartTime is the same as old.");
+            }
+            if (newEventDto.getStartTime().compareTo(newEventDto.getEndTime()) >= 0) {
+                errors.put("endTime error", "You must set endTime to be after startTime");
+            } else {
+                event.setEndTime(newEventDto.getEndTime());
+                event.setStartTime(newEventDto.getStartTime());
+            }
+        }
+        if (errors.isEmpty()) {
+            return Optional.of(true);
+        } else return Optional.of(errors);
+    }
+
+    public void updatePeriodic(Event event, NewEventDto newEventDto) {
         event.setPeriodicType(newEventDto.getPeriodicType());
     }
 
-    void updateHashtags(Event event, NewEventDto newEventDto) {
-        if (event.getHashtags() == null) {
-            if (newEventDto.getHashtags() != null) {
-                Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convertToString).collect(Collectors.toSet());
-                newEventDto.getHashtags().forEach(e -> {
-                    if (!currHashtags.contains(e)) {
-                        Optional<Hashtag> hashtag = hashtagRepository.findByContent(e.getContent());
-                        if (hashtag.isPresent()) {
-                            hashtagService.incrementHashtagGlobalCount(hashtag.get().getId());
-                            event.getHashtags().add(hashtag.get());
-                        } else {
-                            HashtagDto hashtagDto = new HashtagDto();
-                            hashtagDto.setContent(e.getContent());
-                            hashtagService.insertNewHashtag(hashtagDto);
-                            event.getHashtags().add(hashtagRepository.findByContent(e.getContent()).get());
-                        }
-                    }
-                });
-                event.getHashtags().forEach(e -> {
-                    if (!newEventDto.getHashtags().contains(e.getContent())) {
-                        event.getHashtags().remove(e);
-                        hashtagService.decrementHashtagGlobalCount(e.getId());
-                    }
-                });
-            }
+    @Transactional
+    public void updateHashtags(Event event, NewEventDto newEventDto) {
+        if (event.getHashtags() != null) {
+            Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convertToString).collect(Collectors.toSet());
+            Set<Hashtag> eventHashtags = new HashSet<>(event.getHashtags());
+            newEventDto.getHashtags().forEach(e -> {
+                if (!currHashtags.contains(e.getContent())) {
+                    HashtagDto hashtag = new HashtagDto();
+                    hashtag.setContent(e.getContent());
+                    Hashtag insertHash = hashtagService.insertNewHashtag(hashtag);
+                    event.getHashtags().add(insertHash);
+                }
+            });
+            Set<String> currNewHashtags = newEventDto.getHashtags().stream().map(HashtagDto::getContent).collect(Collectors.toSet());
+            eventHashtags.forEach(e -> {
+                if (!currNewHashtags.contains(e.getContent())) {
+                    event.getHashtags().remove(e);
+                    hashtagService.decrementHashtagGlobalCount(e.getId());
+                }
+            });
+
         } else {
-            if (newEventDto.getHashtags() != null) {
-                newEventDto.getHashtags().forEach(h -> {
-                    Optional<Hashtag> hashtag = hashtagRepository.findByContent(h.getContent());
-                    if (hashtag.isPresent()) {
-                        hashtagService.incrementHashtagGlobalCount(hashtag.get().getId());
-                        event.getHashtags().add(hashtag.get());
-                    } else {
-                        HashtagDto hashtagDto = new HashtagDto();
-                        hashtagDto.setContent(h.getContent());
-                        hashtagService.insertNewHashtag(hashtagDto);
-                        event.getHashtags().add(hashtagRepository.findByContent(h.getContent()).get());
-                    }
-                });
-            }
+            newEventDto.getHashtags().forEach(e -> {
+                HashtagDto hashtag = new HashtagDto();
+                hashtag.setContent(e.getContent());
+                Hashtag insertHash = hashtagService.insertNewHashtag(hashtag);
+                event.getHashtags().add(insertHash);
+            });
         }
     }
 
-    void updateOrganizer(Event event, NewEventDto newEventDto) {
+    public boolean updateMemberLimit(Event event, NewEventDto newEventDto) {
+        if (newEventDto.getMemberLimit() > 1 && event.getMembers().size() <= newEventDto.getMemberLimit()) {
+            event.setMemberLimit((long) newEventDto.getMemberLimit());
+            return true;
+        } else
+            return false;
+    }
+
+    public void updateOrganizer(Event event, NewEventDto newEventDto) {
         Employee organizer = employeeRepository.getReferenceById(newEventDto.getOrganizerId());
         event.setOrganizer(organizer);
         event.getMembers().add(organizer.getUser().getPerson());
     }
 
-    void updateUnitsAndInvitedMembers(Event event, NewEventDto newEventDto) {
+    public void updateUnitsAndInvitedMembers(Event event, NewEventDto newEventDto) {
         if (newEventDto.getInvitedMembers() != null) {
             for (Integer i : newEventDto.getInvitedMembers()) {
                 event.getInvited().add(employeeRepository.getReferenceById(i));
@@ -157,40 +206,33 @@ public class EventUpdater {
         }
     }*/
 
-    void updateCategory(Event event, NewEventDto newEventDto) {
-        if (newEventDto.getCategoryId() != null) {
+    public boolean updateCategory(Event event, NewEventDto newEventDto) {
+        if (!newEventDto.getCategoryId().equals(event.getCategory().getId()))
             if (categoryRepository.existsById(newEventDto.getCategoryId()))
-                if (!categoryRepository.getReferenceById(newEventDto.getCategoryId()).isHidden())
+                if (!categoryRepository.getReferenceById(newEventDto.getCategoryId()).isHidden()) {
                     event.setCategory(categoryRepository.getReferenceById(newEventDto.getCategoryId()));
-                else
-                    event.setCategory(null);
-        } else
-            event.setCategory(null);
+                    return true;
+                }
+        return false;
     }
 
-    void updateName(Event event, NewEventDto newEventDto) {
-        event.setName(newEventDto.getName());
-    }
 
-    void updateDescription(Event event, NewEventDto newEventDto) {
-        event.setDescription(newEventDto.getDescription());
-    }
-
-    void updateLocation(Event event, NewEventDto newEventDto) {
-        if(newEventDto.getLocation()!=null)
+    public void updateLocation(Event event, NewEventDto newEventDto) {
+        if (newEventDto.getLocation() != null)
             event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
         else
             event.setLocation(null);
     }
 
-    void updateMemberLimit(Event event, NewEventDto newEventDto) {
-        if(newEventDto.getMemberLimit()>1)
-            event.setMemberLimit((long) newEventDto.getMemberLimit());
-        else
-            event.setMemberLimit(null);
-    }
 
     /*void updateMainPhoto(Event event, NewEventDto newEventDto) {
         event.setMainPhoto(attachmentService.insertOrGetAttachment(newEventDto.getMainPhoto()));
     }*/
+    public boolean updateTheme(Event event, NewEventDto newEventDto) {
+        if (newEventDto.getTheme().equals(event.getTheme())) {
+            return false;
+        }
+        event.setTheme(newEventDto.getTheme());
+        return true;
+    }
 }

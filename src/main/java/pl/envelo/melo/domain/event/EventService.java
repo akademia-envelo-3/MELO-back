@@ -243,14 +243,70 @@ public class EventService {
         if (optionalEvent.isEmpty())
             return ResponseEntity.badRequest().body("Event with id " + id + " not found");
         Event event = optionalEvent.get();
-
-        Map<String, String> validationResult = eventValidator.validateToEdit(event, newEventDto);
-        validationResult.forEach((k, v) -> System.out.println(k + " " + v));
-        if (validationResult.size() != 0) {
-            return ResponseEntity.badRequest().body(validationResult);
+//        if (event.getStartTime().compareTo(LocalDateTime.now()) <= 0)
+//            return ResponseEntity.badRequest().body("You cannot edit archived event");
+        if (!Objects.isNull(newEventDto.getName())) {
+            if (eventUpdater.updateName(event, newEventDto)) {
+                //notification
+            } else {
+                return ResponseEntity.status(404).body("Name is the same as was");
+            }
         }
-        eventUpdater.update(event, newEventDto);
-        eventNotificationHandler.editNotification(event, newEventDto).forEach(notificationService::insertEventNotification);
+        if (!Objects.isNull(newEventDto.getDescription())) {
+            if (eventUpdater.updateDescription(event, newEventDto)) {
+                //notyfication
+            } else {
+                return ResponseEntity.status(404).body("Description is the same as was");
+            }
+
+        }
+        if (!Objects.isNull(newEventDto.getStartTime()) || !Objects.isNull(newEventDto.getEndTime())) {
+            Optional<?> updateDates = eventUpdater.updateDate(event, newEventDto);
+            if (updateDates.get() instanceof Boolean) {
+                //notification
+            } else if (updateDates.get() instanceof Map) {
+                return ResponseEntity.status(404).body(updateDates.get());
+            }
+        }
+        //TODO Periodic type
+        if(!Objects.isNull(newEventDto.getHashtags())){
+            //TODO Hashtags from name and description
+            eventUpdater.updateHashtags(event,newEventDto);
+            //notification
+                  }
+        System.out.println("Member limit:"+newEventDto.getMemberLimit());
+        if (newEventDto.getMemberLimit()>0) {
+            if (event.getType().toString().startsWith("LIMITED")) {
+                if (eventUpdater.updateMemberLimit(event, newEventDto)) {
+                    //Noticication
+                } else {
+                    return ResponseEntity.status(404).body("You can not set this member limit");
+                }
+            }else return ResponseEntity.status(400).body("You can not change memberLimit for this type of event");
+        }
+        if (!Objects.isNull(newEventDto.getCategoryId())) {
+            if (eventUpdater.updateCategory(event, newEventDto)) {
+                //notification
+            } else {
+                return ResponseEntity.status(404).body("There is problem with changing category");//fixme
+            }
+        }
+        //TODO attachments
+        //TODO main photo
+        //TODO Location
+        if (!Objects.isNull(newEventDto.getTheme())) {
+            if (eventUpdater.updateTheme(event, newEventDto)) {
+                //notification
+            } else return ResponseEntity.status(404).body("Theme is the same as was");
+        }
+
+//        Map<String, String> validationResult = eventValidator.validateToEdit(event, newEventDto);
+//        validationResult.forEach((k, v) -> System.out.println(k + " " + v));
+//        if (validationResult.size() != 0) {
+//            return ResponseEntity.badRequest().body(validationResult);
+//        }
+//        eventUpdater.update(event, newEventDto);
+//        eventNotificationHandler.editNotification(event, newEventDto).forEach(notificationService::insertEventNotification);
         return ResponseEntity.ok(eventDetailsMapper.convert(eventRepository.save(event)));
     }
 
