@@ -26,6 +26,7 @@ import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
+import pl.envelo.melo.domain.event.dto.EventToDisplayOnUnitDetailsList;
 import pl.envelo.melo.domain.event.utils.PagingHeaders;
 import pl.envelo.melo.domain.event.utils.PagingResponse;
 import pl.envelo.melo.domain.hashtag.Hashtag;
