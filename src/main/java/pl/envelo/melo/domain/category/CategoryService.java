@@ -6,9 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import pl.envelo.melo.authorization.AuthFailed;
+import pl.envelo.melo.authorization.AuthSucceded;
+import pl.envelo.melo.authorization.AuthorizationService;
+import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.mappers.CategoryMapper;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +23,8 @@ public class CategoryService {
     @Autowired
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final AuthorizationService authorizationService;
+    private final EmployeeRepository employeeRepository;
 
 
     public ResponseEntity<?> changeStatusCategory(int id) {
@@ -67,9 +74,12 @@ public class CategoryService {
         else return ResponseEntity.status(404).body("Category with given ID does not exist in database");
     }
 
-    public ResponseEntity<List<Category>> listAllCategory(int tokenId) {
+    public ResponseEntity<List<Category>> listAllCategory(Principal principal) {
+        if(authorizationService.inflateUser(principal) instanceof AuthFailed){
+            return ResponseEntity.status(403).build();
+        }
         List<Category> listOfCategories = categoryRepository.findAll();
-        if(tokenId == 1) {
+        if(employeeRepository.findByUserId(authorizationService.getUUID(principal)).isPresent()) {
             return ResponseEntity.ok(listOfCategories.stream().filter(category -> !category.isHidden()).toList());
         }
         return ResponseEntity.ok(listOfCategories.stream().toList());

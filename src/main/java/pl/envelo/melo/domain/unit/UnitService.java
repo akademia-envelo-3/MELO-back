@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.unit;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
@@ -12,9 +13,11 @@ import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.domain.poll.PollConst;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
+import pl.envelo.melo.exceptions.EmployeeNotFound;
 import pl.envelo.melo.mappers.UnitDetailsMapper;
 import pl.envelo.melo.mappers.UnitMapper;
 
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,6 +31,7 @@ public class UnitService {
     private final UnitMapper unitMapper;
     private final UnitDetailsMapper unitDetailsMapper;
     private final NotificationService notificationService;
+    private final AuthorizationService authorizationService;
 
     public ResponseEntity<?> getUnit(int id) {
         Optional<Unit> unit = unitRepository.findById(id);
@@ -56,29 +60,28 @@ public class UnitService {
     }
 
 
-    public ResponseEntity<?> changeOwnership(int newEmployeeId, int currentTokentId, int unitId) {
+    public ResponseEntity<?> changeOwnership(int newEmployeeId, int unitId, Principal principal) {
+        authorizationService.inflateUser(principal);
         Optional<Unit> unit = unitRepository.findById(unitId);
-        Optional<Employee> oldOwner = employeeRepository.findById(currentTokentId);
+        Employee oldOwner = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
         Optional<Employee> newOwner = employeeRepository.findById(newEmployeeId);
 
         if (!unit.isPresent()) {
             return ResponseEntity.status(404).body("Unit does not exist");
-        } else if (!oldOwner.isPresent()) {
-            return ResponseEntity.status(404).body("Your id " + currentTokentId + " doesn't exist in data base");
         } else if (!newOwner.isPresent()) {
             return ResponseEntity.status(404).body("Chosen employee with id " + newEmployeeId + " doesn't exist in data base");
-        } else if (unit.get().getOwner().getId() != oldOwner.get().getId()) {
+        } else if (unit.get().getOwner().getId() != oldOwner.getId()) {
             return ResponseEntity.status(400).body("You are not the organizer of the event you " +
                     "do not have the authority to make changes");
         } else {
-            employeeService.removeFromOwnedUnits(currentTokentId, unit.get());
+            employeeService.removeFromOwnedUnits(oldOwner.getId(), unit.get());
             unit.get().setOwner(newOwner.get());
             employeeService.addToJoinedUnits(newEmployeeId, unit.get());
             employeeService.addToOwnedUnits(newEmployeeId, unit.get());
             if (!unit.get().getMembers().contains(newOwner.get())) {
                 unit.get().getMembers().add(newOwner.get());
             }
-            sendOwnershipNotification(oldOwner.get().getId(), unit.get().getId(), true);
+            sendOwnershipNotification(oldOwner.getId(), unit.get().getId(), true);
             sendOwnershipNotification(newEmployeeId, unit.get().getId(), false);
             return ResponseEntity.status(200).body("The owner of the unit with id "
                     + unitId + " has been correctly changed to "
@@ -127,61 +130,57 @@ public class UnitService {
     }
 
 
-    public ResponseEntity<?> addEmployee(int employeeId, int unitId) {
-        if (employeeRepository.existsById(employeeId)) {
-            Optional<Unit> unit = unitRepository.findById(unitId);
-            if (unit.isPresent()) {
-                if (employeeService.addToJoinedUnits(employeeId, unit.get())) {
-                    if (unit.get().getMembers() == null) {
-                        Set<Employee> members = new HashSet<>();
-                        members.add(employeeRepository.findById(employeeId).get());
-                        unit.get().setMembers(members);
-                    } else {
-                        unit.get().getMembers().add(employeeRepository.findById(employeeId).get());
-                    }
-                    unitRepository.save(unit.get());
-                    return ResponseEntity.ok(true);
+    public ResponseEntity<?> addEmployee(int unitId, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Optional<Unit> unit = unitRepository.findById(unitId);
+        if (unit.isPresent()) {
+            if (employeeService.addToJoinedUnits(employee.getId(), unit.get())) {
+                if (unit.get().getMembers() == null) {
+                    Set<Employee> members = new HashSet<>();
+                    members.add(employee);
+                    unit.get().setMembers(members);
+                } else {
+                    unit.get().getMembers().add(employee);
                 }
-                return ResponseEntity.status(400).body("Employee already in unit");
+                unitRepository.save(unit.get());
+                return ResponseEntity.ok(true);
             }
-            return ResponseEntity.status(404).body("Unit does not exist");
+            return ResponseEntity.status(400).body("Employee already in unit");
         }
-        return ResponseEntity.status(404).body("Employee is not in database");
+        return ResponseEntity.status(404).body("Unit does not exist");
+
     }
 
-    public ResponseEntity<?> quitUnit(int employeeIdToken, int unitId) {
+    public ResponseEntity<?> quitUnit(int unitId, Principal principal) {
+        authorizationService.inflateUser(principal);
         Optional<Unit> unit = unitRepository.findById(unitId);
-        Optional<Employee> employee = employeeRepository.findById(employeeIdToken);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
 
         if (unit.isPresent()) {
-            if (unit.get().getOwner().getId() == employeeIdToken) {
+            if (unit.get().getOwner().getId() == employee.getId()) {
                 return ResponseEntity.status(400).body("Unit organizer cant be remove from his unit");
             }
-            if (employee.isPresent() && unit.get().getMembers().contains(employee.get())) {
-                unit.get().getMembers().remove(employee.get());
-                employeeService.removeFromJoinedUnits(employeeIdToken, unit.get());
-                return ResponseEntity.ok("Employee whit Id " + employeeIdToken +
+            if (unit.get().getMembers().contains(employee)) {
+                unit.get().getMembers().remove(employee);
+                employeeService.removeFromJoinedUnits(employee.getId(), unit.get());
+                return ResponseEntity.ok("Employee whit Id " + employee.getId() +
                         " was correctly removed from the members of the unit");
-            } else if (employee.isEmpty()) {
-                return ResponseEntity.status(404).body("Employee whit Id " + employeeIdToken + " does not exist");
             } else
                 return ResponseEntity.status(404).body("Employee is not a member of the unit");
         } else
             return ResponseEntity.status(404).body("Unit whit Id " + unitId + " does not exist");
     }
 
-    public ResponseEntity<?> insertNewUnit(UnitNewDto unitNewDto) {
-        int employeeId = 1;//TODO Wyciągnąc z tokena
+    public ResponseEntity<?> insertNewUnit(UnitNewDto unitNewDto, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
         Unit unit = unitMapper.toEntity(unitNewDto);
         unit.setName(unit.getName().replaceAll("( +)", " ").trim().toLowerCase());
-        if (employeeRepository.findById(employeeId).isEmpty()) {
-            return ResponseEntity.status(404).body("Employee is not in Database");
-        }
         if (unitRepository.findByName(unit.getName().toLowerCase()).isPresent()) {
             return ResponseEntity.status(400).body("Unit with this name already exist");
         }
         unit.setDescription(unit.getDescription().replaceAll("( +)", " ").trim());
-        Employee employee = employeeRepository.findById(employeeId).get();
         unit.setOwner(employee);
         Set<Employee> members = new HashSet<>();
         members.add(employee);
@@ -194,14 +193,18 @@ public class UnitService {
         return ResponseEntity.ok(unitReturn);
     }
 
-    public ResponseEntity<?> updateUnit(int unitId, UnitNewDto unitNewDto) {
+    public ResponseEntity<?> updateUnit(int unitId, UnitNewDto unitNewDto, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
         Unit unit;
         if (unitRepository.findById(unitId).isPresent()) {
             unit = unitRepository.findById(unitId).get();
         } else {
             return ResponseEntity.status(404).body("Unit with given ID is not present in database");
         }
-
+        if(unit.getOwner() != employee){
+            return ResponseEntity.status(403).build();
+        }
         NotificationType notification = null;
         if (!Objects.isNull(unitNewDto.getName())) {
             unitNewDto.setName(unitNewDto.getName().replaceAll("( +)", " ").trim().toLowerCase());
