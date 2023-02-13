@@ -8,6 +8,8 @@ import java.util.Optional;
 @Repository
 public interface HashtagRepository extends JpaRepository<Hashtag, Integer> {
 
+    Optional<Hashtag> findByContentIgnoreCase(String content);
+
     Optional<Hashtag> findByContent(String content);
     Hashtag getById(Integer id);
 

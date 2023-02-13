@@ -25,7 +25,7 @@ public class EventValidator {
         if (!event.getType().equals(eventDto.getEventType()))
             errors.put(EventType.class.getName() + " error", "You cannot edit eventType");
         else {
-            if (event.getType().name().contains("LIMITED")) {
+            if (event.getType().name().startsWith("LIMITED")) {
                 if (eventDto.getMemberLimit() < 2) {
                     errors.put("memberLimit" + " error", "You cannot set memberLimit to less than 2");
                 }
@@ -58,7 +58,7 @@ public class EventValidator {
         if (eventDto.getEventType().name().equals(""))
             errors.put(EventType.class.getName() + " error", "You have to enter event type");
         else {
-            if (eventDto.getEventType().name().contains("LIMITED")) {
+            if (eventDto.getEventType().name().startsWith("LIMITED")) {
                 if (eventDto.getMemberLimit() < 2) {
                     errors.put("memberLimit" + " error", "You cannot set memberLimit to less than 2");
                 }

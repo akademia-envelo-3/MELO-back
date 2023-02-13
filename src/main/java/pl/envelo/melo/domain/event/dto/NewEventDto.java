@@ -38,7 +38,7 @@ public class NewEventDto {
     private EventType eventType;
     @NotNull
     private int organizerId;
-    @NotNull
+    @NotNull(message = "Periodic type can not be null")
     private PeriodicType periodicType;
     @Size(max = 100)
     private Set<HashtagDto> hashtags;

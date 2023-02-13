@@ -17,16 +17,30 @@ public class HashtagService {
     private final HashtagMapper hashtagMapper;
 
     public Hashtag insertNewHashtag(HashtagDto hashtagDto) {
+
         Hashtag hashtag = hashtagMapper.toEntity(hashtagDto);
+
         if(hashtagRepository.existsByContent(hashtag.getContent().toLowerCase())){
             hashtag = hashtagRepository.findByContent(hashtag.getContent().toLowerCase()).get();
             incrementHashtagGlobalCount(hashtag.getId());
+
         }
         else{
             hashtag.setGlobalUsageCount(1);
+            hashtag.setContent(hashtag.getContent().toLowerCase());
             hashtagRepository.save(hashtag);
         }
         return hashtag;
+//        Optional<Hashtag> hashtag = hashtagRepository.findByContentIgnoreCase(hashtagDto.getContent());
+//        if(hashtag.isPresent() && hashtag.get().getContent().equalsIgnoreCase(hashtagDto.getContent())){
+//            incrementHashtagGlobalCount(hashtag.get().getId());
+//        }
+//        else{
+//            hashtag = Optional.ofNullable(hashtagMapper.toEntity(hashtagDto));
+//            hashtag.get().setGlobalUsageCount(1);
+//            hashtagRepository.save(hashtag.get());
+//        }
+//        return hashtag.get();
     }
 
     public ResponseEntity<?> incrementHashtagGlobalCount(int id) {

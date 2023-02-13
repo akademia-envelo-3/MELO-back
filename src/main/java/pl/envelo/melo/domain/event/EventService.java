@@ -134,11 +134,16 @@ public class EventService {
 
             if (!employee.isPresent()) {
                 return ResponseEntity.status(404).body("Employee with id " + newEventDto.getOrganizerId() + " does not exist");
-            } else if (event.getType().toString().startsWith("LIMITED") && event.getMemberLimit() < 1) {
-                return ResponseEntity.status(400).body("Event with limited eventType must have higher memberLimit than 0.");
             } else if (!category.isPresent()) {
                 return ResponseEntity.status(404).body("The specified category does not exist, first submit a request to create a category to admin");
             } else {
+
+                Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
+                validationResult.forEach((k, v) -> System.out.println(k + " " + v));
+                if (validationResult.size() != 0) {
+                    return ResponseEntity.badRequest().body(validationResult);
+                }
+
                 if (newEventDto.getLocation() != null) {
                     event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
                 }
@@ -146,12 +151,6 @@ public class EventService {
                     event.setUnit(unit.get());
                 } else {
                     event.setUnit(null);
-                }
-
-                Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
-                validationResult.forEach((k, v) -> System.out.println(k + " " + v));
-                if (validationResult.size() != 0) {
-                    return ResponseEntity.badRequest().body(validationResult);
                 }
 
                 event.setOrganizer(employee.get());
@@ -162,6 +161,7 @@ public class EventService {
                 event.setStartTime(newEventDto.getStartTime());
                 event.setEndTime(newEventDto.getEndTime());
                 event.setMemberLimit(newEventDto.getMemberLimit());
+                event.setPeriodicType(newEventDto.getPeriodicType());
 
                 if (!Objects.isNull(additionalAttachments)) {
                     /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
@@ -205,9 +205,12 @@ public class EventService {
 
                 Set<Hashtag> hashtags = new HashSet<>();
 
-                Set<HashtagDto> hashtagDtos = findHashtagFromEvent(newEventDto.getName(), newEventDto.getDescription());
-                for (HashtagDto hashtagDto : hashtagDtos) {
-                    Optional<Hashtag> hashtag = hashtagRepository.findByContent(hashtagDto.getContent());
+                Set<HashtagDto> hashtagDtoFromTitleAndDescription = findHashtagFromEvent(newEventDto.getName(), newEventDto.getDescription());
+                if (newEventDto.getHashtags() != null) {
+                    hashtagDtoFromTitleAndDescription.addAll(newEventDto.getHashtags());
+                }
+                for (HashtagDto hashtagDto : hashtagDtoFromTitleAndDescription) {
+                    hashtagDto.setContent(hashtagDto.getContent().toLowerCase());
                        hashtags.add(hashtagService.insertNewHashtag(hashtagDto));
                 }
 
@@ -417,13 +420,12 @@ public class EventService {
         System.out.println(text);
         for (String s : textArray) {
             if (s.startsWith("#")) {
-                s = s.replaceFirst("#","").toLowerCase();
-                hashtagSet.add(new HashtagDto(s));
+                s = s.replaceFirst("#","");
+                hashtagSet.add(new HashtagDto(s.toLowerCase()));
             }
         }
         return hashtagSet;
     }
-
 
     public ResponseEntity<?> sendResignationTokenMail(Event event, Person person){
         if(mailService.sendMailWithToken(person,event, false )){
@@ -431,6 +433,5 @@ public class EventService {
         }
         return ResponseEntity.status(404).body("Email was not sent");
     }
-
 }
 
