@@ -53,6 +53,7 @@ import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -219,7 +220,7 @@ public class EventService {
                 employeeService.addToJoinedEvents(employee.get().getId(), event);
                 employeeService.addToOwnedEvents(employee.get().getId(), event);
 
-                return ResponseEntity.status(201).body("Event created");
+                return ResponseEntity.created(URI.create("/v1/events/" + event.getId())).build();
             }
 
         } else
