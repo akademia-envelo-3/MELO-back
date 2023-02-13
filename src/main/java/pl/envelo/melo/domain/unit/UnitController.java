@@ -115,7 +115,7 @@ public class UnitController {
     public ResponseEntity<?> addNewUnit(@RequestBody @Valid UnitNewDto unitDto) {
         return unitService.insertNewUnit(unitDto);
     }
-
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PatchMapping("/{unit-id}")
     @Operation(summary = "Edit unit", responses = {
             @ApiResponse(responseCode = "200", description = "Unit edited successfully.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitToDisplayOnListDto.class))),

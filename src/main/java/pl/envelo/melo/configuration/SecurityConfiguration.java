@@ -42,7 +42,7 @@ public class SecurityConfiguration {
                 .requestMatchers( "/api-docs/**").permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher( "/"+apiVersion+eventsPath+"/participation/**")).permitAll()
-                .requestMatchers(new RegexRequestMatcher("/"+apiVersion+eventsPath+"/\\d+/external", HttpMethod.GET.name())).permitAll()
+                .requestMatchers(new RegexRequestMatcher("/"+apiVersion+eventsPath+"/\\d+/external", HttpMethod.POST.name())).permitAll()
                 .and()
                 .authorizeHttpRequests().anyRequest().authenticated()
                 .and()
