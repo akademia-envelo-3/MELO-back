@@ -45,7 +45,12 @@ public class AuthorizationService {
             return returnCode(createdEntities(tokenPrincipal, principalId));
         }
     }
-
+    public UUID getUUID(Principal principal){
+        return UUID.fromString((String) ((JwtAuthenticationToken)principal).getTokenAttributes().get("sub"));
+    }
+    public String getEmail(Principal principal){
+        return (String)((JwtAuthenticationToken)principal).getTokenAttributes().get("email");
+    }
     private int createdEntities(JwtAuthenticationToken tokenPrincipal, UUID principalId) {
         Person person;
         try {

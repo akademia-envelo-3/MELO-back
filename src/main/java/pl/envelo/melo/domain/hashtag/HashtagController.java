@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.hashtag;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,7 +26,7 @@ public class HashtagController {
     public ResponseEntity<Hashtag> unhideHashtag(int id) {
         return null;
     }
-
+    @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
     @GetMapping("/admin/hashtagStatistic")
     public ResponseEntity<?> showHashtagsStatistic(){
         return hashtagService.listHashtagStatistic();
