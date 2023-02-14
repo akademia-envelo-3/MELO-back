@@ -64,7 +64,7 @@ public class EventController {
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping("/{id}")
-    public ResponseEntity<?> editEvent(@RequestParam("id") int id, @RequestBody NewEventDto newEventDto) {
+    public ResponseEntity<?> editEvent(@PathVariable("id") int id, @RequestBody NewEventDto newEventDto) {
         return eventService.updateEvent(id, newEventDto);
     }
 
@@ -106,7 +106,7 @@ public class EventController {
     //@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(encoding = @Encoding(name = "eventData", contentType = "application/json")))
     //W razie problemów na froncie, pokombinować z enkodowaniem. v2.0 Swaggera, nie wspiera, więc poniższe rozwiązanie wymaga w Swaggerze, uploadu JSON w formie
     //pliku .json. W PostMan można wysłać zarówno plik jak i json "tekstowy" z parametrem Content-Type application/json.
-    public ResponseEntity<?> addEvent(@RequestPart(value = "eventData") @Parameter(schema = @Schema(type = "string", format = "binary")) NewEventDto newEventDto,
+    public ResponseEntity<?> addEvent(@RequestPart(value = "eventData") @Parameter(schema = @Schema(type = "string", format = "binary")) @Valid NewEventDto newEventDto,
                                       @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
                                       @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments) {
 
