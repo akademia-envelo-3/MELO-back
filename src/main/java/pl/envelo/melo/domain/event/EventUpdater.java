@@ -397,6 +397,7 @@ public class EventUpdater {
     }
 
     public boolean removeCategory(Event event, int categoryId) {
+        if(event.getCategory()==null) return false;
         if (categoryId == event.getCategory().getId()) {
             event.setCategory(null);
             return true;
