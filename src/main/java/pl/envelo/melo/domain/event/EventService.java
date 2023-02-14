@@ -139,7 +139,6 @@ public class EventService {
                 event.setCategory(null);
             } else {
                 category = categoryRepository.findById(newEventDto.getCategoryId());
-                event.setCategory(category.get());
             }
 
             Optional<Unit> unit = unitRepository.findById(newEventDto.getUnitId());
@@ -166,6 +165,7 @@ public class EventService {
                 event.setMembers(members);
                 event.setStartTime(newEventDto.getStartTime());
                 event.setEndTime(newEventDto.getEndTime());
+                event.setCategory(category.get());
                 event.setMemberLimit(newEventDto.getMemberLimit());
                 event.setPeriodicType(newEventDto.getPeriodicType());
 
@@ -247,8 +247,6 @@ public class EventService {
                 } else {
                     event.setUnit(null);
                 }
-
-
 
                 event.setInvited(invitedCopyMembers);
                 event.setHashtags(hashtags);
