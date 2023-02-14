@@ -55,15 +55,13 @@ public class EventValidator {
     public Map<String, String> validateToCreateEvent(NewEventDto eventDto) {
         Map<String, String> errors = new HashMap<>();
 
-        if (eventDto.getEventType().name().equals(""))
-            errors.put(EventType.class.getName() + " error", "You have to enter event type");
-        else {
-            if (eventDto.getEventType().name().startsWith("LIMITED")) {
-                if (eventDto.getMemberLimit() < 2) {
-                    errors.put("memberLimit" + " error", "You cannot set memberLimit to less than 2");
-                }
+
+        if (eventDto.getEventType().name().startsWith("LIMITED")) {
+            if (eventDto.getMemberLimit() < 2) {
+                errors.put("memberLimit" + " error", "You cannot set memberLimit to less than 2");
             }
         }
+
         if (eventDto.getStartTime() != null) {
             if (eventDto.getStartTime().compareTo(eventDto.getEndTime()) >= 0) {
                 errors.put("endTime error", "You must set endTime to be after startTime");

@@ -133,13 +133,21 @@ public class EventService {
         if (newEventDto != null) {
             Event event = eventMapper.newEvent(newEventDto);
             Optional<Employee> employee = employeeRepository.findById(newEventDto.getOrganizerId());
-            Optional<Category> category = categoryRepository.findById(newEventDto.getCategoryId());
+
+            Optional<Category> category = Optional.empty();
+            if (newEventDto.getCategoryId() == null) {
+                event.setCategory(null);
+            } else {
+                category = categoryRepository.findById(newEventDto.getCategoryId());
+                event.setCategory(category.get());
+            }
+
             Optional<Unit> unit = unitRepository.findById(newEventDto.getUnitId());
 
             if (!employee.isPresent()) {
                 return ResponseEntity.status(404).body("Employee with id " + newEventDto.getOrganizerId() + " does not exist");
-            } else if (!category.isPresent()) {
-                return ResponseEntity.status(404).body("The specified category does not exist, first submit a request to create a category to admin");
+            } else if (!category.isPresent() || category.get().isHidden()) {
+                return ResponseEntity.status(404).body("The specified category does not exist or is hidden, first submit a request to create a category to admin");
             } else {
 
                 Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
@@ -156,7 +164,6 @@ public class EventService {
                 Set<Person> members = new HashSet<>();
                 members.add(employee.get().getUser().getPerson());
                 event.setMembers(members);
-                event.setCategory(category.get());
                 event.setStartTime(newEventDto.getStartTime());
                 event.setEndTime(newEventDto.getEndTime());
                 event.setMemberLimit(newEventDto.getMemberLimit());
@@ -228,17 +235,20 @@ public class EventService {
                     event.setUnit(unit.get());
                     membersUnit = unit.get().getMembers();
                     invitedCopyMembers.addAll(membersUnit);
+
+                    if (unit.get().getEventList() == null){
+                        List<Event> eventList = new ArrayList<>();
+                        eventList.add(event);
+                        unit.get().setEventList(eventList);
+                    } else {
+                        unit.get().getEventList().add(event);
+                    }
+
                 } else {
                     event.setUnit(null);
                 }
 
-                if (unit.get().getEventList() == null){
-                    List<Event> eventList = new ArrayList<>();
-                    eventList.add(event);
-                    unit.get().setEventList(eventList);
-                } else {
-                    unit.get().getEventList().add(event);
-                }
+
 
                 event.setInvited(invitedCopyMembers);
                 event.setHashtags(hashtags);

@@ -34,7 +34,7 @@ public class NewEventDto {
     private LocalDateTime startTime;
     @DateTimeFormat(pattern = "")
     private LocalDateTime endTime;
-    @NotNull
+    @NotNull(message = "Event type cant be null")
     private EventType eventType;
     @NotNull
     private int organizerId;
