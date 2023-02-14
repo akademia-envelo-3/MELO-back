@@ -63,7 +63,7 @@ public class UnitController {
     }
 
     @PreAuthorize("hasAnyAuthority( @securityConfiguration.getEmployeeRole(), @securityConfiguration.getAdminRole())")
-    @PatchMapping("/{unitId}")
+    @PatchMapping("/{unitId}/owner")
     @Operation(summary = "Change unit owner from current to another employee")
     public ResponseEntity<?> changeOwnership(@PathVariable("unitId") int unitId,
                                              @RequestParam("newEmployeeId") int newEmployeeId,

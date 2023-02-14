@@ -66,8 +66,8 @@ public class CategoryController {
                     ),
                     @ApiResponse(responseCode = "404", description = "Category with given ID does not exist in database")
             })
-    public ResponseEntity<?> getCategory(@RequestParam("id") int id) {
-        return categoryService.getCategory(id);
+    public ResponseEntity<?> getCategory(@RequestParam("id") int id, Principal principal) {
+        return categoryService.getCategory(id, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
