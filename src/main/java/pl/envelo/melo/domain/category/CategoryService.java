@@ -83,7 +83,7 @@ public class CategoryService {
         List<Category> listOfCategories = categoryRepository.findAll();
         if (Objects.nonNull(admin))
             return ResponseEntity.ok(listOfCategories.stream().toList());
-        if(Objects.nonNull(principal))
+        if(Objects.nonNull(employee))
            return ResponseEntity.ok(listOfCategories.stream().filter(category -> !category.isHidden()).toList());
         return ResponseEntity.status(403).build();
     }
