@@ -1,13 +1,18 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.mail.Multipart;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
+import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.attachment.AttachmentService;
+import pl.envelo.melo.domain.attachment.AttachmentType;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.hashtag.Hashtag;
@@ -82,7 +87,7 @@ public class EventUpdater {
             startTime = null;
         } else {
             try {
-                startTime = LocalDateTime.parse(startTimeObject.toString().replace("T"," "), format);
+                startTime = LocalDateTime.parse(startTimeObject.toString().replace("T", " "), format);
             } catch (DateTimeException e) {
                 return Optional.of(e);
             }
@@ -92,7 +97,7 @@ public class EventUpdater {
             endTime = null;
         } else {
             try {
-                endTime = LocalDateTime.parse(endTimeObject.toString().replace("T"," "), format);
+                endTime = LocalDateTime.parse(endTimeObject.toString().replace("T", " "), format);
             } catch (DateTimeException e) {
                 return Optional.of(e);
             }
@@ -142,17 +147,15 @@ public class EventUpdater {
         if (event.getPeriodicType() != null && event.getPeriodicType().equals(periodicType)) {
             return false;
         } else {
-            if(event.getPeriodicType() == null) {
-                if (event.getUnit() != null && periodicType!=PeriodicType.NONE) {
+            if (event.getPeriodicType() == null) {
+                if (event.getUnit() != null && periodicType != PeriodicType.NONE) {
                     event.setPeriodicType(periodicType);
                     return true;
-                } else if(periodicType==PeriodicType.NONE) {
+                } else if (periodicType == PeriodicType.NONE) {
                     event.setPeriodicType(periodicType);
                     return true;
-                }
-                else return false;
-            }
-            else if (event.getPeriodicType().equals(PeriodicType.NONE) ) {
+                } else return false;
+            } else if (event.getPeriodicType().equals(PeriodicType.NONE)) {
                 if (event.getUnit() != null) {
                     event.setPeriodicType(periodicType);
                     //TODO wywołać metodę która "stworzy" cykilczność wydarzenia
@@ -400,4 +403,75 @@ public class EventUpdater {
         }
         return false;
     }
+
+    @Transactional
+    public boolean removeAttachments(Event event, Object listAttachment) {
+        try {
+            ArrayList<String> attachments = (ArrayList<String>) listAttachment;
+            Set<String> eventAttachments = event.getAttachments().stream().map(Attachment::getName).collect(Collectors.toSet());
+            for (String i : attachments) {
+                if (eventAttachments.contains(i)) {
+                    event.getAttachments().remove(attachmentRepository.findByName(i));
+                    attachmentRepository.delete(attachmentRepository.findByName(i));
+                }
+            }
+            return true;
+        } catch (ClassCastException e) {
+            return false;
+        }
+    }
+
+    @Transactional
+    public boolean addAttachments(Event event, MultipartFile[] additionalAttachments) {
+
+            /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
+            for (MultipartFile multipartFile : additionalAttachments) {
+                AttachmentType attachmentType = attachmentService.validateAttachmentType(multipartFile);
+                if (Objects.isNull(attachmentType)) {
+                    return false;
+                }
+            }
+            for (MultipartFile multipartFile : additionalAttachments) {
+                Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
+                if (attachmentFromServer == null) {
+                    return false;
+                }
+                if (Objects.isNull(event.getAttachments())) {
+                    event.setAttachments(new HashSet<>());
+                }
+                event.getAttachments().add(attachmentFromServer);
+            }
+        return true;
+    }
+
+    public boolean removeMainPhoto(Event event, Object mainPhoto) {
+        if(event.getMainPhoto()==null)
+            return false;
+        try{
+            String id = (String) mainPhoto;
+            if(Objects.equals(event.getMainPhoto().getName(), id)){
+                event.setMainPhoto(null);
+                attachmentRepository.delete(attachmentRepository.findByName(id));
+                return true;
+            }
+            return false;
+        }catch (ClassCastException e) {
+            return false;
+        }
+    }
+
+    public boolean addMainPhoto(Event event, MultipartFile mainPhoto) {
+        Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
+        if (mainPhotoFromServer == null) {
+            return false;
+        }
+        if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
+            return false;
+        }
+        event.setMainPhoto(mainPhotoFromServer);
+        return true;
+    }
+
+
 }
+

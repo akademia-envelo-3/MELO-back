@@ -246,29 +246,30 @@ public class EventService {
         }
     }
 
-    public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes) {
+    public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes, MultipartFile mainPhoto, MultipartFile[] additionalAttachments) {
         boolean general_change = false;
-        //general_change = true;
         Optional<Event> optionalEvent = eventRepository.findById(id);
         if (optionalEvent.isEmpty())
             return ResponseEntity.badRequest().body("Event with id " + id + " not found");
         Event event = optionalEvent.get();
         if (!Objects.isNull(updates)) {
             if (!Objects.isNull(updates.get("name"))) {
-                Set<HashtagDto> oldHashtagDtos = findHashtagFromEvent(event.getName(),"");
+                Set<HashtagDto> oldHashtagDtos = findHashtagFromEvent(event.getName(), "");
                 if (eventUpdater.updateName(event, updates.get("name").toString())) {
-                    Set<HashtagDto> hashtagDtos = findHashtagFromEvent(updates.get("name").toString(),"");
-                    if(hashtagDtos!=null||!hashtagDtos.isEmpty()) eventUpdater.updateHashtags(event, hashtagDtos, oldHashtagDtos);
+                    Set<HashtagDto> hashtagDtos = findHashtagFromEvent(updates.get("name").toString(), "");
+                    if (hashtagDtos != null || !hashtagDtos.isEmpty())
+                        eventUpdater.updateHashtags(event, hashtagDtos, oldHashtagDtos);
                     general_change = true;
                 } else {
                     return ResponseEntity.status(404).body("Name is the same as was");
                 }
             }
             if (!Objects.isNull(updates.get("description"))) {
-                Set<HashtagDto> oldHashtagDtos = findHashtagFromEvent("",event.getDescription());
+                Set<HashtagDto> oldHashtagDtos = findHashtagFromEvent("", event.getDescription());
                 if (eventUpdater.updateDescription(event, updates.get("description").toString())) {
-                    Set<HashtagDto> hashtagDtos = findHashtagFromEvent("",updates.get("description").toString());
-                    if(hashtagDtos!=null||!hashtagDtos.isEmpty()) eventUpdater.updateHashtags(event, hashtagDtos, oldHashtagDtos);
+                    Set<HashtagDto> hashtagDtos = findHashtagFromEvent("", updates.get("description").toString());
+                    if (hashtagDtos != null || !hashtagDtos.isEmpty())
+                        eventUpdater.updateHashtags(event, hashtagDtos, oldHashtagDtos);
                     general_change = true;
                 } else {
                     return ResponseEntity.status(404).body("Description is the same as was");
@@ -277,7 +278,7 @@ public class EventService {
             if (!Objects.isNull(updates.get("startTime")) || !Objects.isNull(updates.get("endTime"))) {
                 Optional<?> updateDates = eventUpdater.updateDate(event, updates.get("startTime"), updates.get("endTime"));
                 if (updateDates.get() instanceof Boolean) {
-                    for (Person p: event.getMembers()) {
+                    for (Person p : event.getMembers()) {
                         Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
                         if (e.isPresent()) {
                             EventNotificationDto eventNotificationDto = new EventNotificationDto();
@@ -317,7 +318,7 @@ public class EventService {
             }
             if (!Objects.isNull(updates.get("location"))) {
                 if (eventUpdater.updateLocation(event, updates.get("location"))) {
-                    for (Person p: event.getMembers()) {
+                    for (Person p : event.getMembers()) {
                         Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
                         if (e.isPresent()) {
                             EventNotificationDto eventNotificationDto = new EventNotificationDto();
@@ -337,27 +338,27 @@ public class EventService {
                 } else return ResponseEntity.status(404).body("Theme is the same as was");
             }
         }
-        if(!Objects.isNull(adds)) {
+        if (!Objects.isNull(adds)) {
             if (!Objects.isNull(adds.get("hashtags"))) {
-                if(!eventUpdater.addHashtags(event, adds.get("hashtags")))
+                if (!eventUpdater.addHashtags(event, adds.get("hashtags")))
                     return ResponseEntity.status(404).body("Hashtags are in wrong format");
                 general_change = true;
             }
-            if(!Objects.isNull(adds.get("invitedMembers"))){
-                if(!eventUpdater.addInvitedMembers(event,adds.get("invitedMembers")))
+            if (!Objects.isNull(adds.get("invitedMembers"))) {
+                if (!eventUpdater.addInvitedMembers(event, adds.get("invitedMembers")))
                     return ResponseEntity.status(404).body("InvitedMembers are in wrong format");
             }
         }
-        if(!Objects.isNull(deletes)){
+        if (!Objects.isNull(deletes)) {
             if (!Objects.isNull(deletes.get("hashtags"))) {
-                if (!eventUpdater.removeHashtags(event, deletes.get("hashtags"))){
+                if (!eventUpdater.removeHashtags(event, deletes.get("hashtags"))) {
                     return ResponseEntity.status(404).body("Hashtags are in wrong format");
                 }
                 general_change = true;
             }
-            if(!Objects.isNull(deletes.get("invitedMembers"))){
-                if(!eventUpdater.removeInvitedMembers(event,deletes.get("invitedMembers")))
-                return ResponseEntity.status(404).body("InvitedMembers are in wrong format");
+            if (!Objects.isNull(deletes.get("invitedMembers"))) {
+                if (!eventUpdater.removeInvitedMembers(event, deletes.get("invitedMembers")))
+                    return ResponseEntity.status(404).body("InvitedMembers are in wrong format");
             }
             if (!Objects.isNull(deletes.get("categoryId"))) {
                 if (eventUpdater.removeCategory(event, Integer.parseInt(deletes.get("categoryId").toString()))) {
@@ -366,26 +367,49 @@ public class EventService {
                     return ResponseEntity.status(404).body("There is problem with changing category");//fixme
                 }
             }
+            if (!Objects.isNull((deletes.get("attachments")))) {
+                if (eventUpdater.removeAttachments(event, deletes.get("attachments"))) {
+                    general_change = true;
+                } else {
+                    return ResponseEntity.status(404).body("Attachments was not remove correctly");
+                }
+            }
+            if (!Objects.isNull((deletes.get("mainPhoto")))) {
+                if (eventUpdater.removeMainPhoto(event, deletes.get("mainPhoto"))) {
+                    general_change = true;
+                } else {
+                    return ResponseEntity.status(404).body("Main Photo was not remove correctly");
+                }
+            }
         }
-        if(general_change){
-            for (Person p: event.getMembers()) {
+        if (!Objects.isNull(additionalAttachments)) {
+            if (eventUpdater.addAttachments(event, additionalAttachments)) {
+                general_change = true;
+            } else {
+                return ResponseEntity.status(404).body("Attachments was not added correctly");
+            }
+        }
+        if (!Objects.isNull(mainPhoto)) {
+            if (eventUpdater.addMainPhoto(event, mainPhoto)) {
+                general_change = true;
+            } else {
+                return ResponseEntity.status(404).body("Main Photo was not added correctly");
+            }
+        }
+        if (general_change) {
+            for (Person p : event.getMembers()) {
                 Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
-                if(e.isPresent()) {
+                if (e.isPresent()) {
                     EventNotificationDto eventNotificationDto = new EventNotificationDto();
                     eventNotificationDto.setEventId(event.getId());
                     eventNotificationDto.setType(NotificationType.EVENT_UPDATED);
-                    eventNotificationDto.setContent("Wydarzenie "+event.getName()+ "został zmieniony");
+                    eventNotificationDto.setContent("Wydarzenie " + event.getName() + "został zmieniony");
 
                     eventNotificationDto.setEmployeeId(e.get().getId());
                     notificationService.insertEventNotification(eventNotificationDto);
                 }
             }
         }
-        //Map^
-        //TODO attachments
-        //TODO main photo
-
-
         return ResponseEntity.ok(eventDetailsMapper.convert(eventRepository.save(event)));
 
     }
@@ -531,7 +555,7 @@ public class EventService {
         System.out.println(text);
         for (String s : textArray) {
             if (s.startsWith("#")) {
-                s = s.replaceFirst("#","").toLowerCase();
+                s = s.replaceFirst("#", "").toLowerCase();
                 hashtagSet.add(new HashtagDto(s));
             }
         }
@@ -539,8 +563,8 @@ public class EventService {
     }
 
 
-    public ResponseEntity<?> sendResignationTokenMail(Event event, Person person){
-        if(mailService.sendMailWithToken(person,event, false )){
+    public ResponseEntity<?> sendResignationTokenMail(Event event, Person person) {
+        if (mailService.sendMailWithToken(person, event, false)) {
             return ResponseEntity.ok("Email was sent");
         }
         return ResponseEntity.status(404).body("Email was not sent");

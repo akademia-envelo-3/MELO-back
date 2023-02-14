@@ -61,9 +61,12 @@ public class EventController {
     }
 
 
-    @PatchMapping(value = "/{eventId}")
-    public ResponseEntity<?> editEvent(@PathVariable("eventId") int id, @RequestBody(required = false) Map<String,Map<String,Object>> update ) {
-        return eventService.updateEvent(id, update.get("updates"), update.get("adds"), update.get("deletes"));
+    @PatchMapping(value = "/{eventId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> editEvent(@PathVariable("eventId") int id,
+                                       @RequestPart(value = "update") @Parameter(schema = @Schema(type = "string", format = "binary")) Map<String,Map<String,Object>> update,
+                                       @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
+                                       @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments ) {
+        return eventService.updateEvent(id, update.get("updates"), update.get("adds"), update.get("deletes"),mainPhoto,additionalAttachments);
     }
 
     @GetMapping("/{id}/edit-form")
