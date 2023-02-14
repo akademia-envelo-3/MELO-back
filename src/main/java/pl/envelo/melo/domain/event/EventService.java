@@ -383,6 +383,9 @@ public class EventService {
             }
         }
         if (!Objects.isNull(additionalAttachments)) {
+            if(event.getAttachments().size()+additionalAttachments.length>10){
+                return ResponseEntity.status(404).body("You can upload max 10 attachments to Your Event");
+            }
             if (eventUpdater.addAttachments(event, additionalAttachments)) {
                 general_change = true;
             } else {
