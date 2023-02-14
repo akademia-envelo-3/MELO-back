@@ -145,7 +145,7 @@ public class EventService {
 
             if (!employee.isPresent()) {
                 return ResponseEntity.status(404).body("Employee with id " + newEventDto.getOrganizerId() + " does not exist");
-            } else if (!category.isPresent() || category.get().isHidden()) {
+            } else if (event.getCategory()!= null && !category.isPresent() || category.get().isHidden()) {
                 return ResponseEntity.status(404).body("The specified category does not exist or is hidden, first submit a request to create a category to admin");
             } else {
 
