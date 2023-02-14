@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.jdbc.object.UpdatableSqlQuery;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,13 +55,13 @@ public class EventController {
     private final CommentService commentService;
     private final PersonService personService;
 
-
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping()
     public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
         return eventService.listAllEvents();
     }
 
-
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PatchMapping(value = "/{eventId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> editEvent(@PathVariable("eventId") int id,
                                        @RequestPart(value = "update") @Parameter(schema = @Schema(type = "string", format = "binary")) Map<String,Map<String,Object>> update,
@@ -69,27 +70,32 @@ public class EventController {
         return eventService.updateEvent(id, update.get("updates"), update.get("adds"), update.get("deletes"),mainPhoto,additionalAttachments);
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}/edit-form")
     public ResponseEntity<?> editForm(@RequestParam("id") int id) {
         return eventService.editEventForm(id);
     }
-    //    @GetMapping()
 
+    //    @GetMapping()
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}")
     public ResponseEntity<?> getEvent(@RequestParam("id") int id, @RequestParam("employeeId") Integer employeeId) {
         return eventService.getEvent(id, employeeId);
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     //    @GetMapping()
     public ResponseEntity<List<Person>> getEventMembers() {
         return null;
     }
 
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     //    @GetMapping()/
     public ResponseEntity<EmployeeNameDto> getEventOrganizer(int id) {
         return null;
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @Transactional
     @PatchMapping("/{id}/organizer")
     @Operation(summary = "Change event organizer from current to another")
@@ -97,7 +103,7 @@ public class EventController {
         return eventService.changeEventOrganizer(eventId, employeeId);
     }
 
-
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     //@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(encoding = @Encoding(name = "eventData", contentType = "application/json")))
     //W razie problemów na froncie, pokombinować z enkodowaniem. v2.0 Swaggera, nie wspiera, więc poniższe rozwiązanie wymaga w Swaggerze, uploadu JSON w formie
@@ -116,6 +122,7 @@ public class EventController {
 
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping(value = "/{id}/comments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> addCommentToEvent(@PathVariable int id,
                                                @RequestPart(value = "commentData", required = false)
@@ -130,6 +137,7 @@ public class EventController {
         return commentService.insertNewComment(id, commentDto, multipartFiles);
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping("/{event-id}/polls")
     @Operation(summary = "Add new poll to event",
             responses = {
@@ -148,13 +156,14 @@ public class EventController {
 
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("/{event-id}/polls/{poll-id}")
     @Operation(summary = "Retrieve information about poll in event with given ID's",
             responses = {
                     @ApiResponse(responseCode = "200",
                             description = "Displays poll with given ID in event with given ID succesfully.<br />" +
-                            "id + pollAnswer when Employee haven't voted yet.<br />" +
-                            "result + pollAnswer when Employee already voted.", content = {
+                                    "id + pollAnswer when Employee haven't voted yet.<br />" +
+                                    "result + pollAnswer when Employee already voted.", content = {
                             @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = PollDto.class))
                     }),
@@ -165,6 +174,7 @@ public class EventController {
         return pollService.getPoll(eventId, pollId, employeeId);
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping("/{event-id}/polls/vote/{emp-id}")
     @Operation(summary = "Vote in poll",
             responses = {
@@ -182,7 +192,6 @@ public class EventController {
         return pollService.insertNewPollAnswer(eventId, empId, pollSendResultDto); // returns PollResultDto
     }
 
-
     @PostMapping("/{id}/external")
     @Operation(summary = "Send mail to guest with link to confirm participation on event ",
             responses = {
@@ -190,14 +199,13 @@ public class EventController {
                     @ApiResponse(responseCode = "400", description = "Various validation with description: <br />" +
                             "Token was already created.<br />" +
                             "Event is not public, guest can't be added.<br />" +
-                            "Event is full. <br />"+"Char amount of one pollAnswer must be between 1 and 255.<br />"),
-                    @ApiResponse(responseCode = "404", description = "Event does not exist.<br/>"+
+                            "Event is full. <br />" + "Char amount of one pollAnswer must be between 1 and 255.<br />"),
+                    @ApiResponse(responseCode = "404", description = "Event does not exist.<br/>" +
                             "Email was not send")
             })
     public ResponseEntity<?> addGuestToEvent(@Valid @RequestBody AddGuestToEventDto addGuestToEventDto, @PathVariable("id") int eventId) {
         return eventService.sendConfirmationMail(eventId, addGuestToEventDto);
     }
-
 
     @GetMapping("/participation")
     @Operation(summary = "Adding or removing guest from event.",
@@ -207,14 +215,15 @@ public class EventController {
                             "Person is still on list.<br />" +
                             "MailToken still exist.<br />" +
                             "Event is full. <br />"),
-                    @ApiResponse(responseCode = "404", description = "Event does not exist.<br/>"+
-                            "Email was not send.<br/>"+
+                    @ApiResponse(responseCode = "404", description = "Event does not exist.<br/>" +
+                            "Email was not send.<br/>" +
                             "Token is not in database")
             })
     public ResponseEntity<?> toggleParticipation(@Valid @RequestParam("token") UUID token) {
         return eventService.toggleParticipation(token);
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}/join/{employeeId}")
     @Operation(summary = "Add employee to event members",
             responses = {
@@ -228,6 +237,7 @@ public class EventController {
 
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     //    @PostMapping()
     public ResponseEntity<?> acceptInvite(int employeeId, int eventId) {
         return null;
@@ -238,11 +248,13 @@ public class EventController {
         return null;
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     //    @GetMapping
     public ResponseEntity<List<Person>> getAllInvited(int eventId) {
         return null;
     }
 
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @Transactional
     @PatchMapping("/{eventId}/members/{employeeId}")
     @Operation(summary = "Remove employee from event")

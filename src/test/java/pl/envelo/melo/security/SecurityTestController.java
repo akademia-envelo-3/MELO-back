@@ -28,4 +28,18 @@ public class SecurityTestController {
         }
         return ResponseEntity.ok(authorizationService.inflateUser(principal));
     }
+    @GetMapping("/test/security/mail")
+    public ResponseEntity<?> getUserMail(Principal principal){
+        if(principal == null){
+            return ResponseEntity.status(HttpStatusCode.valueOf(401)).build();
+        }
+        return ResponseEntity.ok(authorizationService.getEmail(principal));
+    }
+    @GetMapping("/test/security/uuid")
+    public ResponseEntity<?> getUserUUID(Principal principal){
+        if(principal == null){
+            return ResponseEntity.status(HttpStatusCode.valueOf(401)).build();
+        }
+        return ResponseEntity.ok(authorizationService.getUUID(principal));
+    }
 }
