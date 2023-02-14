@@ -18,7 +18,7 @@ public class Hashtag {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @NotNull
-    @Column(nullable = false, length = 50, unique = true)
+    @Column(nullable = false, length = 50) // unique = true)
     private String content;
     @Column(nullable = false)
     private int globalUsageCount;
@@ -29,7 +29,7 @@ public class Hashtag {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Hashtag hashtag = (Hashtag) o;
-        return Objects.equals(content, hashtag.content);
+        return content.equalsIgnoreCase(hashtag.content);
     }
 
     @Override

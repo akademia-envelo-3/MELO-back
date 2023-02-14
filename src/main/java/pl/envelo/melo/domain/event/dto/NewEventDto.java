@@ -34,29 +34,19 @@ public class NewEventDto {
     private LocalDateTime startTime;
     @DateTimeFormat(pattern = "")
     private LocalDateTime endTime;
-    @NotNull
+    @NotNull(message = "Event type cant be null")
     private EventType eventType;
     @NotNull
     private int organizerId;
-    @NotNull
+    @NotNull(message = "Periodic type can not be null")
     private PeriodicType periodicType;
     @Size(max = 100)
     private Set<HashtagDto> hashtags;
-    private int memberLimit;
+    private long memberLimit;
     private Set<Integer> invitedMembers;
     private Integer unitId;
     private LocationDto location;
     private Integer categoryId;
     private Theme theme;
 
-    public NewEventDto(String name, String description, LocalDateTime startTime, LocalDateTime endTime,
-                        EventType eventType, int organizerId, PeriodicType periodicType){
-        this.name = name;
-        this.description = description;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.eventType = eventType;
-        this.organizerId = organizerId;
-        this.periodicType = periodicType;
-    }
 }
