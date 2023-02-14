@@ -141,13 +141,17 @@ public class EventService {
                 category = categoryRepository.findById(newEventDto.getCategoryId());
             }
 
-            Optional<Unit> unit = unitRepository.findById(newEventDto.getUnitId());
-
             if (!employee.isPresent()) {
                 return ResponseEntity.status(404).body("Employee with id " + newEventDto.getOrganizerId() + " does not exist");
-            } else if (event.getCategory()!= null && !category.isPresent() || category.get().isHidden()) {
-                return ResponseEntity.status(404).body("The specified category does not exist or is hidden, first submit a request to create a category to admin");
+
             } else {
+
+                if (category.isPresent() && !category.get().isHidden()) {
+                    event.setCategory(category.get());
+                } else {
+                    return ResponseEntity.status(404).body("Category you tried to add is not available anymore");
+                 //   event.setCategory(null);
+                }
 
                 Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
                 validationResult.forEach((k, v) -> System.out.println(k + " " + v));
@@ -165,7 +169,6 @@ public class EventService {
                 event.setMembers(members);
                 event.setStartTime(newEventDto.getStartTime());
                 event.setEndTime(newEventDto.getEndTime());
-                event.setCategory(category.get());
                 event.setMemberLimit(newEventDto.getMemberLimit());
                 event.setPeriodicType(newEventDto.getPeriodicType());
 
@@ -231,27 +234,32 @@ public class EventService {
                 }
 
                 Set<Employee> membersUnit;
-                if (unit.isPresent()) {
-                    event.setUnit(unit.get());
-                    membersUnit = unit.get().getMembers();
-                    invitedCopyMembers.addAll(membersUnit);
-
-                    if (unit.get().getEventList() == null){
-                        List<Event> eventList = new ArrayList<>();
-                        eventList.add(event);
-                        unit.get().setEventList(eventList);
-                    } else {
-                        unit.get().getEventList().add(event);
-                    }
-
-                } else {
+                Optional<Unit> unit = Optional.empty();
+                if (newEventDto.getUnitId() == null){
                     event.setUnit(null);
                 }
+                else {
+                    unit = unitRepository.findById(newEventDto.getUnitId());
 
+                    if (unit.isPresent()) {
+                        event.setUnit(unit.get());
+                        membersUnit = unit.get().getMembers();
+                        invitedCopyMembers.addAll(membersUnit);
+
+                        if (unit.get().getEventList() == null) {
+                            List<Event> eventList = new ArrayList<>();
+                            eventList.add(event);
+                            unit.get().setEventList(eventList);
+                        } else {
+                            unit.get().getEventList().add(event);
+                        }
+                    } else {
+                        return ResponseEntity.status(404).body("Unit you tried to add is not available");
+                    }
+                }
                 event.setInvited(invitedCopyMembers);
                 event.setHashtags(hashtags);
                 eventRepository.save(event);
-                unitRepository.save(unit.get());
                 employeeService.addToJoinedEvents(employee.get().getId(), event);
                 employeeService.addToOwnedEvents(employee.get().getId(), event);
                 sendEventInvitationNotification(event,NotificationType.INVITE);
