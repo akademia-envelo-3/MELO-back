@@ -70,7 +70,7 @@ public class EventController {
 
     @Transactional
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
-    @GetMapping()
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<EventToDisplayOnListDto>> get(
             @And({
@@ -98,10 +98,10 @@ public class EventController {
         return headers;
     }
 
-    /*@GetMapping()
-    public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
-        return eventService.listAllEvents();
-    }
+//    @GetMapping()
+//    public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
+//        return eventService.listAllEvents();
+//    }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping("/{id}")
