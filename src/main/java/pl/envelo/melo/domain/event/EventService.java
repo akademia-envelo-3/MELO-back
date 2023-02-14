@@ -24,6 +24,9 @@ import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
 import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.notification.NotificationService;
+import pl.envelo.melo.domain.notification.NotificationType;
+import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
+import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollService;
@@ -148,11 +151,6 @@ public class EventService {
                 if (newEventDto.getLocation() != null) {
                     event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
                 }
-                if (unit.isPresent()) {
-                    event.setUnit(unit.get());
-                } else {
-                    event.setUnit(null);
-                }
 
                 event.setOrganizer(employee.get());
                 Set<Person> members = new HashSet<>();
@@ -163,6 +161,7 @@ public class EventService {
                 event.setEndTime(newEventDto.getEndTime());
                 event.setMemberLimit(newEventDto.getMemberLimit());
                 event.setPeriodicType(newEventDto.getPeriodicType());
+
 
                 if (!Objects.isNull(additionalAttachments)) {
                     /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
@@ -214,11 +213,40 @@ public class EventService {
                     hashtagDto.setContent(hashtagDto.getContent().toLowerCase());
                        hashtags.add(hashtagService.insertNewHashtag(hashtagDto));
                 }
+                
+                Set<Employee> invitedCopyMembers = new HashSet<>();
+                if (newEventDto.getInvitedMembers()!=null) {
+                    Set<Integer> invitedMembers = newEventDto.getInvitedMembers();
+                    for (Integer invitedMember : invitedMembers) {
+                        Optional<Employee> employeeToInvite = employeeRepository.findById(invitedMember);
+                        employeeToInvite.ifPresent(invitedCopyMembers::add);
+                    }
+                }
 
+                Set<Employee> membersUnit;
+                if (unit.isPresent()) {
+                    event.setUnit(unit.get());
+                    membersUnit = unit.get().getMembers();
+                    invitedCopyMembers.addAll(membersUnit);
+                } else {
+                    event.setUnit(null);
+                }
+
+                if (unit.get().getEventList() == null){
+                    List<Event> eventList = new ArrayList<>();
+                    eventList.add(event);
+                    unit.get().setEventList(eventList);
+                } else {
+                    unit.get().getEventList().add(event);
+                }
+
+                event.setInvited(invitedCopyMembers);
                 event.setHashtags(hashtags);
                 eventRepository.save(event);
+                unitRepository.save(unit.get());
                 employeeService.addToJoinedEvents(employee.get().getId(), event);
                 employeeService.addToOwnedEvents(employee.get().getId(), event);
+                sendEventInvitationNotification(event,NotificationType.INVITE);
 
                 return ResponseEntity.created(URI.create("/v1/events/" + event.getId())).build();
             }
@@ -433,6 +461,18 @@ public class EventService {
             return ResponseEntity.ok("Email was sent");
         }
         return ResponseEntity.status(404).body("Email was not sent");
+    }
+
+    private void sendEventInvitationNotification(Event event, NotificationType notificationType) {
+        EventNotificationDto eventNotificationDto = new EventNotificationDto();
+        eventNotificationDto.setEventId(event.getId());
+        eventNotificationDto.setType(notificationType);
+
+        for (Employee employee : event.getInvited()) {
+             System.out.println("Wysyłam powiadomienie "+notificationType+" do Employee id="+employee.getId());
+            eventNotificationDto.setEmployeeId(employee.getId());
+            notificationService.insertEventNotification(eventNotificationDto);
+        }
     }
 }
 

@@ -49,14 +49,4 @@ public class NewEventDto {
     private Integer categoryId;
     private Theme theme;
 
-    public NewEventDto(String name, String description, LocalDateTime startTime, LocalDateTime endTime,
-                        EventType eventType, int organizerId, PeriodicType periodicType){
-        this.name = name;
-        this.description = description;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.eventType = eventType;
-        this.organizerId = organizerId;
-        this.periodicType = periodicType;
-    }
 }
