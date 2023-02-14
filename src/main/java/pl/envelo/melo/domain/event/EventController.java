@@ -98,8 +98,8 @@ public class EventController {
     @Transactional
     @PatchMapping("/{id}/organizer")
     @Operation(summary = "Change event organizer from current to another")
-    public ResponseEntity<?> changeEventOrganizer(@PathVariable("id") int eventId, Principal principal) {
-        return eventService.changeEventOrganizer(eventId, principal);
+    public ResponseEntity<?> changeEventOrganizer(@PathVariable("id") int eventId, @RequestParam("newOrganizerId") int newOrganizerId, Principal principal) {
+        return eventService.changeEventOrganizer(eventId, newOrganizerId, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
@@ -127,14 +127,16 @@ public class EventController {
     public ResponseEntity<?> addCommentToEvent(@PathVariable int id,
                                                @RequestPart(value = "commentData", required = false)
                                                @Parameter(schema = @Schema(type = "string", format = "binary")) CommentDto commentDto,
-                                               @RequestPart(value = "attachments", required = false) MultipartFile[] multipartFiles) {
+                                               @RequestPart(value = "attachments", required = false) MultipartFile[] multipartFiles,
+                                               Principal principal
+    ) {
         if (!Objects.isNull(multipartFiles)) {
             if (multipartFiles.length > 10) {
                 return ResponseEntity.badRequest()
                         .body("You can upload max 10 attachments to each Comment");
             }
         }
-        return commentService.insertNewComment(id, commentDto, multipartFiles);
+        return commentService.insertNewComment(id, commentDto, multipartFiles, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
@@ -170,8 +172,8 @@ public class EventController {
                     @ApiResponse(responseCode = "400", description = "Poll and Event with given ID are not correlated to each other."),
                     @ApiResponse(responseCode = "404", description = "Event ID and/or Poll ID does not exist in database")
             })
-    public ResponseEntity<?> getPollFromEvent(@PathVariable("event-id") int eventId, @PathVariable("poll-id") int pollId, @RequestParam("employee-id") int employeeId) {
-        return pollService.getPoll(eventId, pollId, employeeId);
+    public ResponseEntity<?> getPollFromEvent(@PathVariable("event-id") int eventId, @PathVariable("poll-id") int pollId, Principal principal) {
+        return pollService.getPoll(eventId, pollId, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
@@ -188,8 +190,8 @@ public class EventController {
                             "This Poll is not multichoice, you can only put 1 PollAnswer.<br />"),
                     @ApiResponse(responseCode = "404", description = "Employee was not found in database.")
             })
-    public ResponseEntity<?> addPollAnswer(@PathVariable("event-id") int eventId, @PathVariable("emp-id") int empId, @RequestBody PollSendResultDto pollSendResultDto) {
-        return pollService.insertNewPollAnswer(eventId, empId, pollSendResultDto); // returns PollResultDto
+    public ResponseEntity<?> addPollAnswer(@PathVariable("event-id") int eventId, @RequestBody PollSendResultDto pollSendResultDto, Principal principal) {
+        return pollService.insertNewPollAnswer(eventId, pollSendResultDto, principal); // returns PollResultDto
     }
 
     @PostMapping("/{id}/external")

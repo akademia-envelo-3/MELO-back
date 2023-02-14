@@ -13,7 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
-import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 
@@ -63,20 +62,13 @@ public class UnitController {
         return unitService.getUnitEmployees();
     }
 
-    @PreAuthorize("hasAuthority( @securityConfiguration.getEmployeeRole())")
-    @Transactional
+    @PreAuthorize("hasAnyAuthority( @securityConfiguration.getEmployeeRole(), @securityConfiguration.getAdminRole())")
     @PatchMapping("/{unitId}")
     @Operation(summary = "Change unit owner from current to another employee")
     public ResponseEntity<?> changeOwnership(@PathVariable("unitId") int unitId,
                                              @RequestParam("newEmployeeId") int newEmployeeId,
                                              Principal principal) {
         return unitService.changeOwnership(newEmployeeId, unitId, principal);
-    }
-
-    @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
-    @PatchMapping("{id}/owner")
-    public ResponseEntity<?> changeOwnershipByAdmin(@PathVariable("id") int unitId, @RequestParam("new-owner") int newOwner) {
-        return unitService.changeOwnershipByAdmin(unitId, newOwner);
     }
 
     @PreAuthorize("hasAuthority( @securityConfiguration.getEmployeeRole())")

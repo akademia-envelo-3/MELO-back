@@ -1,16 +1,18 @@
 package pl.envelo.melo.domain.unit;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.AuthorizationService;
+import pl.envelo.melo.authorization.admin.Admin;
+import pl.envelo.melo.authorization.admin.AdminRepository;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
-import pl.envelo.melo.domain.poll.PollConst;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.exceptions.EmployeeNotFound;
@@ -27,6 +29,7 @@ public class UnitService {
 
     private final UnitRepository unitRepository;
     private final EmployeeRepository employeeRepository;
+    private final AdminRepository adminRepository;
     private final EmployeeService employeeService;
     private final UnitMapper unitMapper;
     private final UnitDetailsMapper unitDetailsMapper;
@@ -58,12 +61,20 @@ public class UnitService {
     public ResponseEntity<List<Employee>> getUnitEmployees() {
         return null;
     }
-
-
-    public ResponseEntity<?> changeOwnership(int newEmployeeId, int unitId, Principal principal) {
+    public ResponseEntity<?> changeOwnership(int newEmployeeId, int unitId, Principal principal){
         authorizationService.inflateUser(principal);
+        Employee oldOwner = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
+        Admin admin = adminRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
+        if(Objects.nonNull(admin))
+            return changeOwnershipByAdmin(unitId,newEmployeeId);
+        if(Objects.nonNull(oldOwner))
+            return changeOwnershipByEmployee(newEmployeeId, unitId, oldOwner);
+        return ResponseEntity.status(403).build();
+    }
+    @Transactional
+    public ResponseEntity<?> changeOwnershipByEmployee(int newEmployeeId, int unitId, Employee oldOwner) {
+
         Optional<Unit> unit = unitRepository.findById(unitId);
-        Employee oldOwner = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
         Optional<Employee> newOwner = employeeRepository.findById(newEmployeeId);
 
         if (!unit.isPresent()) {

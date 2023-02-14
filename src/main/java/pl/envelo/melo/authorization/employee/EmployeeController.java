@@ -37,8 +37,8 @@ public class EmployeeController {
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("{id}")
-    public ResponseEntity<EmployeeDto> getEmployee(@PathVariable int id) {
-        return employeeService.getEmployee(id);
+    public ResponseEntity<EmployeeDto> getEmployee(@PathVariable int id, Principal principal) {
+        return employeeService.getEmployee(id, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")

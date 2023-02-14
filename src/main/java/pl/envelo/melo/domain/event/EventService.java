@@ -213,7 +213,7 @@ public class EventService {
         return null;
     }
 
-    public ResponseEntity<?> changeEventOrganizer(int eventId, Principal principal) {
+    public ResponseEntity<?> changeEventOrganizer(int eventId, int newOrganizerId, Principal principal) {
         authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
         if (!eventRepository.existsById(eventId)) {
@@ -224,28 +224,28 @@ public class EventService {
         } else if (employee.getId() == eventRepository.findById(eventId).get().getOrganizer().getId()) {
             return ResponseEntity.status(400).body("You are event organizer already");
         } else {
+            Employee newOrganizer = employeeRepository.findById(newOrganizerId).orElseThrow(EmployeeNotFound::new);
             Event event = eventRepository.findById(eventId).get();
-
             employeeService.removeFromOwnedEvents(event.getOrganizer().getId(), event);
-            event.setOrganizer(employee);
-            employeeService.addToOwnedEvents(employee.getId(), event);
-            employeeService.addToJoinedEvents(employee.getId(), event);
+            event.setOrganizer(newOrganizer);
+            employeeService.addToOwnedEvents(newOrganizer.getId(), event);
+            employeeService.addToJoinedEvents(newOrganizer.getId(), event);
             eventRepository.findById(eventId).get()
                     .getMembers()
-                    .add(employee.getUser().getPerson());
+                    .add(newOrganizer.getUser().getPerson());
 
             return ResponseEntity.status(200).body("The organizer of the event with id "
                     + eventId + " has been correctly changed to "
-                    + employee.getUser().getPerson().getFirstName() + " "
-                    + employee.getUser().getPerson().getLastName());
+                    + newOrganizer.getUser().getPerson().getFirstName() + " "
+                    + newOrganizer.getUser().getPerson().getLastName());
         }
     }
 
     public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto, Principal principal) {
         //TODO dostosować do funckjonalnosci wysyłania plików na serwer
-        if (authorizationService.inflateUser(principal) instanceof AuthSucceded)
-            if (newEventDto.getOrganizerId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new).getId())
-                return ResponseEntity.status(403).build();
+        authorizationService.inflateUser(principal);
+        if (newEventDto.getOrganizerId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new).getId())
+            return ResponseEntity.status(403).build();
         Optional<Event> optionalEvent = eventRepository.findById(id);
         if (optionalEvent.isEmpty())
             return ResponseEntity.badRequest().body("Event with id " + id + " not found");
