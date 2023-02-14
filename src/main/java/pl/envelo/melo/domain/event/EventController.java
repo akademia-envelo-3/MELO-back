@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.object.UpdatableSqlQuery;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.EmployeeService;
@@ -35,9 +36,7 @@ import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.poll.dto.*;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @AllArgsConstructor
@@ -62,9 +61,9 @@ public class EventController {
     }
 
 
-    @PatchMapping("/{eventId}")
-    public ResponseEntity<?> editEvent(@PathVariable("eventId") int id, @RequestBody NewEventDto newEventDto) {
-        return eventService.updateEvent(id, newEventDto);
+    @PatchMapping(value = "/{eventId}")
+    public ResponseEntity<?> editEvent(@PathVariable("eventId") int id, @RequestBody(required = false) Map<String,Map<String,Object>> update ) {
+        return eventService.updateEvent(id, update.get("updates"), update.get("adds"), update.get("deletes"));
     }
 
     @GetMapping("/{id}/edit-form")
