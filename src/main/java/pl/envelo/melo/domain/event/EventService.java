@@ -54,6 +54,7 @@ import pl.envelo.melo.validators.EventValidator;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -118,8 +119,12 @@ public class EventService {
         if (isRequestPaged(headers)) {
             return get(spec, buildPageRequest(headers, sort));
         } else {
+            //List<Event> entities = get(spec, sort);
             List<Event> entities = get(spec, sort);
-            return new PagingResponse((long) entities.size(), 0L, 0L, 0L, 0L, entities);
+
+            /// Mapowanie na DTO.
+            List<EventToDisplayOnListDto> entitiesMapped = entities.stream().map(eventMapper::convert).collect(Collectors.toList());
+            return new PagingResponse((long) entitiesMapped.size(), 0L, 0L, 0L, 0L, entitiesMapped);
         }
     }
 
@@ -142,8 +147,12 @@ public class EventService {
      */
     public PagingResponse get(Specification<Event> spec, Pageable pageable) {
         Page<Event> page = eventRepository.findAll(spec, pageable);
+
         List<Event> content = page.getContent();
-        return new PagingResponse(page.getTotalElements(), (long) page.getNumber(), (long) page.getNumberOfElements(), pageable.getOffset(), (long) page.getTotalPages(), content);
+
+        ///Mapowanie na Dto!
+        List<EventToDisplayOnListDto> contentMapped = content.stream().map(eventMapper::convert).collect(Collectors.toList());
+        return new PagingResponse(page.getTotalElements(), (long) page.getNumber(), (long) page.getNumberOfElements(), pageable.getOffset(), (long) page.getTotalPages(), contentMapped);
     }
 
     /**
@@ -155,7 +164,6 @@ public class EventService {
     public List<Event> get(Specification<Event> spec, Sort sort) {
         return eventRepository.findAll(spec, sort);
     }
-    ////////
 
     public ResponseEntity<List<EventToDisplayOnListDto>> listAllEvents() {
         List<Event> result = eventRepository.findAllByStartTimeAfterAndType(LocalDateTime.now(), EventType.LIMITED_EXTERNAL);

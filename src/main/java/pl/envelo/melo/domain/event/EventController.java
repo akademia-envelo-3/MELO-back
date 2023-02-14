@@ -72,7 +72,7 @@ public class EventController {
     @Transactional
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<Event>> get(
+    public ResponseEntity<List<EventToDisplayOnListDto>> get(
             @And({
                     @Spec(path = "name", params = "name", spec = Like.class),
                     @Spec(path = "organizer.id", params = "organizer", spec = Equal.class),
@@ -97,7 +97,6 @@ public class EventController {
         headers.set(PagingHeaders.PAGE_TOTAL.getName(), String.valueOf(response.getPageTotal()));
         return headers;
     }
-
 
     /*@GetMapping()
     public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
