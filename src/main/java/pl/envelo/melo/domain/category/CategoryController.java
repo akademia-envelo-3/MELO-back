@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -65,8 +66,8 @@ public class CategoryController {
                     ),
                     @ApiResponse(responseCode = "404", description = "Category with given ID does not exist in database")
             })
-    public ResponseEntity<?> getCategory(@RequestParam("id") int id) {
-        return categoryService.getCategory(id);
+    public ResponseEntity<?> getCategory(@RequestParam("id") int id, Principal principal) {
+        return categoryService.getCategory(id, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
@@ -93,7 +94,7 @@ public class CategoryController {
                     @ApiResponse(responseCode = "200", description = "Shows list of all categories", content =
                     @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
             })
-    public ResponseEntity<List<Category>> showAllCategory(@RequestParam("tokenId") int tokenId) {
-        return categoryService.listAllCategory(tokenId);
+    public ResponseEntity<List<Category>> showAllCategory(Principal principal) {
+        return categoryService.listAllCategory(principal);
     }
 }

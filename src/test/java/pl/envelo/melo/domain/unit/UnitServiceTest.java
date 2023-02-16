@@ -1,6 +1,5 @@
 package pl.envelo.melo.domain.unit;
 
-import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,7 +11,6 @@ import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -81,14 +79,14 @@ class UnitServiceTest extends EventContextTest{
 
         unitRepository.save(unit);
 
-        ResponseEntity<?> response = unitService.changeOwnership(employee.getId(),owner.getId(),unit.getId());
+        ResponseEntity<?> response = unitService.changeOwnershipByEmployee(employee.getId(),owner.getId(),unit.getId());
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2,unit.getMembers().size());
         assertEquals(unit.getOwner().getId(),employee.getId());
         assertTrue(employee.getJoinedUnits().contains(unit));
         assertTrue(owner.getJoinedUnits().contains(unit));
 
-        response = unitService.changeOwnership(owner.getId(),owner.getId(),unit.getId());
+        response = unitService.changeOwnershipByEmployee(owner.getId(),owner.getId(),unit.getId());
         assertEquals(HttpStatus.BAD_REQUEST,response.getStatusCode());
 
 
