@@ -89,11 +89,10 @@ public class UnitService {
             unit.get().setOwner(newOwner.get());
             employeeService.addToJoinedUnits(newEmployeeId, unit.get());
             employeeService.addToOwnedUnits(newEmployeeId, unit.get());
-            if (!unit.get().getMembers().contains(newOwner.get())) {
-                unit.get().getMembers().add(newOwner.get());
-            }
+            unit.get().getMembers().add(newOwner.get());
             sendOwnershipNotification(oldOwner.getId(), unit.get().getId(), true);
             sendOwnershipNotification(newEmployeeId, unit.get().getId(), false);
+            unitRepository.save(unit.get());
             return ResponseEntity.status(200).body("The owner of the unit with id "
                     + unitId + " has been correctly changed to "
                     + newOwner.get().getUser().getPerson().getFirstName() + " "

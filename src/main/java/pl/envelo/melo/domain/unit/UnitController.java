@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
+import pl.envelo.melo.domain.unit.dto.UnitDetailsDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 
@@ -28,12 +29,12 @@ public class UnitController {
     private final AuthorizationService authorizationService;
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}")
-    @Operation(summary = "Retrieve list of units",
+    @Operation(summary = "Retrieve concrete unit by id",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Retrieve details of single unit with given id", content =
                     @Content(mediaType = "application/json", schema = @Schema(
-                            description = "",
-                            oneOf = {UnitToDisplayOnListDto.class}
+                            description = "Unit details",
+                            implementation = UnitDetailsDto.class
                     ))
                     ),
                     @ApiResponse(responseCode = "404", description = "Error when unit with given ID is missing")

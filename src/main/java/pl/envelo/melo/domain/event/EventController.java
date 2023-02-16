@@ -124,7 +124,7 @@ public class EventController {
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping(value = "/{id}/comments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> addCommentToEvent(@PathVariable int id,
+    public ResponseEntity<?> addCommentToEvent(@PathVariable("id") int id,
                                                @RequestPart(value = "commentData", required = false)
                                                @Parameter(schema = @Schema(type = "string", format = "binary")) CommentDto commentDto,
                                                @RequestPart(value = "attachments", required = false) MultipartFile[] multipartFiles,

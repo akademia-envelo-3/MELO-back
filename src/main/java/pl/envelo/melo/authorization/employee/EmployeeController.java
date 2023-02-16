@@ -37,13 +37,13 @@ public class EmployeeController {
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("{id}")
-    public ResponseEntity<EmployeeDto> getEmployee(@PathVariable int id, Principal principal) {
+    public ResponseEntity<EmployeeDto> getEmployee(@PathVariable("id") int id, Principal principal) {
         return employeeService.getEmployee(id, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("{id}/owned-events")
-    public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(@PathVariable int id, Principal principal) {
+    public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(@PathVariable("id") int id, Principal principal) {
         return (ResponseEntity<Set<EventToDisplayOnListDto>>) employeeService.getSetOfOwnedEvents(id, principal);
     }
 

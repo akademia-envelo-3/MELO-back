@@ -216,21 +216,21 @@ public class EventService {
     public ResponseEntity<?> changeEventOrganizer(int eventId, int newOrganizerId, Principal principal) {
         authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
-        if (!eventRepository.existsById(eventId)) {
+        Event event = eventRepository.findById(eventId).orElse(null);
+        if (Objects.isNull(event)) {
             return ResponseEntity.status(404).body("Event with Id " + eventId + " does not exist");
-        } else if (employee.getId() != eventRepository.findById(eventId).get().getOrganizer().getId()) {
+        } else if (employee.getId() != event.getOrganizer().getId()) {
             return ResponseEntity.status(401).body("You are not the organizer of the event you " +
                     "do not have the authority to make changes");
-        } else if (employee.getId() == eventRepository.findById(eventId).get().getOrganizer().getId()) {
+        } else if (newOrganizerId == event.getOrganizer().getId()) {
             return ResponseEntity.status(400).body("You are event organizer already");
         } else {
             Employee newOrganizer = employeeRepository.findById(newOrganizerId).orElseThrow(EmployeeNotFound::new);
-            Event event = eventRepository.findById(eventId).get();
             employeeService.removeFromOwnedEvents(event.getOrganizer().getId(), event);
             event.setOrganizer(newOrganizer);
             employeeService.addToOwnedEvents(newOrganizer.getId(), event);
             employeeService.addToJoinedEvents(newOrganizer.getId(), event);
-            eventRepository.findById(eventId).get()
+            event
                     .getMembers()
                     .add(newOrganizer.getUser().getPerson());
 
