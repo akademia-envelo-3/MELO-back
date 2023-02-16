@@ -39,6 +39,7 @@ import pl.envelo.melo.domain.poll.dto.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -67,7 +68,7 @@ public class EventController {
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PatchMapping(value = "/{eventId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> editEvent(@PathVariable("eventId") int id,
-                                       @RequestPart(value = "update") @Parameter(schema = @Schema(type = "string", format = "binary")) Map<String,Map<String,Object>> update,
+                                       @RequestPart(value = "update") @Parameter(schema = @Schema(type = "string", format = "binary")) Map<String, Map<String,Object>> update,
                                        @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
                                        @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments,
                                        Principal principal) {

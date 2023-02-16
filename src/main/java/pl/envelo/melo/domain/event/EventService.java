@@ -307,12 +307,12 @@ public class EventService {
     public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes, MultipartFile mainPhoto, MultipartFile[] additionalAttachments,Principal principal) {
         boolean general_change = false;
         authorizationService.inflateUser(principal);
-//        if (newEventDto.getOrganizerId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new).getId())
-//            return ResponseEntity.status(403).build();
         Optional<Event> optionalEvent = eventRepository.findById(id);
         if (optionalEvent.isEmpty())
             return ResponseEntity.badRequest().body("Event with id " + id + " not found");
         Event event = optionalEvent.get();
+        if (event.getOrganizer().getId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new).getId())
+            return ResponseEntity.status(403).build();
         if (!Objects.isNull(updates)) {
             if (!Objects.isNull(updates.get("name"))) {
                 Set<HashtagDto> oldHashtagDtos = findHashtagFromEvent(event.getName(), "");
