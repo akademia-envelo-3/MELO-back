@@ -49,8 +49,11 @@ public class NotificationService {
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
         Notification notification = notificationRepository.findById(notificationId).orElseThrow(NotificationNotFoundException::new);
         Set<Notification> notificationsBox = employee.getNotificationsBox();
-        if(notificationsBox.contains(notification))
+        if(notificationsBox.contains(notification)) {
+            notification.setChecked(true);
+            notificationRepository.save(notification);
             return ResponseEntity.ok().build();
+        }
         return ResponseEntity.status(403).build();
     }
 }
