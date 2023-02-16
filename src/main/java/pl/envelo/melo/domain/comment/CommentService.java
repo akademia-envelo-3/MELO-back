@@ -2,9 +2,11 @@ package pl.envelo.melo.domain.comment;
 
 
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
@@ -13,8 +15,10 @@ import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.comment.dto.CommentDto;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
+import pl.envelo.melo.exceptions.EmployeeNotFound;
 import pl.envelo.melo.mappers.CommentMapper;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 public class CommentService {
 
 
@@ -31,22 +36,12 @@ public class CommentService {
     private EventRepository eventRepository;
     private EmployeeRepository employeeRepository;
     private AttachmentService attachmentService;
-
-    public CommentService(CommentRepository commentRepository, AttachmentRepository attachmentRepository,
-                          CommentMapper commentMapper, EventRepository eventRepository,
-                          EmployeeRepository employeeRepository, AttachmentService attachmentService) {
-        this.commentRepository = commentRepository;
-        this.attachmentRepository = attachmentRepository;
-        this.commentMapper = commentMapper;
-        this.eventRepository = eventRepository;
-        this.employeeRepository = employeeRepository;
-        this.attachmentService = attachmentService;
-    }
-
+    private AuthorizationService authorizationService;
     @Transactional
-    public ResponseEntity<?> insertNewComment(int eventId, CommentDto commentToSave, MultipartFile[] multipartFiles) {
+    public ResponseEntity<?> insertNewComment(int eventId, CommentDto commentToSave, MultipartFile[] multipartFiles, Principal principal) {
         String userIdFromJWT = "1";   ////Zaciągnij mordo z UserDetailsDto
-
+        authorizationService.inflateUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
         /// Obsługa błędu - brak czegokolwiek - i kontentu i atachmentu
         if(Objects.isNull(commentToSave) && Objects.isNull(multipartFiles)) {
             return ResponseEntity.badRequest().body("Comment is empty. You must add CONTENT, ATTACHMENT or both together.");
@@ -66,12 +61,11 @@ public class CommentService {
         }*/
 
         /// Tymczasowe rozwiązanie z parsowaniem sztywnego ID pracownika. Do edycji w momenci tokena.
-        Optional<Employee> EmployeeFromDb = employeeRepository.findById(Integer.parseInt(userIdFromJWT));
         Optional<Event> tmpEvent = eventRepository.findById(eventId);
 
         // Sprawdzam istnieje event i użytkownik i lecę z zapisem.
-        if (EmployeeFromDb.isPresent() && tmpEvent.isPresent()) {
-            mappedComment.setAuthor(EmployeeFromDb.get());
+        if (tmpEvent.isPresent()) {
+            mappedComment.setAuthor(employee);
             mappedComment.setTimestamp(LocalDateTime.now());
             mappedComment.setContent(commentToSave.getContent());
 

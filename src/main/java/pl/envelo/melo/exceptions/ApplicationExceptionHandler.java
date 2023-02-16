@@ -28,5 +28,12 @@ public class ApplicationExceptionHandler {
         errorMap.put("Resource not found", ex.getMessage());
         return errorMap;
     }
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AppUserNotFound.class)
+    public Map<String, String> handleAppUserNotFound(AppUserNotFound ex){
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("error : ", ex.getMessage());
+        return errorMap;
+    }
 
 }

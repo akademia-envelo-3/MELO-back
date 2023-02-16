@@ -3,14 +3,17 @@ package pl.envelo.melo.domain.poll;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.poll.dto.*;
+import pl.envelo.melo.exceptions.EmployeeNotFound;
 import pl.envelo.melo.mappers.*;
 
+import java.security.Principal;
 import java.util.*;
 
 @Service
@@ -26,6 +29,7 @@ public class PollService {
     private final EmployeeService employeeService;
     private final EmployeeMapper employeeMapper;
     private final EmployeeRepository employeeRepository;
+    private final AuthorizationService authorizationService;
 
 
     public ResponseEntity<?> insertNewPoll(NewPollDto newPollDto, int eventId) {
@@ -81,8 +85,10 @@ public class PollService {
         return ResponseEntity.status(201).body(newPollDto);
     }
 
-    public ResponseEntity<?> getPoll(int eventId, int pollId, int empId) {
-        int employeeId = empId;
+    public ResponseEntity<?> getPoll(int eventId, int pollId, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        int employeeId = employee.getId();
         if (checkPollValidation(eventId, pollId).getStatusCode().is2xxSuccessful()) {
             Event event = eventRepository.findById(eventId).get();
             Poll poll = pollRepository.findById(pollId).get();
@@ -115,18 +121,15 @@ public class PollService {
         return ResponseEntity.notFound().build();
     }
 
-    public ResponseEntity<?> insertNewPollAnswer(int eventId, int empId, PollSendResultDto pollSendResultDto) {
-        int employeeId = empId; //employee token
+    public ResponseEntity<?> insertNewPollAnswer(int eventId, PollSendResultDto pollSendResultDto, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        int employeeId = employee.getId(); //employee token
         Poll poll;
 
         if (checkPollValidation(eventId, pollSendResultDto.getPollId()).getStatusCode().is2xxSuccessful()) {
             poll = pollRepository.findById(pollSendResultDto.getPollId()).get();
         } else return checkPollValidation(eventId, pollSendResultDto.getPollId());
-
-        Employee employee = employeeRepository.findById(employeeId).orElse(null);
-        if (employee == null) {
-            return ResponseEntity.status(404).body("Employee was not found in database");
-        }
 
         if (poll.getPollAnswers().stream().anyMatch(e ->
                 e.getEmployee().stream().anyMatch(emp -> emp.getId() == employeeId))) {
