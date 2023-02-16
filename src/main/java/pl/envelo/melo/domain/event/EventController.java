@@ -36,6 +36,7 @@ import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.poll.dto.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -64,21 +65,21 @@ public class EventController {
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping("/{id}")
-    public ResponseEntity<?> editEvent(@PathVariable("id") int id, @RequestBody NewEventDto newEventDto) {
-        return eventService.updateEvent(id, newEventDto);
+    public ResponseEntity<?> editEvent(@RequestParam("id") int id, @RequestBody NewEventDto newEventDto, Principal principal) {
+        return eventService.updateEvent(id, newEventDto, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}/edit-form")
-    public ResponseEntity<?> editForm(@RequestParam("id") int id) {
-        return eventService.editEventForm(id);
+    public ResponseEntity<?> editForm(@RequestParam("id") int id, Principal principal) {
+        return eventService.editEventForm(id, principal);
     }
 
     //    @GetMapping()
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getEvent(@RequestParam("id") int id, @RequestParam("employeeId") Integer employeeId) {
-        return eventService.getEvent(id, employeeId);
+    public ResponseEntity<?> getEvent(@PathVariable("id") int id, Principal principal) {
+        return eventService.getEvent(id, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
@@ -97,8 +98,8 @@ public class EventController {
     @Transactional
     @PatchMapping("/{id}/organizer")
     @Operation(summary = "Change event organizer from current to another")
-    public ResponseEntity<?> changeEventOrganizer(@PathVariable("id") int eventId, @RequestBody int employeeId) {
-        return eventService.changeEventOrganizer(eventId, employeeId);
+    public ResponseEntity<?> changeEventOrganizer(@PathVariable("id") int eventId, @RequestParam("newOrganizerId") int newOrganizerId, Principal principal) {
+        return eventService.changeEventOrganizer(eventId, newOrganizerId, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
@@ -108,7 +109,8 @@ public class EventController {
     //pliku .json. W PostMan można wysłać zarówno plik jak i json "tekstowy" z parametrem Content-Type application/json.
     public ResponseEntity<?> addEvent(@RequestPart(value = "eventData") @Parameter(schema = @Schema(type = "string", format = "binary")) @Valid NewEventDto newEventDto,
                                       @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
-                                      @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments) {
+                                      @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments,
+                                      Principal principal) {
 
         if (!Objects.isNull(additionalAttachments)) {
             if (additionalAttachments.length > 10) {
@@ -116,23 +118,25 @@ public class EventController {
                         .body("You can upload max 10 attachments to Your Event");
             }
         }
-        return eventService.insertNewEvent(newEventDto, mainPhoto, additionalAttachments);
+        return eventService.insertNewEvent(newEventDto, mainPhoto, additionalAttachments, principal);
 
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping(value = "/{id}/comments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> addCommentToEvent(@PathVariable int id,
+    public ResponseEntity<?> addCommentToEvent(@PathVariable("id") int id,
                                                @RequestPart(value = "commentData", required = false)
                                                @Parameter(schema = @Schema(type = "string", format = "binary")) CommentDto commentDto,
-                                               @RequestPart(value = "attachments", required = false) MultipartFile[] multipartFiles) {
+                                               @RequestPart(value = "attachments", required = false) MultipartFile[] multipartFiles,
+                                               Principal principal
+    ) {
         if (!Objects.isNull(multipartFiles)) {
             if (multipartFiles.length > 10) {
                 return ResponseEntity.badRequest()
                         .body("You can upload max 10 attachments to each Comment");
             }
         }
-        return commentService.insertNewComment(id, commentDto, multipartFiles);
+        return commentService.insertNewComment(id, commentDto, multipartFiles, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
@@ -168,8 +172,8 @@ public class EventController {
                     @ApiResponse(responseCode = "400", description = "Poll and Event with given ID are not correlated to each other."),
                     @ApiResponse(responseCode = "404", description = "Event ID and/or Poll ID does not exist in database")
             })
-    public ResponseEntity<?> getPollFromEvent(@PathVariable("event-id") int eventId, @PathVariable("poll-id") int pollId, @RequestParam("employee-id") int employeeId) {
-        return pollService.getPoll(eventId, pollId, employeeId);
+    public ResponseEntity<?> getPollFromEvent(@PathVariable("event-id") int eventId, @PathVariable("poll-id") int pollId, Principal principal) {
+        return pollService.getPoll(eventId, pollId, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
@@ -186,8 +190,8 @@ public class EventController {
                             "This Poll is not multichoice, you can only put 1 PollAnswer.<br />"),
                     @ApiResponse(responseCode = "404", description = "Employee was not found in database.")
             })
-    public ResponseEntity<?> addPollAnswer(@PathVariable("event-id") int eventId, @PathVariable("emp-id") int empId, @RequestBody PollSendResultDto pollSendResultDto) {
-        return pollService.insertNewPollAnswer(eventId, empId, pollSendResultDto); // returns PollResultDto
+    public ResponseEntity<?> addPollAnswer(@PathVariable("event-id") int eventId, @RequestBody PollSendResultDto pollSendResultDto, Principal principal) {
+        return pollService.insertNewPollAnswer(eventId, pollSendResultDto, principal); // returns PollResultDto
     }
 
     @PostMapping("/{id}/external")
@@ -222,16 +226,15 @@ public class EventController {
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
-    @GetMapping("/{id}/join/{employeeId}")
+    @GetMapping("/{id}/join")
     @Operation(summary = "Add employee to event members",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Employee added to event", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Event.class))),
                     @ApiResponse(responseCode = "400", description = "Event is full or employee already on list", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Event.class))),
                     @ApiResponse(responseCode = "404", description = "Event or employee do not exist")
             })
-    public ResponseEntity<?> joinEvent(@PathVariable("id") int id, @PathVariable("employeeId") int employeeId) {
-//        int employeeId = 2;//TODO take Id from Token
-        return eventService.addEmployeeToEvent(employeeId, id);
+    public ResponseEntity<?> joinEvent(@PathVariable("id") int id, Principal principal) {
+        return eventService.addEmployeeToEvent(id, principal);
 
     }
 
@@ -254,9 +257,9 @@ public class EventController {
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @Transactional
-    @PatchMapping("/{eventId}/members/{employeeId}")
+    @PatchMapping("/{eventId}/members")
     @Operation(summary = "Remove employee from event")
-    public ResponseEntity<?> disjoinEvent(@PathVariable("employeeId") int employeeId, @PathVariable("eventId") int eventId) {
-        return eventService.removeEmployeeFromEvent(employeeId, eventId);
+    public ResponseEntity<?> disjoinEvent(@PathVariable("eventId") int eventId, Principal principal) {
+        return eventService.removeEmployeeFromEvent(eventId, principal);
     }
 }
