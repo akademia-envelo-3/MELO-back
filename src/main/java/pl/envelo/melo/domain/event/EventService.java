@@ -55,6 +55,7 @@ import pl.envelo.melo.domain.hashtag.HashtagRepository;
 
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
+import pl.envelo.melo.validators.HashtagValidator;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -95,6 +96,7 @@ public class EventService {
     private AddGuestToEventMapper addGuestToEventMapper;
     //Other
     private EventValidator eventValidator;
+    private HashtagValidator hashtagValidator;
     private EditEventNotificationHandler eventNotificationHandler;
     private EventUpdater eventUpdater;
     public ResponseEntity<?> getEvent(int id, Integer employeeId) {
@@ -131,26 +133,28 @@ public class EventService {
     public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto, MultipartFile[] additionalAttachments) {
 
         if (newEventDto != null) {
+
             Event event = eventMapper.newEvent(newEventDto);
             Optional<Employee> employee = employeeRepository.findById(newEventDto.getOrganizerId());
-
             Optional<Category> category = Optional.empty();
-            if (newEventDto.getCategoryId() == null) {
-                event.setCategory(null);
-            } else {
-                category = categoryRepository.findById(newEventDto.getCategoryId());
-            }
 
             if (!employee.isPresent()) {
                 return ResponseEntity.status(404).body("Employee with id " + newEventDto.getOrganizerId() + " does not exist");
 
             } else {
 
+                if (newEventDto.getCategoryId() != null) {
+                    category = categoryRepository.findById(newEventDto.getCategoryId());
+                } else {
+                    event.setCategory(null);
+                }
+
                 if (category.isPresent() && !category.get().isHidden()) {
                     event.setCategory(category.get());
-                } else {
+                } else if (category.isPresent() && category.get().isHidden()){
                     return ResponseEntity.status(404).body("Category you tried to add is not available anymore");
-                 //   event.setCategory(null);
+                } else if (!category.isPresent() && newEventDto.getCategoryId() != null) {
+                    return ResponseEntity.status(404).body("Category you tried to add does not exist");
                 }
 
                 Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
@@ -219,11 +223,18 @@ public class EventService {
                 if (newEventDto.getHashtags() != null) {
                     hashtagDtoFromTitleAndDescription.addAll(newEventDto.getHashtags());
                 }
+
+                Map<String, String> validationHashtagResults = hashtagValidator.validateHashtagFromForm(hashtagDtoFromTitleAndDescription);
+                validationHashtagResults.forEach((k, v) -> System.out.println(k + " " + v));
+                if (validationHashtagResults.size() != 0) {
+                    return ResponseEntity.badRequest().body(validationHashtagResults);
+                }
+
                 for (HashtagDto hashtagDto : hashtagDtoFromTitleAndDescription) {
                     hashtagDto.setContent(hashtagDto.getContent().toLowerCase());
                        hashtags.add(hashtagService.insertNewHashtag(hashtagDto));
                 }
-                
+
                 Set<Employee> invitedCopyMembers = new HashSet<>();
                 if (newEventDto.getInvitedMembers()!=null) {
                     Set<Integer> invitedMembers = newEventDto.getInvitedMembers();
@@ -460,9 +471,8 @@ public class EventService {
 
     private Set<HashtagDto> findHashtagFromEvent(String eventName, String eventDescription) {
         Set<HashtagDto> hashtagSet = new HashSet<>();
-        String text = eventName + "    " + eventDescription;
+        String text = eventName + " " + eventDescription;
         String[] textArray = text.split(" ");
-        System.out.println(text);
         for (String s : textArray) {
             if (s.startsWith("#")) {
                 s = s.replaceFirst("#","");
