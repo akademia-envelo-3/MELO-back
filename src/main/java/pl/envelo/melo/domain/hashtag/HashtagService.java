@@ -3,18 +3,26 @@ package pl.envelo.melo.domain.hashtag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import pl.envelo.melo.authorization.AuthorizationService;
+import pl.envelo.melo.authorization.admin.Admin;
+import pl.envelo.melo.authorization.admin.AdminRepository;
+import pl.envelo.melo.authorization.employee.Employee;
+import pl.envelo.melo.authorization.employee.EmployeeRepository;
+import pl.envelo.melo.domain.category.Category;
 import pl.envelo.melo.mappers.HashtagMapper;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.security.Principal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
+    private final EmployeeRepository employeeRepository;
+    private final AdminRepository adminRepository;
     private final HashtagMapper hashtagMapper;
+    private final AuthorizationService authorizationService;
 
     public Hashtag insertNewHashtag(HashtagDto hashtagDto) {
 
@@ -64,8 +72,16 @@ public class HashtagService {
         return null;
     }
 
-    public ResponseEntity<List<HashtagDto>> listAllHashtag() {
-        return null;
+    public ResponseEntity<List<HashtagDto>> listAllHashtag(Principal principal) {
+        authorizationService.inflateUser(principal);
+        authorizationService.inflateUser(principal);
+        List<Hashtag> hashtagSet=null;
+        if(Objects.nonNull( employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null))){
+            hashtagSet=hashtagRepository.findAllByHidden(false);
+        }else if(Objects.nonNull(adminRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null))){
+            hashtagSet=hashtagRepository.findAll();
+        }
+        return ResponseEntity.ok(hashtagSet.stream().map(hashtagMapper::toDto).collect(Collectors.toList()));
     }
 
     public ResponseEntity<?> listHashtagStatistic(){
