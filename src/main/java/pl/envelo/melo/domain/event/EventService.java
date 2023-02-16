@@ -3,7 +3,6 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +26,9 @@ import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
 import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.notification.NotificationService;
+import pl.envelo.melo.domain.notification.NotificationType;
+import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
+import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollService;
@@ -36,10 +38,21 @@ import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.attachment.AttachmentType;
+import pl.envelo.melo.domain.category.Category;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
+import pl.envelo.melo.domain.hashtag.Hashtag;
+import pl.envelo.melo.domain.hashtag.HashtagDto;
+import pl.envelo.melo.domain.hashtag.HashtagRepository;
+import pl.envelo.melo.domain.hashtag.HashtagService;
+import pl.envelo.melo.domain.location.LocationRepository;
+import pl.envelo.melo.domain.location.LocationService;
+import pl.envelo.melo.domain.notification.NotificationService;
+import pl.envelo.melo.domain.poll.*;
+import pl.envelo.melo.domain.unit.Unit;
+import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
 
 import pl.envelo.melo.exceptions.EmployeeNotFound;
@@ -47,6 +60,7 @@ import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 
 import java.security.Principal;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -125,28 +139,42 @@ public class EventService {
 
     @Transactional
     public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto, MultipartFile[] additionalAttachments, Principal principal) {
-
         authorizationService.inflateUser(principal);
         Event event = eventMapper.newEvent(newEventDto);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Optional<Category> category = Optional.empty();
+        if (newEventDto.getCategoryId() == null) {
+            event.setCategory(null);
+        } else {
+            category = categoryRepository.findById(newEventDto.getCategoryId());
+        }
 
-        //validation
-        if (event.getType().toString().startsWith("LIMITED")) {
-            if (event.getMemberLimit() < 1) {
-                return ResponseEntity.status(400).body("Event with limited eventType must have higher memberLimit than 0.");
-            }
+        if (category.isPresent() && !category.get().isHidden()) {
+            event.setCategory(category.get());
+        } else {
+            return ResponseEntity.status(404).body("Category you tried to add is not available anymore");
+            //   event.setCategory(null);
+        }
+
+        Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
+        validationResult.forEach((k, v) -> System.out.println(k + " " + v));
+        if (validationResult.size() != 0) {
+            return ResponseEntity.badRequest().body(validationResult);
         }
 
         if (newEventDto.getLocation() != null) {
             event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
         }
-        event.setOrganizer(employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new));
-        if (!(newEventDto.getCategoryId() == null)) {
-            if (categoryRepository.findById(newEventDto.getCategoryId()).isPresent()) {
-                event.setCategory(categoryRepository.findById(newEventDto.getCategoryId()).get());
-            } else {
-                event.setCategory(null); // todo set category
-            }
-        }
+
+        event.setOrganizer(employee);
+        Set<Person> members = new HashSet<>();
+        members.add(employee.getUser().getPerson());
+        event.setMembers(members);
+        event.setStartTime(newEventDto.getStartTime());
+        event.setEndTime(newEventDto.getEndTime());
+        event.setMemberLimit(newEventDto.getMemberLimit());
+        event.setPeriodicType(newEventDto.getPeriodicType());
+
 
         if (!Objects.isNull(additionalAttachments)) {
             /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
@@ -157,7 +185,6 @@ public class EventService {
                             .body("Illegal format of attachment. WTF ARE U DOING? TURBO ERROR!");
                 }
             }
-
 
             for (MultipartFile multipartFile : additionalAttachments) {
                 Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
@@ -189,24 +216,56 @@ public class EventService {
             event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
         }
 
+        Set<Hashtag> hashtags = new HashSet<>();
 
-        if (!(newEventDto.getHashtags() == null)) {
-            for (Hashtag hashtag : event.getHashtags()) {
-                hashtagRepository.save(hashtag);
-                //todo swap with hashtagService method when present
+        Set<HashtagDto> hashtagDtoFromTitleAndDescription = findHashtagFromEvent(newEventDto.getName(), newEventDto.getDescription());
+        if (newEventDto.getHashtags() != null) {
+            hashtagDtoFromTitleAndDescription.addAll(newEventDto.getHashtags());
+        }
+        for (HashtagDto hashtagDto : hashtagDtoFromTitleAndDescription) {
+            hashtagDto.setContent(hashtagDto.getContent().toLowerCase());
+            hashtags.add(hashtagService.insertNewHashtag(hashtagDto));
+        }
+
+        Set<Employee> invitedCopyMembers = new HashSet<>();
+        if (newEventDto.getInvitedMembers() != null) {
+            Set<Integer> invitedMembers = newEventDto.getInvitedMembers();
+            for (Integer invitedMember : invitedMembers) {
+                Optional<Employee> employeeToInvite = employeeRepository.findById(invitedMember);
+                employeeToInvite.ifPresent(invitedCopyMembers::add);
             }
         }
 
-        if (!(newEventDto.getUnitId() == null)) {
-            if (unitRepository.findById(newEventDto.getUnitId()).isPresent()) {
-                event.setUnit(unitRepository.findById(newEventDto.getUnitId()).get());
+        Set<Employee> membersUnit;
+        Optional<Unit> unit = Optional.empty();
+        if (newEventDto.getUnitId() == null) {
+            event.setUnit(null);
+        } else {
+            unit = unitRepository.findById(newEventDto.getUnitId());
+
+            if (unit.isPresent()) {
+                event.setUnit(unit.get());
+                membersUnit = unit.get().getMembers();
+                invitedCopyMembers.addAll(membersUnit);
+
+                if (unit.get().getEventList() == null) {
+                    List<Event> eventList = new ArrayList<>();
+                    eventList.add(event);
+                    unit.get().setEventList(eventList);
+                } else {
+                    unit.get().getEventList().add(event);
+                }
             } else {
-                event.setUnit(null);
+                return ResponseEntity.status(404).body("Unit you tried to add is not available");
             }
-        } //todo create UnitMapper and use UnitRepository to find unit in database
-
-
-        return new ResponseEntity(eventRepository.save(event), HttpStatus.CREATED);
+        }
+        event.setInvited(invitedCopyMembers);
+        event.setHashtags(hashtags);
+        eventRepository.save(event);
+        employeeService.addToJoinedEvents(employee.getId(), event);
+        employeeService.addToOwnedEvents(employee.getId(), event);
+        sendEventInvitationNotification(event, NotificationType.INVITE);
+        return ResponseEntity.created(URI.create("/v1/events/" + event.getId())).build();
     }
 
     public ResponseEntity<EmployeeDto> getEventOrganizer(int id) {
@@ -395,6 +454,21 @@ public class EventService {
         return ResponseEntity.status(404).body("Email was not sent");
     }
 
+
+    private Set<HashtagDto> findHashtagFromEvent(String eventName, String eventDescription) {
+        Set<HashtagDto> hashtagSet = new HashSet<>();
+        String text = eventName + "    " + eventDescription;
+        String[] textArray = text.split(" ");
+        System.out.println(text);
+        for (String s : textArray) {
+            if (s.startsWith("#")) {
+                s = s.replaceFirst("#", "");
+                hashtagSet.add(new HashtagDto(s.toLowerCase()));
+            }
+        }
+        return hashtagSet;
+    }
+
     public ResponseEntity<?> sendResignationTokenMail(Event event, Person person) {
         if (mailService.sendMailWithToken(person, event, false)) {
             return ResponseEntity.ok("Email was sent");
@@ -402,4 +476,16 @@ public class EventService {
         return ResponseEntity.status(404).body("Email was not sent");
     }
 
+    private void sendEventInvitationNotification(Event event, NotificationType notificationType) {
+        EventNotificationDto eventNotificationDto = new EventNotificationDto();
+        eventNotificationDto.setEventId(event.getId());
+        eventNotificationDto.setType(notificationType);
+
+        for (Employee employee : event.getInvited()) {
+            System.out.println("Wysyłam powiadomienie " + notificationType + " do Employee id=" + employee.getId());
+            eventNotificationDto.setEmployeeId(employee.getId());
+            notificationService.insertEventNotification(eventNotificationDto);
+        }
+    }
 }
+
