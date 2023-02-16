@@ -29,7 +29,9 @@ public class NotificationController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "Retrieve list of notifications for user that is executing this method", content =
                     @Content(mediaType = "application/json", schema =
-                    @Schema(implementation = NotificationDto.class)))
+                    @Schema(implementation = NotificationDto.class))),
+                    @ApiResponse(responseCode = "401", description = "User executing this method is not an Employee"),
+                    @ApiResponse(responseCode = "403", description = "Employee connected with this token is not present in database")
             })
     public ResponseEntity<List<NotificationDto>> showAllNotifications(Principal principal) {
         return notificationService.listAllNotification(principal);
