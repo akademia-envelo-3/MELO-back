@@ -24,16 +24,7 @@ public class CategoryRequestService {
     }
 
     public ResponseEntity<List<CategoryRequestToDisplayOnListDto>> listCategoryRequests(boolean resolved) {
-        return ResponseEntity.ok(categoryRequestRepository.findAllByIsResolved(resolved).stream().map(categoryRequest ->
-                {
-                    EmployeeNameDto employeeNameDto = new EmployeeNameDto();
-                    employeeNameDto.setFirstName(categoryRequest.getEmployee().getFirstName());
-                    employeeNameDto.setLastName(categoryRequest.getEmployee().getLastName());
-                    CategoryRequestToDisplayOnListDto categoryRequestToDisplayOnListDto = categoryRequestMapper.toDisplayOnListDto(categoryRequest);
-                    categoryRequestToDisplayOnListDto.setEmployee(employeeNameDto);
-                    return categoryRequestToDisplayOnListDto;
-                }
-        ).collect(Collectors.toList()));
+        return ResponseEntity.ok(categoryRequestRepository.findAllByIsResolved(resolved).stream().map(categoryRequestMapper::toDisplayOnListDto).collect(Collectors.toList()));
     }
 
     public ResponseEntity<?> isResolved(int categoryRequestId) {

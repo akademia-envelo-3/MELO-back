@@ -6,8 +6,7 @@ import pl.envelo.melo.domain.request.CategoryRequest;
 import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
 import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {EmployeeMapper.class})
 public interface CategoryRequestMapper {
-    @Mapping(ignore = true, target = "employee")
     CategoryRequestToDisplayOnListDto toDisplayOnListDto(CategoryRequest categoryRequest);
 }
