@@ -316,7 +316,7 @@ public class EventService {
             return ResponseEntity.badRequest().body(validationResult);
         }
         eventUpdater.update(event, newEventDto);
-        eventNotificationHandler.editNotification(event, newEventDto).forEach(notificationService::insertEventNotification);
+        eventNotificationHandler.editNotification(event, newEventDto).forEach(notificationService::insertEventUpdateNotification);
         return ResponseEntity.ok(eventDetailsMapper.convert(eventRepository.save(event)));
     }
 
@@ -481,11 +481,8 @@ public class EventService {
         eventNotificationDto.setEventId(event.getId());
         eventNotificationDto.setType(notificationType);
 
-        for (Employee employee : event.getInvited()) {
-            System.out.println("Wysyłam powiadomienie " + notificationType + " do Employee id=" + employee.getId());
-            eventNotificationDto.setEmployeeId(employee.getId());
-            notificationService.insertEventNotification(eventNotificationDto);
-        }
+        notificationService.insertCreateEventInviteNotification(eventNotificationDto);
+
     }
 }
 

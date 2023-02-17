@@ -136,7 +136,7 @@ public class UnitService {
             unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_REVOKED);
         else
             unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_GRANTED);
-        notificationService.insertUnitNotification(unitNotificationDto);
+        notificationService.insertUnitOwnerChangeNotification(unitNotificationDto);
     }
 
 
@@ -250,11 +250,7 @@ public class UnitService {
         unitNotificationDto.setUnitId(unit.getId());
         unitNotificationDto.setNotificationType(notificationType);
 
-        for (Employee employee : unit.getMembers()) {
-            // System.out.println("Wysyłam powiadomienie "+notificationType+" do Employee id="+employee.getId());
-            unitNotificationDto.setEmployeeId(employee.getId());
-            notificationService.insertUnitNotification(unitNotificationDto);
-        }
+            notificationService.insertUnitUpdateNotification(unitNotificationDto);
     }
 
 }
