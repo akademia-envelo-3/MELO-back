@@ -15,7 +15,7 @@ import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
-import pl.envelo.melo.exceptions.EmployeeNotFound;
+import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.mappers.UnitDetailsMapper;
 import pl.envelo.melo.mappers.UnitMapper;
 
@@ -142,7 +142,7 @@ public class UnitService {
 
     public ResponseEntity<?> addEmployee(int unitId, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Optional<Unit> unit = unitRepository.findById(unitId);
         if (unit.isPresent()) {
             if (employeeService.addToJoinedUnits(employee.getId(), unit.get())) {
@@ -165,7 +165,7 @@ public class UnitService {
     public ResponseEntity<?> quitUnit(int unitId, Principal principal) {
         authorizationService.inflateUser(principal);
         Optional<Unit> unit = unitRepository.findById(unitId);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
 
         if (unit.isPresent()) {
             if (unit.get().getOwner().getId() == employee.getId()) {
@@ -184,7 +184,7 @@ public class UnitService {
 
     public ResponseEntity<?> insertNewUnit(UnitNewDto unitNewDto, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Unit unit = unitMapper.toEntity(unitNewDto);
         unit.setName(unit.getName().replaceAll("( +)", " ").trim().toLowerCase());
         if (unitRepository.findByName(unit.getName().toLowerCase()).isPresent()) {
@@ -205,7 +205,7 @@ public class UnitService {
 
     public ResponseEntity<?> updateUnit(int unitId, UnitNewDto unitNewDto, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Unit unit;
         if (unitRepository.findById(unitId).isPresent()) {
             unit = unitRepository.findById(unitId).get();

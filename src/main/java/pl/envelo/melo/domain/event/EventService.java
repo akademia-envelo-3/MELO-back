@@ -3,7 +3,6 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
-import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollService;
@@ -43,19 +41,11 @@ import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
-import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagDto;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
-import pl.envelo.melo.domain.hashtag.HashtagService;
-import pl.envelo.melo.domain.location.LocationRepository;
-import pl.envelo.melo.domain.location.LocationService;
-import pl.envelo.melo.domain.notification.NotificationService;
-import pl.envelo.melo.domain.poll.*;
 import pl.envelo.melo.domain.unit.Unit;
-import pl.envelo.melo.domain.unit.UnitRepository;
-import pl.envelo.melo.domain.hashtag.HashtagRepository;
 
-import pl.envelo.melo.exceptions.EmployeeNotFound;
+import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 
@@ -141,7 +131,7 @@ public class EventService {
     public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto, MultipartFile[] additionalAttachments, Principal principal) {
         authorizationService.inflateUser(principal);
         Event event = eventMapper.newEvent(newEventDto);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Optional<Category> category = Optional.empty();
         if (newEventDto.getCategoryId() == null) {
             event.setCategory(null);
@@ -274,7 +264,7 @@ public class EventService {
 
     public ResponseEntity<?> changeEventOrganizer(int eventId, int newOrganizerId, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Event event = eventRepository.findById(eventId).orElse(null);
         if (Objects.isNull(event)) {
             return ResponseEntity.status(404).body("Event with Id " + eventId + " does not exist");
@@ -284,7 +274,7 @@ public class EventService {
         } else if (newOrganizerId == event.getOrganizer().getId()) {
             return ResponseEntity.status(400).body("You are event organizer already");
         } else {
-            Employee newOrganizer = employeeRepository.findById(newOrganizerId).orElseThrow(EmployeeNotFound::new);
+            Employee newOrganizer = employeeRepository.findById(newOrganizerId).orElseThrow(EmployeeNotFoundException::new);
             employeeService.removeFromOwnedEvents(event.getOrganizer().getId(), event);
             event.setOrganizer(newOrganizer);
             employeeService.addToOwnedEvents(newOrganizer.getId(), event);
@@ -303,7 +293,7 @@ public class EventService {
     public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto, Principal principal) {
         //TODO dostosować do funckjonalnosci wysyłania plików na serwer
         authorizationService.inflateUser(principal);
-        if (newEventDto.getOrganizerId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new).getId())
+        if (newEventDto.getOrganizerId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new).getId())
             return ResponseEntity.status(403).build();
         Optional<Event> optionalEvent = eventRepository.findById(id);
         if (optionalEvent.isEmpty())
@@ -325,7 +315,7 @@ public class EventService {
             return ResponseEntity.status(HttpStatusCode.valueOf(404)).body("Event with " + id + " does not exists");
         Event event = eventRepository.getReferenceById(id);
         if (authorizationService.inflateUser(principal) instanceof AuthSucceded)
-            if (event.getOrganizer().getId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new).getId())
+            if (event.getOrganizer().getId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new).getId())
                 return ResponseEntity.status(403).build();
         return ResponseEntity.ok(eventEditMapper.convert(event));
     }
@@ -340,7 +330,7 @@ public class EventService {
                     return ResponseEntity.status(400).body("Event is full");
                 }
             }
-            Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+            Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
             if (employeeService.addToJoinedEvents(employee.getId(), event.get())) {
                 Set<Person> eventMembers = event.get().getMembers();
                 if (eventMembers == null) {
@@ -363,7 +353,7 @@ public class EventService {
 
         authorizationService.inflateUser(principal);
         Optional<Event> event = eventRepository.findById(eventId);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (event.isEmpty()) {
 
             return ResponseEntity.status(404).body("Event with Id " + eventId + " does not exist");
