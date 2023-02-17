@@ -8,13 +8,11 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.AuthSucceded;
 import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
+import pl.envelo.melo.authorization.employee.dto.EmployeeListDto;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
@@ -31,8 +29,10 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final AuthorizationService authorizationService;
 
-    public ResponseEntity<List<EmployeeDto>> getEmployees() {
-        return null;
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
+    @GetMapping()
+    public ResponseEntity<List<EmployeeListDto>> getEmployees(@RequestParam(value = "search", required = false)String q) {
+        return employeeService.getEmployees(q);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
