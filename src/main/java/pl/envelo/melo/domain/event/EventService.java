@@ -160,7 +160,7 @@ public class EventService {
             return ResponseEntity.status(404).body("Category you tried to add does not exist");
         }
 
-            Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
+        Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
         validationResult.forEach((k, v) -> System.out.println(k + " " + v));
         if (validationResult.size() != 0) {
             return ResponseEntity.badRequest().body(validationResult);
@@ -224,6 +224,10 @@ public class EventService {
 
         Set<HashtagDto> hashtagDtoFromTitleAndDescription = findHashtagFromEvent(newEventDto.getName(), newEventDto.getDescription());
         if (newEventDto.getHashtags() != null) {
+            Map<String, String> validationIsHidden = hashtagValidator.validateIsHidden(newEventDto.getHashtags());
+            if (validationIsHidden.size() != 0){
+                return ResponseEntity.badRequest().body(validationIsHidden);
+            }
             hashtagDtoFromTitleAndDescription.addAll(newEventDto.getHashtags());
         }
 
@@ -467,12 +471,16 @@ public class EventService {
 
     private Set<HashtagDto> findHashtagFromEvent(String eventName, String eventDescription) {
         Set<HashtagDto> hashtagSet = new HashSet<>();
+        Optional<Hashtag> hashtag = Optional.empty();
         String text = eventName + " " + eventDescription;
         String[] textArray = text.split(" ");
         for (String s : textArray) {
             if (s.startsWith("#")) {
                 s = s.replaceFirst("#", "");
-                hashtagSet.add(new HashtagDto(s.toLowerCase()));
+                hashtag = hashtagRepository.findByContentIgnoreCase(s);
+                if (hashtag.isPresent() && !hashtag.get().isHidden() || hashtag.isEmpty()) {
+                    hashtagSet.add(new HashtagDto(s.toLowerCase()));
+                }
             }
         }
         return hashtagSet;
