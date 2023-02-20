@@ -19,10 +19,10 @@ import pl.envelo.melo.domain.event.dto.NewEventDto;
 @Mapper(componentModel = "spring", uses = { EmployeeService.class })
 public interface EmployeeMapper extends EntityMapper<EmployeeDto, Employee>{
 
-    @Mapping(source = "employeeId", target = "id")
-    default ResponseEntity<EmployeeDto> map(Integer id, @Context EmployeeService employeeService) {
-        return employeeService.getEmployee(id);
-    }
+//    @Mapping(source = "employeeId", target = "id")
+//    default ResponseEntity<EmployeeDto> map(Integer id, @Context EmployeeService employeeService) {
+//        return employeeService.getEmployee(id);
+//    }
 
     @Mapping(source = "firstName", target = "user.person.firstName")
     @Mapping(source = "lastName", target = "user.person.lastName")

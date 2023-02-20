@@ -25,7 +25,7 @@ public class EventValidator {
         if (!event.getType().equals(eventDto.getEventType()))
             errors.put(EventType.class.getName() + " error", "You cannot edit eventType");
         else {
-            if (event.getType().name().contains("LIMITED")) {
+            if (event.getType().name().startsWith("LIMITED")) {
                 if (eventDto.getMemberLimit() < 2) {
                     errors.put("memberLimit" + " error", "You cannot set memberLimit to less than 2");
                 }
@@ -51,4 +51,33 @@ public class EventValidator {
         }
         return errors;
     }
+
+    public Map<String, String> validateToCreateEvent(NewEventDto eventDto) {
+        Map<String, String> errors = new HashMap<>();
+
+
+        if (eventDto.getEventType().name().startsWith("LIMITED")) {
+            if (eventDto.getMemberLimit() < 2) {
+                errors.put("memberLimit" + " error", "You cannot set memberLimit to less than 2");
+            }
+        }
+
+        if (eventDto.getStartTime() != null) {
+            if (eventDto.getStartTime().compareTo(eventDto.getEndTime()) >= 0) {
+                errors.put("endTime error", "You must set endTime to be after startTime");
+            }
+        }
+        if (eventDto.getStartTime() == null) {
+            errors.put("startTime error", "You must set startTime");
+        } else {
+            if (eventDto.getStartTime().compareTo(LocalDateTime.now()) <= 0) {
+                errors.put("startTime error", "You cannot set startTime to past time");
+            }
+        }
+        if (eventDto.getEndTime() == null) {
+            errors.put("endTime error", "You must set endTime");
+        }
+        return errors;
+    }
+
 }

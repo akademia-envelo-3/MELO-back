@@ -13,7 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
-import pl.envelo.melo.domain.event.Event;
+import pl.envelo.melo.domain.unit.dto.UnitDetailsDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 
@@ -29,18 +29,17 @@ public class UnitController {
     private final AuthorizationService authorizationService;
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}")
-    @Operation(summary = "Retrieve list of units",
+    @Operation(summary = "Retrieve concrete unit by id",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Retrieve details of single unit with given id", content =
                     @Content(mediaType = "application/json", schema = @Schema(
-                            description = "",
-                            oneOf = {UnitToDisplayOnListDto.class}
+                            description = "Unit details",
+                            implementation = UnitDetailsDto.class
                     ))
                     ),
                     @ApiResponse(responseCode = "404", description = "Error when unit with given ID is missing")
             })
-    public ResponseEntity<?> getUnit(@PathVariable("id") int id, Principal principal) {
-        System.out.println(authorizationService.inflateUser(principal));
+    public ResponseEntity<?> getUnit(@PathVariable("id") int id) {
         return unitService.getUnit(id);
     }
 
@@ -64,44 +63,37 @@ public class UnitController {
         return unitService.getUnitEmployees();
     }
 
-    @PreAuthorize("hasAuthority( @securityConfiguration.getEmployeeRole())")
-    @Transactional
-    @PatchMapping("/{unitId}/owner{oldOwnerId}/")
+    @PreAuthorize("hasAnyAuthority( @securityConfiguration.getEmployeeRole(), @securityConfiguration.getAdminRole())")
+    @PatchMapping("/{unitId}/owner")
     @Operation(summary = "Change unit owner from current to another employee")
     public ResponseEntity<?> changeOwnership(@PathVariable("unitId") int unitId,
-                                             @PathVariable("oldOwnerId") int currentTokenId,
-                                             @RequestBody int newEmployeeId) {
-        return unitService.changeOwnership(newEmployeeId, currentTokenId, unitId);
-    }
-
-    @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
-    @PatchMapping("{id}/owner")
-    public ResponseEntity<?> changeOwnershipByAdmin(@PathVariable("id") int unitId, @RequestParam("new-owner") int newOwner) {
-        return unitService.changeOwnershipByAdmin(unitId, newOwner);
+                                             @RequestParam("newEmployeeId") int newEmployeeId,
+                                             Principal principal) {
+        return unitService.changeOwnership(newEmployeeId, unitId, principal);
     }
 
     @PreAuthorize("hasAuthority( @securityConfiguration.getEmployeeRole())")
-    @GetMapping("/{unitId}/join/{id}")
+    @GetMapping("/{unitId}/join")
     @Operation(summary = "Add employee to unit members",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Employee added to unit"),
                     @ApiResponse(responseCode = "400", description = "Employee already in unit"),
                     @ApiResponse(responseCode = "404", description = "Unit or employee do not exist")
             })
-    public ResponseEntity<?> addEmployee(@PathVariable("id") int employeeId, @PathVariable("unitId") int unitId) {
-        return unitService.addEmployee(employeeId, unitId);
+    public ResponseEntity<?> addEmployee(@PathVariable("unitId") int unitId, Principal principal) {
+        return unitService.addEmployee(unitId, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @Transactional
-    @PatchMapping("/{unitId}/members/{employeeIdToken}")
+    @PatchMapping("/{unitId}/members")
     @Operation(summary = "Remove employee from unit members",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Employee was removed"),
                     @ApiResponse(responseCode = "404"),
             })
-    public ResponseEntity<?> quitUnit(@PathVariable("employeeIdToken") int employeeIdToken, @PathVariable("unitId") int unitId) {
-        return unitService.quitUnit(employeeIdToken, unitId);
+    public ResponseEntity<?> quitUnit(@PathVariable("unitId") int unitId, Principal principal) {
+        return unitService.quitUnit(unitId, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
@@ -112,8 +104,8 @@ public class UnitController {
                     @ApiResponse(responseCode = "404"),
                     @ApiResponse(responseCode = "400", description = "Wrong data")
             })
-    public ResponseEntity<?> addNewUnit(@RequestBody @Valid UnitNewDto unitDto) {
-        return unitService.insertNewUnit(unitDto);
+    public ResponseEntity<?> addNewUnit(@RequestBody @Valid UnitNewDto unitDto, Principal principal) {
+        return unitService.insertNewUnit(unitDto, principal);
     }
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PatchMapping("/{unit-id}")
@@ -124,8 +116,8 @@ public class UnitController {
                     "Name must be between 2 and 255 characters. <br />" +
                     "Description must not exceed 4000 characters.<br />")
     })
-    public ResponseEntity<?> updateUnit(@PathVariable("unit-id") int id, @RequestBody @Valid UnitNewDto unitNewDto) {
-        return unitService.updateUnit(id, unitNewDto);
+    public ResponseEntity<?> updateUnit(@PathVariable("unit-id") int id, @RequestBody @Valid UnitNewDto unitNewDto, Principal principal) {
+        return unitService.updateUnit(id, unitNewDto, principal);
     }
 
 

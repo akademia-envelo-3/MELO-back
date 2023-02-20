@@ -5,16 +5,20 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import pl.envelo.melo.authorization.AuthSucceded;
+import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
+import pl.envelo.melo.exceptions.EmployeeNotFound;
 import pl.envelo.melo.mappers.EmployeeMapper;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.mappers.EventMapper;
 import pl.envelo.melo.mappers.UnitMapper;
 
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,22 +26,19 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class EmployeeService {
-
-
     private EmployeeRepository employeeRepository;
     private final EventMapper eventMapper;
     private final UnitMapper unitMapper;
     private PersonRepository personRepository;
     private final EmployeeMapper employeeMapper;
+    private final AuthorizationService authorizationService;
 
-
-    public ResponseEntity<EmployeeDto> getEmployee(int id) {
-
-        Optional<Employee> employeeOptional = employeeRepository.findById(id);
-        if (!employeeOptional.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        EmployeeDto employeeDto = employeeMapper.toDto(employeeOptional.get());
+    public ResponseEntity<EmployeeDto> getEmployee(int id, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        if (id != employee.getId())
+            return ResponseEntity.status(403).build();
+        EmployeeDto employeeDto = employeeMapper.toDto(employee);
         return new ResponseEntity<>(employeeDto, HttpStatus.OK);
 
     }
@@ -61,7 +62,7 @@ public class EmployeeService {
                 ownedEvent.add(event);
                 employeeRepository.findById(employeeId).get().setOwnedEvents(ownedEvent);
             } else {
-                if(ownedEvent.contains(event)) {
+                if (ownedEvent.contains(event)) {
                     return false;
                 }
                 employeeRepository.findById(employeeId).get().getOwnedEvents().add(event);
@@ -91,7 +92,7 @@ public class EmployeeService {
                 joinedEvent.add(event);
                 employeeRepository.findById(employeeId).get().setJoinedEvents(joinedEvent);
             } else {
-                if(joinedEvent.contains(event)) {
+                if (joinedEvent.contains(event)) {
                     return false;
                 }
                 employeeRepository.findById(employeeId).get().getJoinedEvents().add(event);
@@ -120,7 +121,7 @@ public class EmployeeService {
                 ownedUnit.add(unit);
                 employeeRepository.findById(employeeId).get().setOwnedUnits(ownedUnit);
             } else {
-                if(ownedUnit.contains(unit)) {
+                if (ownedUnit.contains(unit)) {
                     return false;
                 }
                 employeeRepository.findById(employeeId).get().getOwnedUnits().add(unit);
@@ -148,8 +149,8 @@ public class EmployeeService {
                 joinedUnits = new HashSet<>();
                 joinedUnits.add(unit);
                 employeeRepository.findById(employeeId).get().setJoinedUnits(joinedUnits);
-            }else {
-                if(joinedUnits.contains(unit)) {
+            } else {
+                if (joinedUnits.contains(unit)) {
                     return false;
                 }
                 employeeRepository.findById(employeeId).get().getJoinedUnits().add(unit);
@@ -171,20 +172,21 @@ public class EmployeeService {
     }
 
 
-    public ResponseEntity<?> getSetOfOwnedEvents(int id) {
-        if (employeeRepository.existsById(id)) {
-            Set<Event> events = employeeRepository.findById(id).get().getOwnedEvents();
-            return ResponseEntity.ok(events.stream().map(eventMapper::convert).collect(Collectors.toSet()));
-        } else {
-            return ResponseEntity.status(404).body("Employee with this ID do not exist");
-        }
+    public ResponseEntity<?> getSetOfOwnedEvents(int id, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        if (id != employee.getId())
+            return ResponseEntity.status(403).build();
+        Set<Event> events = employee.getOwnedEvents();
+        return ResponseEntity.ok(events.stream().map(eventMapper::convert).collect(Collectors.toSet()));
     }
 
-    public ResponseEntity<?> getListOfJoinedUnits(int id){
-        if (!employeeRepository.existsById(id)) {
-            return ResponseEntity.status(404).body("Employee with this ID do not exist");
-        } else if (employeeRepository.findById(id).get()
-                .getJoinedUnits() == null){
+    public ResponseEntity<?> getListOfJoinedUnits(int id, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        if (id != employee.getId())
+            return ResponseEntity.status(403).build();
+        if (employee.getJoinedUnits() == null) {
             return ResponseEntity.status(404).body("No units to display");
         } else {
             return ResponseEntity.ok(employeeRepository.findById(id).get()
@@ -195,15 +197,15 @@ public class EmployeeService {
         }
     }
 
-    public ResponseEntity<?> getListOfCreatedUnits(int employeeId){
-        if(employeeRepository.existsById(employeeId)){
-            return ResponseEntity.ok(employeeRepository.findById(employeeId).get().getOwnedUnits().stream().map(e->{
-                UnitToDisplayOnListDto dto = unitMapper.convert(e);
-                return dto;
-            }).collect(Collectors.toSet()));
-        }
-        else{
-            return ResponseEntity.status(404).body("Employee with this ID do not exist");
-        }
+    public ResponseEntity<?> getListOfCreatedUnits(int employeeId, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        if (employeeId != employee.getId())
+            return ResponseEntity.status(403).build();
+        return ResponseEntity.ok(employee.getOwnedUnits().stream().map(e -> {
+            UnitToDisplayOnListDto dto = unitMapper.convert(e);
+            return dto;
+        }).collect(Collectors.toSet()));
+
     }
 }
