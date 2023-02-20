@@ -161,7 +161,6 @@ public class EventService {
         }
 
         Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
-        validationResult.forEach((k, v) -> System.out.println(k + " " + v));
         if (validationResult.size() != 0) {
             return ResponseEntity.badRequest().body(validationResult);
         }
@@ -176,7 +175,11 @@ public class EventService {
         event.setMembers(members);
         event.setStartTime(newEventDto.getStartTime());
         event.setEndTime(newEventDto.getEndTime());
-        event.setMemberLimit(newEventDto.getMemberLimit());
+        event.setType(newEventDto.getEventType());
+        if (event.getType().name().startsWith("LIMITED"))
+            event.setMemberLimit(newEventDto.getMemberLimit());
+        else
+            event.setMemberLimit(null);
         event.setPeriodicType(newEventDto.getPeriodicType());
 
 
