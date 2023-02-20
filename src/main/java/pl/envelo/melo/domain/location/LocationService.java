@@ -14,11 +14,6 @@ public class LocationService {
 
     @Autowired
     LocationRepository locationRepository;
-
-    public Location insertNewLocation(LocationDto locationDto) {
-        return null;
-    }
-
     public Location insertOrGetLocation(LocationDto locationDto) {
 
         if (locationDto.getStreetName().trim().equals("")
