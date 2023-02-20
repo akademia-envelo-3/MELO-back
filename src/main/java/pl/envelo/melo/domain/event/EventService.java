@@ -414,7 +414,7 @@ public class EventService {
         }
         if (!Objects.isNull(deletes)) {
             if (!Objects.isNull(deletes.get("hashtags"))) {
-                if (!eventUpdater.removeHashtags(event, deletes.get("hashtags"))) {
+                if (!eventUpdater.removeHashtags(event, deletes.get("hashtags"),findHashtagFromEvent(event.getName(),event.getDescription()))) {
                     return ResponseEntity.status(404).body("Hashtags are in wrong format");
                 }
                 general_change = true;

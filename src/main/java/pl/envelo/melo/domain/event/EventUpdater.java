@@ -186,7 +186,7 @@ public class EventUpdater {
             hashtags = new HashSet<>();
             for (Object o : objectArrayList) {
                 HashtagDto hash = new HashtagDto();
-                hash.setContent(String.valueOf(((Map<String, String>) o).get("content")));
+                hash.setContent(String.valueOf(((Map<String, String>) o).get("content")).toLowerCase());
                 hashtags.add(hash);
             }
             if (event.getHashtags() != null) {
@@ -215,20 +215,20 @@ public class EventUpdater {
     }
 
     @Transactional
-    public boolean removeHashtags(Event event, Object objectHashtags) {
+    public boolean removeHashtags(Event event, Object objectHashtags, Set<HashtagDto> hashtagsInNameAndDescription) {
         try {
             ArrayList<Object> objectArrayList = (ArrayList<Object>) objectHashtags;
             Set<HashtagDto> hashtags = new HashSet<>();
             for (Object o : objectArrayList) {
                 HashtagDto hash = new HashtagDto();
-                hash.setContent(String.valueOf(((Map<String, String>) o).get("content")));
+                hash.setContent(String.valueOf(((Map<String, String>) o).get("content")).toLowerCase());
                 hashtags.add(hash);
             }
             Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convertToString).collect(Collectors.toSet());
             for (HashtagDto e : hashtags) {
                 if (currHashtags.contains(e.getContent())) {
                     Optional<Hashtag> hashtagOpt = hashtagRepository.findByContent(e.getContent());
-                    if(hashtagOpt.isPresent()) {
+                    if(hashtagOpt.isPresent()&&!hashtagsInNameAndDescription.contains(hashtagMapper.toDto(hashtagOpt.get()))) {
                         Hashtag hashtag = hashtagOpt.get();
                         event.getHashtags().remove(hashtag);
                         if (!hashtagService.decrementHashtagGlobalCount(hashtag.getId())) {
