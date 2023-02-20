@@ -62,15 +62,15 @@ public class HashtagService {
         }
     }
 
-    public ResponseEntity<?> decrementHashtagGlobalCount(int id) {
+    public Boolean decrementHashtagGlobalCount(int id) {
         if (hashtagRepository.existsById(id)){
             Hashtag hashtag = hashtagRepository.getById(id);
             hashtag.setGlobalUsageCount(hashtag.getGlobalUsageCount()-1);
             hashtagRepository.save(hashtag);
-            return ResponseEntity.ok(hashtag);
+            return true;
         }
         else {
-            return ResponseEntity.status(404).body("Hashtag by this ID do not exist");
+            return false;
         }
     }
 

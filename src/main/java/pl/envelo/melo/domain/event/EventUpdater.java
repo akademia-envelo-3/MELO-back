@@ -1,10 +1,7 @@
 package pl.envelo.melo.domain.event;
 
-import jakarta.mail.Multipart;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -82,7 +79,7 @@ public class EventUpdater {
     public Optional<?> updateDate(Event event, Object startTimeObject, Object endTimeObject) {
         LocalDateTime startTime;
         LocalDateTime endTime;
-        DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSX");
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         if (startTimeObject == null) {
             startTime = null;
         } else {
@@ -230,8 +227,14 @@ public class EventUpdater {
             Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convertToString).collect(Collectors.toSet());
             for (HashtagDto e : hashtags) {
                 if (currHashtags.contains(e.getContent())) {
-                    event.getHashtags().remove(hashtagMapper.toEntity(e));
-                    hashtagService.decrementHashtagGlobalCount(hashtagMapper.toEntity(e).getId());
+                    Optional<Hashtag> hashtagOpt = hashtagRepository.findByContent(e.getContent());
+                    if(hashtagOpt.isPresent()) {
+                        Hashtag hashtag = hashtagOpt.get();
+                        event.getHashtags().remove(hashtag);
+                        if (!hashtagService.decrementHashtagGlobalCount(hashtag.getId())) {
+                            return false;
+                        }
+                    }
                 }
             }
             return true;
