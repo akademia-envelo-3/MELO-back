@@ -108,6 +108,9 @@ public class EventUpdater {
             errors.put("forbidden error", "You cannot edit archived event");
         }
         if (startTime == null && endTime != null) {
+            if (endTime.compareTo(LocalDateTime.now()) <= 0) {
+                errors.put("forbidden error", "You cannot set past date");
+            }
             if (event.getEndTime().equals(endTime)) {
                 errors.put("endTime error", "New EndTime is the same as old.");
             } else if (event.getStartTime().compareTo(endTime) >= 0) {
@@ -116,6 +119,9 @@ public class EventUpdater {
                 event.setEndTime(endTime);
             }
         } else if (startTime != null && endTime == null) {
+            if (startTime.compareTo(LocalDateTime.now()) <= 0) {
+                errors.put("forbidden error", "You cannot set past date");
+            }
             if (event.getStartTime().equals(startTime)) {
                 errors.put("startTime error", "New StartTime is the same as old.");
             } else if (event.getEndTime().compareTo(startTime) <= 0) {
@@ -124,6 +130,9 @@ public class EventUpdater {
                 event.setStartTime(startTime);
             }
         } else if (startTime != null && endTime != null) {
+            if (endTime.compareTo(LocalDateTime.now()) <= 0 || startTime.compareTo(LocalDateTime.now()) <= 0) {
+                errors.put("forbidden error", "You cannot set past date");
+            }
             if (event.getEndTime().equals(endTime)) {
                 errors.put("endTime error", "New EndTime is the same as old.");
             }
@@ -363,19 +372,22 @@ public class EventUpdater {
     }
 
     @Transactional
-    public boolean addInvitedMembers(Event event, Object listOfMembers) {
+    public Optional<?> addInvitedMembers(Event event, Object listOfMembers) {
         try {
             ArrayList<Integer> invitedMembers = (ArrayList<Integer>) listOfMembers;
             Set<Integer> eventInvitedMembers = event.getInvited().stream().map(Employee::getId).collect(Collectors.toSet());
             for (Integer id : invitedMembers) {
-                if (!eventInvitedMembers.contains(id)) {
-                    event.getInvited().add(employeeRepository.getReferenceById(id));
-                    //notification?
+                if(employeeRepository.existsById(id)) {
+                    if (!eventInvitedMembers.contains(id)) {
+                        event.getInvited().add(employeeRepository.getReferenceById(id));
+                        //TODO notification?
+                    }
                 }
+                return Optional.of("Add to invited: Employee does not exist");
             }
-            return true;
+            return Optional.of(true);
         } catch (ClassCastException e) {
-            return false;
+            return Optional.of("Error: Employee cast exception");
         }
     }
 

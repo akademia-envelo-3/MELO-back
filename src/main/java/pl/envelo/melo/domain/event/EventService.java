@@ -268,7 +268,7 @@ public class EventService {
         eventRepository.save(event);
         employeeService.addToJoinedEvents(employee.getId(), event);
         employeeService.addToOwnedEvents(employee.getId(), event);
-        sendEventInvitationNotification(event, NotificationType.INVITE);
+//        sendEventInvitationNotification(event, NotificationType.INVITE);
         return ResponseEntity.created(URI.create("/v1/events/" + event.getId())).build();
     }
 
@@ -406,8 +406,10 @@ public class EventService {
                 general_change = true;
             }
             if (!Objects.isNull(adds.get("invitedMembers"))) {
-                if (!eventUpdater.addInvitedMembers(event, adds.get("invitedMembers")))
-                    return ResponseEntity.status(404).body("InvitedMembers are in wrong format");
+                Optional<?> addMembers = eventUpdater.addInvitedMembers(event, adds.get("invitedMembers"));
+                if (!(addMembers.get() instanceof Boolean)) {
+                    return ResponseEntity.status(404).body(addMembers.get().toString());
+                }
             }
         }
         if (!Objects.isNull(deletes)) {
