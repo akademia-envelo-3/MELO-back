@@ -45,6 +45,7 @@ class HashtagServiceTest{
         assertEquals(2,hashtag1.getGlobalUsageCount());
         //Incorrect request
         assertEquals(HttpStatus.valueOf(404), hashtagService.incrementHashtagGlobalCount(200).getStatusCode());
+
     }
 //
 //    @Test
