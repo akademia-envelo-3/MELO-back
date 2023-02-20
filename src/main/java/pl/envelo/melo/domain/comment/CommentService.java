@@ -15,13 +15,12 @@ import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.comment.dto.CommentDto;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
-import pl.envelo.melo.exceptions.EmployeeNotFound;
+import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.mappers.CommentMapper;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -41,7 +40,7 @@ public class CommentService {
     public ResponseEntity<?> insertNewComment(int eventId, CommentDto commentToSave, MultipartFile[] multipartFiles, Principal principal) {
         String userIdFromJWT = "1";   ////Zaciągnij mordo z UserDetailsDto
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         /// Obsługa błędu - brak czegokolwiek - i kontentu i atachmentu
         if(Objects.isNull(commentToSave) && Objects.isNull(multipartFiles)) {
             return ResponseEntity.badRequest().body("Comment is empty. You must add CONTENT, ATTACHMENT or both together.");
