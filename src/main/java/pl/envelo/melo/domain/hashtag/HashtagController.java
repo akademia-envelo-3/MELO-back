@@ -27,7 +27,7 @@ public class HashtagController {
                     @ApiResponse(responseCode = "200", description = "Hashtag visibility was changed"),
                     @ApiResponse(responseCode = "404", description = "Hashtag dose not exist")
             })
-    public ResponseEntity<?> setHashtagHideFlag(@PathVariable("id") int id, @RequestParam boolean hide) {
+    public ResponseEntity<?> setHashtagHideFlag(@PathVariable("id") int id, @RequestParam("hide") boolean hide) {
         return hashtagService.setHashtagHiddenFlag(id, hide);
     }
 
