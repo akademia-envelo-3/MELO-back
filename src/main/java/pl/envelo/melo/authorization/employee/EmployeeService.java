@@ -5,13 +5,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import pl.envelo.melo.authorization.AuthSucceded;
 import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
-import pl.envelo.melo.exceptions.EmployeeNotFound;
+import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.mappers.EmployeeMapper;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.event.Event;
@@ -35,7 +34,7 @@ public class EmployeeService {
 
     public ResponseEntity<EmployeeDto> getEmployee(int id, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (id != employee.getId())
             return ResponseEntity.status(403).build();
         EmployeeDto employeeDto = employeeMapper.toDto(employee);
@@ -174,7 +173,7 @@ public class EmployeeService {
 
     public ResponseEntity<?> getSetOfOwnedEvents(int id, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (id != employee.getId())
             return ResponseEntity.status(403).build();
         Set<Event> events = employee.getOwnedEvents();
@@ -183,7 +182,7 @@ public class EmployeeService {
 
     public ResponseEntity<?> getListOfJoinedUnits(int id, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (id != employee.getId())
             return ResponseEntity.status(403).build();
         if (employee.getJoinedUnits() == null) {
@@ -199,7 +198,7 @@ public class EmployeeService {
 
     public ResponseEntity<?> getListOfCreatedUnits(int employeeId, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (employeeId != employee.getId())
             return ResponseEntity.status(403).build();
         return ResponseEntity.ok(employee.getOwnedUnits().stream().map(e -> {
