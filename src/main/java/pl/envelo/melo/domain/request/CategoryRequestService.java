@@ -45,7 +45,7 @@ public class CategoryRequestService {
         CategoryRequest categoryRequest = setCategoryRequestAsResolved(categoryRequestId);
         Category category = categoryRepository.findByName(categoryRequest.getCategoryName());
         if (Objects.isNull(category) || category.isHidden())
-            sendCategoryRequestNotification(setCategoryRequestAsResolved(categoryRequestId), null, NotificationType.CATEGORY_REQUEST_ACCEPTED);
+            sendCategoryRequestNotification(categoryRequest, null, NotificationType.CATEGORY_REQUEST_ACCEPTED);
         if (Objects.isNull(category))
             return categoryService.insertNewCategory(new CategoryDto(categoryRequest.getCategoryName()));
         if (category.isHidden())
