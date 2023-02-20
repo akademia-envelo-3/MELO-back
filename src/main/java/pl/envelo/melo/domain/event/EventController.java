@@ -78,8 +78,7 @@ public class EventController {
                     @Spec(path = "organizer.id", params = "organizer", spec = Equal.class),
                     @Spec(path = "hashtags.content", params = "hashtags", spec = In.class),
                     @Spec(path = "type", params = "type", spec = Equal.class),
-                    @Spec(path = "startTime", params = "startTime", spec = Like.class),
-                    @Spec(path = "createDate", params = {"startTime", "endTime"}, spec = Between.class),
+                    @Spec(path = "startTime", params = {"startTime", "endTime"}, spec = Between.class),
                     @Spec(path = "category.name", params = "category", spec = Equal.class)
             }) Specification<Event> spec,
             Sort sort,
