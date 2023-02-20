@@ -19,7 +19,7 @@ public interface UnitNotificationMapper extends EntityMapper<UnitNotificationDto
 //    }
 
     @AfterMapping
-    default void update(UnitNotificationDto unitNotificationDto, @MappingTarget Notification notification, @Context UnitRepository unitRepository) {
+    default void updateResult(UnitNotificationDto unitNotificationDto, @MappingTarget Notification notification, @Context UnitRepository unitRepository) {
         notification.setContent("");
         notification.setNotificationType(unitNotificationDto.getNotificationType());
         notification.setTimestamp(LocalDateTime.now());

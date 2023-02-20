@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public interface RequestNotificationMapper extends EntityMapper<RequestNotificationDto, Notification> {
 
     @AfterMapping
-    default void update(RequestNotificationDto requestNotificationDto, @MappingTarget Notification notification) {
+    default void updateResult(RequestNotificationDto requestNotificationDto, @MappingTarget Notification notification) {
         notification.setContent(requestNotificationDto.getReason());
         notification.setNotificationType(requestNotificationDto.getNotificationType());
         notification.setTimestamp(LocalDateTime.now());

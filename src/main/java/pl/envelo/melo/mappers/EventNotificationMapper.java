@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public interface EventNotificationMapper extends EntityMapper<EventNotificationDto, Notification> {
 
     @AfterMapping
-    default void update(EventNotificationDto eventNotificationDto, @MappingTarget Notification notification, @Context EventRepository eventRepository) {
+    default void updateResult(EventNotificationDto eventNotificationDto, @MappingTarget Notification notification, @Context EventRepository eventRepository) {
         notification.setContent(eventNotificationDto.getContent());
         notification.setNotificationType(eventNotificationDto.getType());
         notification.setTimestamp(LocalDateTime.now());
