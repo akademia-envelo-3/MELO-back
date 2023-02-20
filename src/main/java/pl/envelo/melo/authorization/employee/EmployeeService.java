@@ -52,14 +52,18 @@ public class EmployeeService {
         return null;
     }
 
-    public ResponseEntity<List<EmployeeListDto>> getEmployees(String q) {
+    public ResponseEntity<Set<EmployeeListDto>> getEmployees(String q) {
         if(q==null) {
-            return ResponseEntity.ok(employeeRepository.findAll().stream().map(employeeListMapper::toDto).collect(Collectors.toList()));
+            return ResponseEntity.ok(employeeRepository.findAll().stream().map(employeeListMapper::toDto).collect(Collectors.toSet()));
         }
         else{
-            return ResponseEntity.ok(employeeRepository.findByUserPersonFirstNameContainingIgnoreCaseOrUserPersonLastNameContainingIgnoreCase(q,q).get().stream().map(employeeListMapper::toDto).collect(Collectors.toList()));
+            String[] listQ = q.split(" ");
+            Set<Employee> employeeSet = new HashSet<>();
+            for (String a: listQ) {
+               employeeSet.addAll(employeeRepository.findByUserPersonFirstNameContainingIgnoreCaseOrUserPersonLastNameContainingIgnoreCase(a,a).get());
+            }
+            return ResponseEntity.ok(employeeSet.stream().map(employeeListMapper::toDto).collect(Collectors.toSet()));
         }
-//        return null;
     }
 
     public boolean addToOwnedEvents(int employeeId, Event event) {

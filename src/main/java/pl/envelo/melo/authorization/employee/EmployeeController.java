@@ -24,25 +24,25 @@ import java.util.Set;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("v1/users/")
+@RequestMapping("v1/users")
 public class EmployeeController {
     private final EmployeeService employeeService;
     private final AuthorizationService authorizationService;
 
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping()
-    public ResponseEntity<List<EmployeeListDto>> getEmployees(@RequestParam(value = "search", required = false)String q) {
+    public ResponseEntity<Set<EmployeeListDto>> getEmployees(@RequestParam(value = "search", required = false)String q) {
         return employeeService.getEmployees(q);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<EmployeeDto> getEmployee(@PathVariable("id") int id, Principal principal) {
         return employeeService.getEmployee(id, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
-    @GetMapping("{id}/owned-events")
+    @GetMapping("/{id}/owned-events")
     public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(@PathVariable("id") int id, Principal principal) {
         return (ResponseEntity<Set<EventToDisplayOnListDto>>) employeeService.getSetOfOwnedEvents(id, principal);
     }
