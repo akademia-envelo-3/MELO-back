@@ -3,7 +3,6 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
-import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollService;
@@ -43,17 +41,9 @@ import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
-import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagDto;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
-import pl.envelo.melo.domain.hashtag.HashtagService;
-import pl.envelo.melo.domain.location.LocationRepository;
-import pl.envelo.melo.domain.location.LocationService;
-import pl.envelo.melo.domain.notification.NotificationService;
-import pl.envelo.melo.domain.poll.*;
 import pl.envelo.melo.domain.unit.Unit;
-import pl.envelo.melo.domain.unit.UnitRepository;
-import pl.envelo.melo.domain.hashtag.HashtagRepository;
 
 import pl.envelo.melo.exceptions.EmployeeNotFound;
 import pl.envelo.melo.mappers.*;
@@ -289,9 +279,13 @@ public class EventService {
             event.setOrganizer(newOrganizer);
             employeeService.addToOwnedEvents(newOrganizer.getId(), event);
             employeeService.addToJoinedEvents(newOrganizer.getId(), event);
-            event
-                    .getMembers()
-                    .add(newOrganizer.getUser().getPerson());
+            event.getMembers().add(newOrganizer.getUser().getPerson());
+
+            EventNotificationDto eventNotificationDto = new EventNotificationDto();
+            eventNotificationDto.setEventId(eventId);
+            eventNotificationDto.setType(NotificationType.EVENT_ORGANIZER_UPDATED);
+                    //todo set content of eventNotificationDto
+            notificationService.insertEventEmployeeMembersNotification(eventNotificationDto);
 
             return ResponseEntity.status(200).body("The organizer of the event with id "
                     + eventId + " has been correctly changed to "
@@ -316,7 +310,7 @@ public class EventService {
             return ResponseEntity.badRequest().body(validationResult);
         }
         eventUpdater.update(event, newEventDto);
-        eventNotificationHandler.editNotification(event, newEventDto).forEach(notificationService::insertEventUpdateNotification);
+        eventNotificationHandler.editNotification(event, newEventDto);
         return ResponseEntity.ok(eventDetailsMapper.convert(eventRepository.save(event)));
     }
 
@@ -480,9 +474,7 @@ public class EventService {
         EventNotificationDto eventNotificationDto = new EventNotificationDto();
         eventNotificationDto.setEventId(event.getId());
         eventNotificationDto.setType(notificationType);
-
-        notificationService.insertCreateEventInviteNotification(eventNotificationDto);
-
+        notificationService.insertEventInvitedNotification(eventNotificationDto);
     }
 }
 

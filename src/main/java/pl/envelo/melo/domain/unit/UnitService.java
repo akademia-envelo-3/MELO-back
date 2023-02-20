@@ -13,8 +13,8 @@ import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
-import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
+import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.exceptions.EmployeeNotFound;
 import pl.envelo.melo.mappers.UnitDetailsMapper;
 import pl.envelo.melo.mappers.UnitMapper;
@@ -61,16 +61,18 @@ public class UnitService {
     public ResponseEntity<List<Employee>> getUnitEmployees() {
         return null;
     }
-    public ResponseEntity<?> changeOwnership(int newEmployeeId, int unitId, Principal principal){
+
+    public ResponseEntity<?> changeOwnership(int newEmployeeId, int unitId, Principal principal) {
         authorizationService.inflateUser(principal);
         Employee oldOwner = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         Admin admin = adminRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
-        if(Objects.nonNull(admin))
-            return changeOwnershipByAdmin(unitId,newEmployeeId);
-        if(Objects.nonNull(oldOwner))
+        if (Objects.nonNull(admin))
+            return changeOwnershipByAdmin(unitId, newEmployeeId);
+        if (Objects.nonNull(oldOwner))
             return changeOwnershipByEmployee(newEmployeeId, unitId, oldOwner);
         return ResponseEntity.status(403).build();
     }
+
     @Transactional
     public ResponseEntity<?> changeOwnershipByEmployee(int newEmployeeId, int unitId, Employee oldOwner) {
 
@@ -212,7 +214,7 @@ public class UnitService {
         } else {
             return ResponseEntity.status(404).body("Unit with given ID is not present in database");
         }
-        if(unit.getOwner() != employee){
+        if (unit.getOwner() != employee) {
             return ResponseEntity.status(403).build();
         }
         NotificationType notification = null;
@@ -249,8 +251,7 @@ public class UnitService {
         UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
         unitNotificationDto.setUnitId(unit.getId());
         unitNotificationDto.setNotificationType(notificationType);
-
-            notificationService.insertUnitUpdateNotification(unitNotificationDto);
+        notificationService.insertUnitMembersNotification(unitNotificationDto);
     }
 
 }

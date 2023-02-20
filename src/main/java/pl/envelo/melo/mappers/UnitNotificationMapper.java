@@ -23,7 +23,6 @@ public interface UnitNotificationMapper extends EntityMapper<UnitNotificationDto
         notification.setContent("");
         notification.setNotificationType(unitNotificationDto.getNotificationType());
         notification.setTimestamp(LocalDateTime.now());
-        System.out.println("TYPIE@##################### " +notification.getTimestamp());
         notification.setUnit(unitRepository.findById(unitNotificationDto.getUnitId()).get());
     }
 

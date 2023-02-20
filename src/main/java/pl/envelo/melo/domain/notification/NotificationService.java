@@ -1,12 +1,9 @@
 package pl.envelo.melo.domain.notification;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.person.Person;
@@ -25,12 +22,8 @@ import pl.envelo.melo.mappers.UnitNotificationMapper;
 import java.util.List;
 import java.util.Optional;
 
-//@Service
+@Service
 @AllArgsConstructor
-
-@RestController
-@Tag(name = "Notification Controller")
-@RequestMapping("/NOTIFICATION/")
 public class NotificationService {
     @Autowired
     private final NotificationRepository notificationRepository;
@@ -42,9 +35,9 @@ public class NotificationService {
     private final EventNotificationMapper eventNotificationMapper;
     private final UnitNotificationMapper unitNotificationMapper;
 
-    @Transactional
-    @PostMapping("insertEventUpdateNotification")
-    public ResponseEntity<?> insertEventUpdateNotification(@RequestBody EventNotificationDto eventNotificationDto) {
+
+    public ResponseEntity<?> insertEventAllMembersNotification(EventNotificationDto eventNotificationDto) {
+        //used in update event, for members: employee and guest (person)
         if (eventRepository.findById(eventNotificationDto.getEventId()).isEmpty())
             return ResponseEntity.status(404).body("Event with given ID does not exist");
 
@@ -58,13 +51,15 @@ public class NotificationService {
                 notification = notificationRepository.save(notification);
                 employee.getNotificationsBox().add(notification);
                 employeeRepository.save(employee);
+            } else {
+                //todo send email
             }
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("Notifications have been sent to " + event.getMembers().size() + " members.");
     }
-    @PostMapping("insertCreateEventInviteNotification")
-    @Transactional
-    public ResponseEntity<?> insertCreateEventInviteNotification(@RequestBody EventNotificationDto eventNotificationDto) {
+
+    public ResponseEntity<?> insertEventInvitedNotification(EventNotificationDto eventNotificationDto) {
+        //used in create event
         Notification notification = eventNotificationMapper.toEntity(eventNotificationDto);
         notification.setEvent(eventRepository.findById(eventNotificationDto.getEventId()).get());
         for (Employee employee : notification.getEvent().getInvited()) {
@@ -72,20 +67,40 @@ public class NotificationService {
             employee.getNotificationsBox().add(notification);
             employeeRepository.save(employee);
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("Notifications have been sent to " + notification.getEvent().getInvited().size() + " invited people.");
     }
-    @PostMapping("insertEventInviteNotification")
-    @Transactional
-    public ResponseEntity<?> insertEventInviteNotification(@RequestBody  EventNotificationDto eventNotificationDto) {
+
+    public ResponseEntity<?> insertEventEmployeeMembersNotification(EventNotificationDto eventNotificationDto) {
+        if (eventRepository.findById(eventNotificationDto.getEventId()).isEmpty())
+            return ResponseEntity.status(404).body("Event with given ID does not exist");
+
+        Notification notification = eventNotificationMapper.toEntity(eventNotificationDto);
+        Event event = eventRepository.findById(eventNotificationDto.getEventId()).get();
+        notification.setEvent(event);
+        int employeeSize = 0;
+        for (Person person : event.getMembers()) {
+            Optional<Employee> employeeOptional = employeeRepository.findByUserPersonEmail(person.getEmail());
+            if (employeeOptional.isPresent()) {
+                Employee employee = employeeOptional.get();
+                notification = notificationRepository.save(notification);
+                employee.getNotificationsBox().add(notification);
+                employeeRepository.save(employee);
+                employeeSize++;
+            }
+        }
+        return ResponseEntity.ok().body("Notifications have been sent to " + employeeSize + " members.");
+    }
+
+    //redundant - method to invite one person out of create/update event
+    public ResponseEntity<?> insertEventInviteNotification(EventNotificationDto eventNotificationDto) {
         Notification notification = eventNotificationMapper.toEntity(eventNotificationDto);
         notification = notificationRepository.save(notification);
         Employee employee = employeeRepository.findById(eventNotificationDto.getEmployeeId()).get();
         employee.getNotificationsBox().add(notification);
         return ResponseEntity.ok().body(employeeRepository.save(employee));
     }
-    @PostMapping("insertRequestNotification")
-    @Transactional
-    public ResponseEntity<?> insertRequestNotification(@RequestBody RequestNotificationDto requestNotificationDto) {
+
+    public ResponseEntity<?> insertRequestNotification(RequestNotificationDto requestNotificationDto) {
         Employee employee;
         if (employeeRepository.findById(requestNotificationDto.getEmployeeId()).isPresent()) {
             employee = employeeRepository.findById(requestNotificationDto.getEmployeeId()).get();
@@ -97,10 +112,8 @@ public class NotificationService {
         employeeRepository.save(employee);
         return ResponseEntity.ok("Notification has been sent to employee ID: " + employee.getId());
     }
-    @PostMapping("insertUnitUpdateNotification")
 
-    @Transactional
-    public ResponseEntity<?> insertUnitUpdateNotification(@RequestBody UnitNotificationDto unitNotificationDto) {
+    public ResponseEntity<?> insertUnitMembersNotification(UnitNotificationDto unitNotificationDto) {
         if (unitRepository.findById(unitNotificationDto.getUnitId()).isEmpty())
             return ResponseEntity.status(404).body("Unit with given ID does not exist");
 
@@ -112,12 +125,10 @@ public class NotificationService {
             employee.getNotificationsBox().add(notification);
             employeeRepository.save(employee);
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("Sent " + unitNotificationDto.getNotificationType() + " to " + unit.getMembers().size() + "unit members.");
     }
-    @PostMapping("insertUnitOwnerChangeNotification")
 
-    @Transactional
-    public ResponseEntity<?> insertUnitOwnerChangeNotification(@RequestBody UnitNotificationDto unitNotificationDto) {
+    public ResponseEntity<?> insertUnitOwnerChangeNotification(UnitNotificationDto unitNotificationDto) {
         Notification notification = unitNotificationMapper.toEntity(unitNotificationDto);
         Unit unit = unitRepository.findById(unitNotificationDto.getUnitId()).get();
         notification.setUnit(unit);
@@ -125,7 +136,8 @@ public class NotificationService {
         Employee employee = employeeRepository.findById(unitNotificationDto.getEmployeeId()).get();
         employee.getNotificationsBox().add(notification);
         employeeRepository.save(employee);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("Added new notification for employee with ID " + employee.getId() +
+                ": " + notification.getNotificationType());
     }
 
     public ResponseEntity<List<NotificationDto>> listAllNotification(int employeeId) {
