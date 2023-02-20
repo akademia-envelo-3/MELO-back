@@ -153,8 +153,8 @@ public class EventController {
                             "PollAnswers cannot be repeatable. <br />Char amount of one pollAnswer must be between 1 and 255.<br />"),
                     @ApiResponse(responseCode = "404", description = "Event ID does not exist in database")
             })
-    public ResponseEntity<?> addPollToEvent(@Valid @RequestBody NewPollDto newPollDto, @PathVariable("event-id") int id) {
-        return pollService.insertNewPoll(newPollDto, id);
+    public ResponseEntity<?> addPollToEvent(@Valid @RequestBody NewPollDto newPollDto, @PathVariable("event-id") int id, Principal principal) {
+        return pollService.insertNewPoll(newPollDto, id, principal);
 
     }
 
