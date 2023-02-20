@@ -3,6 +3,12 @@ package pl.envelo.melo.domain.event;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +26,9 @@ import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
+import pl.envelo.melo.domain.event.dto.EventToDisplayOnUnitDetailsList;
+import pl.envelo.melo.domain.event.utils.PagingHeaders;
+import pl.envelo.melo.domain.event.utils.PagingResponse;
 import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
@@ -48,11 +57,13 @@ import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
+import pl.envelo.melo.validators.HashtagValidator;
 
 import java.security.Principal;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -89,6 +100,7 @@ public class EventService {
     private AddGuestToEventMapper addGuestToEventMapper;
     //Other
     private EventValidator eventValidator;
+    private HashtagValidator hashtagValidator;
     private EditEventNotificationHandler eventNotificationHandler;
     private EventUpdater eventUpdater;
     private AuthorizationService authorizationService;
@@ -118,6 +130,57 @@ public class EventService {
         }
     }
 
+    ////////
+    public PagingResponse get(Specification<Event> spec, HttpHeaders headers, Sort sort) {
+        if (isRequestPaged(headers)) {
+            return get(spec, buildPageRequest(headers, sort));
+        } else {
+            //List<Event> entities = get(spec, sort);
+            List<Event> entities = get(spec, sort);
+
+            /// Mapowanie na DTO.
+            List<EventToDisplayOnListDto> entitiesMapped = entities.stream().map(eventMapper::convert).collect(Collectors.toList());
+            return new PagingResponse((long) entitiesMapped.size(), 0L, 0L, 0L, 0L, entitiesMapped);
+        }
+    }
+
+    private boolean isRequestPaged(HttpHeaders headers) {
+        return headers.containsKey(PagingHeaders.PAGE_NUMBER.getName()) && headers.containsKey(PagingHeaders.PAGE_SIZE.getName());
+    }
+
+    private Pageable buildPageRequest(HttpHeaders headers, Sort sort) {
+        int page = Integer.parseInt(Objects.requireNonNull(headers.get(PagingHeaders.PAGE_NUMBER.getName())).get(0));
+        int size = Integer.parseInt(Objects.requireNonNull(headers.get(PagingHeaders.PAGE_SIZE.getName())).get(0));
+        return PageRequest.of(page, size, sort);
+    }
+
+    /**
+     * get elements using Criteria.
+     *
+     * @param spec     *
+     * @param pageable pagination data
+     * @return retrieve elements with pagination
+     */
+    public PagingResponse get(Specification<Event> spec, Pageable pageable) {
+        Page<Event> page = eventRepository.findAll(spec, pageable);
+
+        List<Event> content = page.getContent();
+
+        ///Mapowanie na Dto!
+        List<EventToDisplayOnListDto> contentMapped = content.stream().map(eventMapper::convert).collect(Collectors.toList());
+        return new PagingResponse(page.getTotalElements(), (long) page.getNumber(), (long) page.getNumberOfElements(), pageable.getOffset(), (long) page.getTotalPages(), contentMapped);
+    }
+
+    /**
+     * get elements using Criteria.
+     *
+     * @param spec *
+     * @return elements
+     */
+    public List<Event> get(Specification<Event> spec, Sort sort) {
+        return eventRepository.findAll(spec, sort);
+    }
+
     public ResponseEntity<List<EventToDisplayOnListDto>> listAllEvents() {
         List<Event> result = eventRepository.findAllByStartTimeAfterAndType(LocalDateTime.now(), EventType.LIMITED_EXTERNAL);
         result.addAll(eventRepository.findAllByStartTimeAfterAndType(LocalDateTime.now(), EventType.UNLIMITED_EXTERNAL));
@@ -133,21 +196,22 @@ public class EventService {
         Event event = eventMapper.newEvent(newEventDto);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Optional<Category> category = Optional.empty();
-        if (newEventDto.getCategoryId() == null) {
-            event.setCategory(null);
-        } else {
+
+        if (newEventDto.getCategoryId() != null) {
             category = categoryRepository.findById(newEventDto.getCategoryId());
+        } else {
+            event.setCategory(null);
         }
 
         if (category.isPresent() && !category.get().isHidden()) {
             event.setCategory(category.get());
-        } else {
+        } else if (category.isPresent() && category.get().isHidden()){
             return ResponseEntity.status(404).body("Category you tried to add is not available anymore");
-            //   event.setCategory(null);
+        } else if (!category.isPresent() && newEventDto.getCategoryId() != null) {
+            return ResponseEntity.status(404).body("Category you tried to add does not exist");
         }
 
         Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
-        validationResult.forEach((k, v) -> System.out.println(k + " " + v));
         if (validationResult.size() != 0) {
             return ResponseEntity.badRequest().body(validationResult);
         }
@@ -162,7 +226,11 @@ public class EventService {
         event.setMembers(members);
         event.setStartTime(newEventDto.getStartTime());
         event.setEndTime(newEventDto.getEndTime());
-        event.setMemberLimit(newEventDto.getMemberLimit());
+        event.setType(newEventDto.getEventType());
+        if (event.getType().name().startsWith("LIMITED"))
+            event.setMemberLimit(newEventDto.getMemberLimit());
+        else
+            event.setMemberLimit(null);
         event.setPeriodicType(newEventDto.getPeriodicType());
 
 
@@ -210,8 +278,18 @@ public class EventService {
 
         Set<HashtagDto> hashtagDtoFromTitleAndDescription = findHashtagFromEvent(newEventDto.getName(), newEventDto.getDescription());
         if (newEventDto.getHashtags() != null) {
+            Map<String, String> validationIsHidden = hashtagValidator.validateIsHidden(newEventDto.getHashtags());
+            if (validationIsHidden.size() != 0){
+                return ResponseEntity.badRequest().body(validationIsHidden);
+            }
             hashtagDtoFromTitleAndDescription.addAll(newEventDto.getHashtags());
         }
+
+        Map<String, String> validationHashtagResults = hashtagValidator.validateHashtagFromForm(hashtagDtoFromTitleAndDescription);
+        if (validationHashtagResults.size() != 0) {
+            return ResponseEntity.badRequest().body(validationHashtagResults);
+        }
+
         for (HashtagDto hashtagDto : hashtagDtoFromTitleAndDescription) {
             hashtagDto.setContent(hashtagDto.getContent().toLowerCase());
             hashtags.add(hashtagService.insertNewHashtag(hashtagDto));
@@ -447,13 +525,16 @@ public class EventService {
 
     private Set<HashtagDto> findHashtagFromEvent(String eventName, String eventDescription) {
         Set<HashtagDto> hashtagSet = new HashSet<>();
-        String text = eventName + "    " + eventDescription;
+        Optional<Hashtag> hashtag = Optional.empty();
+        String text = eventName + " " + eventDescription;
         String[] textArray = text.split(" ");
-        System.out.println(text);
         for (String s : textArray) {
             if (s.startsWith("#")) {
                 s = s.replaceFirst("#", "");
-                hashtagSet.add(new HashtagDto(s.toLowerCase()));
+                hashtag = hashtagRepository.findByContentIgnoreCase(s);
+                if (hashtag.isPresent() && !hashtag.get().isHidden() || hashtag.isEmpty()) {
+                    hashtagSet.add(new HashtagDto(s.toLowerCase()));
+                }
             }
         }
         return hashtagSet;

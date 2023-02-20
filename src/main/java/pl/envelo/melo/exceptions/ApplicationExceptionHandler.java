@@ -13,10 +13,10 @@ import java.util.Map;
 public class ApplicationExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(LocationBadRequestException.class)
-    public Map<String, String> handleInvalidLocationArgument(LocationBadRequestException ex){
+    @ExceptionHandler(BadRequestException.class)
+    public Map<String, String> handleInvalidLocationArgument(BadRequestException ex){
         Map<String, String> errorMap = new HashMap<>();
-        errorMap.put("Location fields", ex.getMessage());
+        errorMap.put("error : ", ex.getMessage());
         return errorMap;
     }
 

@@ -33,7 +33,7 @@ public class EventDetailsDto {
     private PeriodicType periodicType;
     private Set<PollToDisplayOnListDto> polls;
     private Set<String> hashtags;
-    private int memberLimit;
+    private Long memberLimit;
     private List<EmployeeNameDto> confirmedMembers;
     private LocationDto location;
     private Set<AttachmentDto> attachments;
