@@ -34,6 +34,6 @@ public class Hashtag {
 
     @Override
     public int hashCode() {
-        return Objects.hash(content);
+        return Objects.hash(content.toLowerCase());
     }
 }

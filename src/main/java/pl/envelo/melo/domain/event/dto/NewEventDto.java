@@ -42,7 +42,7 @@ public class NewEventDto {
     private PeriodicType periodicType;
     @Size(max = 100)
     private Set<HashtagDto> hashtags;
-    private long memberLimit;
+    private Long memberLimit;
     private Set<Integer> invitedMembers;
     private Integer unitId;
     private LocationDto location;
