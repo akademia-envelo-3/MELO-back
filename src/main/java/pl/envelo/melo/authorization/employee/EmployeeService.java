@@ -59,8 +59,10 @@ public class EmployeeService {
         else{
             String[] listQ = q.split(" ");
             Set<Employee> employeeSet = new HashSet<>();
-            for (String a: listQ) {
-               employeeSet.addAll(employeeRepository.findByUserPersonFirstNameContainingIgnoreCaseOrUserPersonLastNameContainingIgnoreCase(a,a).get());
+            if(listQ.length==1){
+               employeeSet.addAll(employeeRepository.findByUserPersonFirstNameContainingIgnoreCaseOrUserPersonLastNameContainingIgnoreCase(listQ[0],listQ[0]).get());
+            } else if (listQ.length==2) {
+                employeeSet.addAll(employeeRepository.findByUserPersonFirstNameContainingIgnoreCaseAndUserPersonLastNameContainingIgnoreCase(listQ[0],listQ[1]).get());
             }
             return ResponseEntity.ok(employeeSet.stream().map(employeeListMapper::toDto).collect(Collectors.toSet()));
         }
