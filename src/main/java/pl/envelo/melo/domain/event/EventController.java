@@ -11,6 +11,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import net.kaczmarzyk.spring.data.jpa.domain.Between;
+import net.kaczmarzyk.spring.data.jpa.domain.Equal;
+import net.kaczmarzyk.spring.data.jpa.domain.In;
+import net.kaczmarzyk.spring.data.jpa.domain.Like;
+import net.kaczmarzyk.spring.data.jpa.web.annotation.And;
+import net.kaczmarzyk.spring.data.jpa.web.annotation.Spec;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +32,8 @@ import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonService;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
+import pl.envelo.melo.domain.event.utils.PagingHeaders;
+import pl.envelo.melo.domain.event.utils.PagingResponse;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.poll.PollAnswer;
@@ -59,11 +71,39 @@ public class EventController {
     private final CommentService commentService;
     private final PersonService personService;
 
+    @Transactional
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
-    @GetMapping()
-    public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
-        return eventService.listAllEvents();
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<List<EventToDisplayOnListDto>> get(
+            @And({
+                    @Spec(path = "name", params = "name", spec = Like.class),
+                    @Spec(path = "organizer.id", params = "organizer", spec = Equal.class),
+                    @Spec(path = "hashtags.content", params = "hashtags", spec = In.class),
+                    @Spec(path = "type", params = "type", spec = Equal.class),
+                    @Spec(path = "startTime", params = {"startTime", "endTime"}, spec = Between.class),
+                    @Spec(path = "category.name", params = "category", spec = Equal.class)
+            }) Specification<Event> spec,
+            Sort sort,
+            @RequestHeader HttpHeaders headers) {
+        final PagingResponse response = eventService.get(spec, headers, sort);
+        return new ResponseEntity<>(response.getElements(), returnHttpHeaders(response), HttpStatus.OK);
     }
+
+    public HttpHeaders returnHttpHeaders(PagingResponse response) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(PagingHeaders.COUNT.getName(), String.valueOf(response.getCount()));
+        headers.set(PagingHeaders.PAGE_SIZE.getName(), String.valueOf(response.getPageSize()));
+        headers.set(PagingHeaders.PAGE_OFFSET.getName(), String.valueOf(response.getPageOffset()));
+        headers.set(PagingHeaders.PAGE_NUMBER.getName(), String.valueOf(response.getPageNumber()));
+        headers.set(PagingHeaders.PAGE_TOTAL.getName(), String.valueOf(response.getPageTotal()));
+        return headers;
+    }
+
+//    @GetMapping()
+//    public ResponseEntity<List<EventToDisplayOnListDto>> getEvents() {
+//        return eventService.listAllEvents();
+//    }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PatchMapping(value = "/{eventId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
