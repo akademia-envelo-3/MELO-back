@@ -15,7 +15,7 @@ import java.util.Objects;
 @Getter
 public class HashtagDto {
     @NotBlank
-    @Size(max = 50, min = 2, message = "Wrong size")
+    @Size(max = 50, min = 2, message = "Hashtag must not contain less than 2 characters and more than 50 characters")
     private String content;
 
     @Override

@@ -24,11 +24,11 @@ import java.util.Set;
 @NoArgsConstructor
 public class NewEventDto {
 
-    @NotBlank
-    @Size(max = 255)
+    @NotBlank(message = "Event title must not be blank")
+    @Size(max = 255, message = "Event description must not contain more than 255 characters")
     private String name;
-    @NotBlank
-    @Size(max = 4000)
+    @NotBlank(message = "Event description must not be blank")
+    @Size(max = 4000, message = "Event description must not contain more than 4000 characters")
     private String description;
     @DateTimeFormat(pattern = "")
     private LocalDateTime startTime;
@@ -36,11 +36,11 @@ public class NewEventDto {
     private LocalDateTime endTime;
     @NotNull(message = "Event type cant be null")
     private EventType eventType;
-    @NotNull
+    @NotNull(message = "Organizer id must not be null")
     private int organizerId;
     @NotNull(message = "Periodic type can not be null")
     private PeriodicType periodicType;
-    @Size(max = 100)
+    @Size(max = 100, message = "Event must not contain more than 100 hashtags")
     private Set<HashtagDto> hashtags;
     private Long memberLimit;
     private Set<Integer> invitedMembers;
