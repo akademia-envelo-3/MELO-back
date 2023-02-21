@@ -1,6 +1,6 @@
 package pl.envelo.melo.exceptions;
 
-public class LocationBadRequestException extends RuntimeException {
+public class LocationBadRequestException extends BadRequestException {
 
     public LocationBadRequestException(){}
 

@@ -8,20 +8,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.security.Principal;
 import java.util.List;
 
 @RestController
 @AllArgsConstructor
+@RequestMapping("/v1/hashtags")
 public class HashtagController {
 
     private final HashtagService hashtagService;
 
-    public ResponseEntity<List<HashtagDto>> showAllHashtags() {
-        return null;
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
+    @GetMapping()
+    public ResponseEntity<List<HashtagDto>> showAllHashtags(Principal principal) {
+        return hashtagService.listAllHashtag(principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
-    @PatchMapping("/admin/hashtagFlag/{id}")
+    @PatchMapping("/{id}/flag")
     @Operation(summary = "Change visibility Flag for hashtag",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Hashtag visibility was changed"),
@@ -32,7 +37,7 @@ public class HashtagController {
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
-    @GetMapping("/admin/hashtagStatistic")
+    @GetMapping("/statistic")
     public ResponseEntity<?> showHashtagsStatistic(){
         return hashtagService.listHashtagStatistic();
     }
