@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import pl.envelo.melo.exceptions.ArithmeticBadRequestException;
 
 import java.util.Objects;
 
@@ -28,5 +29,16 @@ public class HashtagDto {
     @Override
     public int hashCode() {
         return Objects.hash(content.toLowerCase());
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        if (content.length() < 2 || content.length() > 50){
+            throw new ArithmeticBadRequestException("Hashtag length should be between 2 to 50 chars");
+        }
+        this.content = content;
     }
 }
