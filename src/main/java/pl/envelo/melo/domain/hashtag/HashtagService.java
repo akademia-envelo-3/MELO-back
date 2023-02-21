@@ -31,7 +31,7 @@ public class HashtagService {
         if (hashtagRepository.existsByContent(hashtag.getContent().toLowerCase())) {
             hashtag = hashtagRepository.findByContent(hashtag.getContent().toLowerCase()).get();
             incrementHashtagGlobalCount(hashtag.getId());
-        } else {
+        } else{
             hashtag.setGlobalUsageCount(1);
             hashtag.setContent(hashtag.getContent().toLowerCase());
             hashtagRepository.save(hashtag);
