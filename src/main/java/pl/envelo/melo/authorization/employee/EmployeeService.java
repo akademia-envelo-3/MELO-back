@@ -12,7 +12,6 @@ import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
-import pl.envelo.melo.exceptions.EmployeeNotFound;
 import pl.envelo.melo.mappers.EmployeeListMapper;
 import pl.envelo.melo.mappers.EmployeeMapper;
 import pl.envelo.melo.authorization.person.PersonRepository;
