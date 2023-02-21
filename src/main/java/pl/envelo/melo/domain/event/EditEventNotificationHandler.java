@@ -14,8 +14,6 @@ import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
 @Component
 @AllArgsConstructor
 public class EditEventNotificationHandler {
-    private final EmployeeRepository employeeRepository;
-    private final UserRepository userRepository;
     private final LocationService locationService;
     private final NotificationService notificationService;
 

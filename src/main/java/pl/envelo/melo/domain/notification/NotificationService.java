@@ -37,63 +37,60 @@ public class NotificationService {
 
 
     public ResponseEntity<?> insertEventAllMembersNotification(EventNotificationDto eventNotificationDto) {
-        //used in update event, for members: employee and guest (person)
         if (eventRepository.findById(eventNotificationDto.getEventId()).isEmpty())
             return ResponseEntity.status(404).body("Event with given ID does not exist");
 
-        Notification notification = eventNotificationMapper.toEntity(eventNotificationDto);
         Event event = eventRepository.findById(eventNotificationDto.getEventId()).get();
-        notification.setEvent(event);
-        for (Person person : event.getMembers()) {
-            Optional<Employee> employeeOptional = employeeRepository.findByUserPersonEmail(person.getEmail());
-            if (employeeOptional.isPresent()) {
-                Employee employee = employeeOptional.get();
-                notification = notificationRepository.save(notification);
-                employee.getNotificationsBox().add(notification);
-                employeeRepository.save(employee);
-            } else {
-                //todo send email
-            }
-        }
-        return ResponseEntity.ok().body("Notifications have been sent to " + event.getMembers().size() + " members.");
+
+        int sentNotificationCount = sendEventNotification(event, eventNotificationDto, true);
+        return ResponseEntity.ok().body("Notifications have been sent to " + sentNotificationCount + " members.");
     }
 
     public ResponseEntity<?> insertEventInvitedNotification(EventNotificationDto eventNotificationDto) {
         //used in create event
-        Notification notification = eventNotificationMapper.toEntity(eventNotificationDto);
-        notification.setEvent(eventRepository.findById(eventNotificationDto.getEventId()).get());
-        for (Employee employee : notification.getEvent().getInvited()) {
-            notification = notificationRepository.save(notification);
-            employee.getNotificationsBox().add(notification);
-            employeeRepository.save(employee);
+        Event event = eventRepository.findById(eventNotificationDto.getEventId()).get();
+        for (Employee employee : event.getInvited()) {
+            Notification notification = eventNotificationMapper.toEntity(eventNotificationDto, eventRepository);
+            notification.setEvent(event);
+            saveNotificationAndEmployee(notification, employee);
         }
-        return ResponseEntity.ok().body("Notifications have been sent to " + notification.getEvent().getInvited().size() + " invited people.");
+        return ResponseEntity.ok().body("Notifications have been sent to " + event.getInvited().size() + " invited people.");
     }
 
     public ResponseEntity<?> insertEventEmployeeMembersNotification(EventNotificationDto eventNotificationDto) {
         if (eventRepository.findById(eventNotificationDto.getEventId()).isEmpty())
             return ResponseEntity.status(404).body("Event with given ID does not exist");
 
-        Notification notification = eventNotificationMapper.toEntity(eventNotificationDto);
         Event event = eventRepository.findById(eventNotificationDto.getEventId()).get();
-        notification.setEvent(event);
-        int employeeSize = 0;
+        int sentNotificationCount = sendEventNotification(event, eventNotificationDto, false);
+
+        return ResponseEntity.ok().body("Notifications have been sent to " + sentNotificationCount + " members.");
+    }
+
+    private int sendEventNotification(Event event, EventNotificationDto eventNotificationDto, boolean employeesOrAll) {
+        int sentNotificationCount = 0;
         for (Person person : event.getMembers()) {
             Optional<Employee> employeeOptional = employeeRepository.findByUserPersonEmail(person.getEmail());
             if (employeeOptional.isPresent()) {
                 Employee employee = employeeOptional.get();
-                notification = notificationRepository.save(notification);
-                employee.getNotificationsBox().add(notification);
-                employeeRepository.save(employee);
-                employeeSize++;
+                if (employee.getId() != event.getOrganizer().getId()) {
+                    Notification notification = eventNotificationMapper.toEntity(eventNotificationDto, eventRepository);
+                    notification.setEvent(event);
+                    saveNotificationAndEmployee(notification, employee);
+                    sentNotificationCount++;
+                }
+            } else {
+                if(employeesOrAll) {
+                    //todo send email
+                }
             }
         }
-        return ResponseEntity.ok().body("Notifications have been sent to " + employeeSize + " members.");
+        return sentNotificationCount;
     }
 
     //redundant - method to invite one person out of create/update event
     public ResponseEntity<?> insertEventInviteNotification(EventNotificationDto eventNotificationDto) {
-        Notification notification = eventNotificationMapper.toEntity(eventNotificationDto);
+        Notification notification = eventNotificationMapper.toEntity(eventNotificationDto, eventRepository);
         notification = notificationRepository.save(notification);
         Employee employee = employeeRepository.findById(eventNotificationDto.getEmployeeId()).get();
         employee.getNotificationsBox().add(notification);
@@ -107,37 +104,41 @@ public class NotificationService {
         } else
             return ResponseEntity.status(404).body("Employee with given ID is not present in database");
 
-        Notification notification = notificationRepository.save(requestNotificationMapper.toEntity(requestNotificationDto));
-        employee.getNotificationsBox().add(notification);
-        employeeRepository.save(employee);
-        return ResponseEntity.ok("Notification has been sent to employee ID: " + employee.getId());
+        Notification notification = requestNotificationMapper.toEntity(requestNotificationDto);
+        saveNotificationAndEmployee(notification, employee);
+        return ResponseEntity.ok("Notification " +notification.getNotificationType() + " has been sent to employee ID: " + employee.getId());
     }
 
     public ResponseEntity<?> insertUnitMembersNotification(UnitNotificationDto unitNotificationDto) {
         if (unitRepository.findById(unitNotificationDto.getUnitId()).isEmpty())
             return ResponseEntity.status(404).body("Unit with given ID does not exist");
 
-        Notification notification = unitNotificationMapper.toEntity(unitNotificationDto);
         Unit unit = unitRepository.findById(unitNotificationDto.getUnitId()).get();
-        notification.setUnit(unit);
+
         for (Employee employee : unit.getMembers()) {
-            notification = notificationRepository.save(notification);
-            employee.getNotificationsBox().add(notification);
-            employeeRepository.save(employee);
+            if(employee.getId()!=unit.getOwner().getId()) {
+                Notification notification = unitNotificationMapper.toEntity(unitNotificationDto, unitRepository);
+                notification.setUnit(unit);
+                saveNotificationAndEmployee(notification, employee);
+            }
         }
         return ResponseEntity.ok().body("Sent " + unitNotificationDto.getNotificationType() + " to " + unit.getMembers().size() + "unit members.");
     }
 
     public ResponseEntity<?> insertUnitOwnerChangeNotification(UnitNotificationDto unitNotificationDto) {
-        Notification notification = unitNotificationMapper.toEntity(unitNotificationDto);
+        Notification notification = unitNotificationMapper.toEntity(unitNotificationDto, unitRepository);
         Unit unit = unitRepository.findById(unitNotificationDto.getUnitId()).get();
         notification.setUnit(unit);
-        notification = notificationRepository.save(notification);
         Employee employee = employeeRepository.findById(unitNotificationDto.getEmployeeId()).get();
-        employee.getNotificationsBox().add(notification);
-        employeeRepository.save(employee);
+        saveNotificationAndEmployee(notification, employee);
         return ResponseEntity.ok().body("Added new notification for employee with ID " + employee.getId() +
                 ": " + notification.getNotificationType());
+    }
+
+    private void saveNotificationAndEmployee(Notification notification, Employee employee) {
+        notification = notificationRepository.save(notification);
+        employee.getNotificationsBox().add(notification);
+        employeeRepository.save(employee);
     }
 
     public ResponseEntity<List<NotificationDto>> listAllNotification(int employeeId) {
