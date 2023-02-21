@@ -210,6 +210,7 @@ public class EventService {
         }
 
         Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
+
         if (validationResult.size() != 0) {
             return ResponseEntity.badRequest().body(validationResult);
         }

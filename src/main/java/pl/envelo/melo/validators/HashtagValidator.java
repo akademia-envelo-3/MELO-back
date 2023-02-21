@@ -5,10 +5,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
+import pl.envelo.melo.domain.hashtag.HashtagDto;
+import java.util.HashMap;
+import java.util.Map;
 import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagDto;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
