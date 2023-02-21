@@ -50,6 +50,7 @@ public class Event {
     private Employee organizer;
     @NotNull
     @Column(nullable = false)
+    @Enumerated
     private EventType type;
     @ManyToMany
     private Set<Person> members;
@@ -62,6 +63,7 @@ public class Event {
     private Set<Hashtag> hashtags;
     private Long memberLimit;
     @ManyToOne
+    @Enumerated
     private Category category;
     @OneToMany(cascade=CascadeType.ALL)
     private Set<Attachment> attachments;
