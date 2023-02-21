@@ -374,7 +374,7 @@ public class EventService {
     }
 
     public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto, Principal principal) {
-        //TODO dostosować do funckjonalnosci wysyłania plików na serwer
+        //TODO dostosować do funkcjonalnosci wysyłania plików na serwer
         authorizationService.inflateUser(principal);
         if (newEventDto.getOrganizerId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new).getId())
             return ResponseEntity.status(403).build();
@@ -388,8 +388,8 @@ public class EventService {
         if (validationResult.size() != 0) {
             return ResponseEntity.badRequest().body(validationResult);
         }
-        eventUpdater.update(event, newEventDto);
         eventNotificationHandler.editNotification(event, newEventDto);
+        eventUpdater.update(event, newEventDto);
         return ResponseEntity.ok(eventDetailsMapper.convert(eventRepository.save(event)));
     }
 

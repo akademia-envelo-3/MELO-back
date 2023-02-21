@@ -36,7 +36,7 @@ public class EditEventNotificationHandler {
 
     private ResponseEntity<?> sendNotification(EventNotificationDto eventNotificationDto, NotificationType notificationType) {
         eventNotificationDto.setType(notificationType);
-        return notificationService.insertEventAllMembersNotification(eventNotificationDto);
+        return notificationService.insertEventMembersNotification(eventNotificationDto, false);
     }
 
 

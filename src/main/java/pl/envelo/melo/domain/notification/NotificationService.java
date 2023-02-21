@@ -16,6 +16,7 @@ import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
 import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitRepository;
+import pl.envelo.melo.exceptions.EventNotFoundException;
 import pl.envelo.melo.mappers.EventNotificationMapper;
 import pl.envelo.melo.mappers.RequestNotificationMapper;
 import pl.envelo.melo.mappers.UnitNotificationMapper;
@@ -49,9 +50,11 @@ public class NotificationService {
     private final UnitNotificationMapper unitNotificationMapper;
 
 
-    public ResponseEntity<?> insertEventAllMembersNotification(EventNotificationDto eventNotificationDto) {
+    public ResponseEntity<?> insertEventMembersNotification(EventNotificationDto eventNotificationDto, boolean employeesOrAll) {
+        //boolean employeesOrAll -> 0: notification for employees only.
+        //                          1: notification for employees and persons (email)
         if (eventRepository.findById(eventNotificationDto.getEventId()).isEmpty())
-            return ResponseEntity.status(404).body("Event with given ID does not exist");
+            throw new EventNotFoundException();
 
         Event event = eventRepository.findById(eventNotificationDto.getEventId()).get();
 
@@ -68,16 +71,6 @@ public class NotificationService {
             saveNotificationAndEmployee(notification, employee);
         }
         return ResponseEntity.ok().body("Notifications have been sent to " + event.getInvited().size() + " invited people.");
-    }
-
-    public ResponseEntity<?> insertEventEmployeeMembersNotification(EventNotificationDto eventNotificationDto) {
-        if (eventRepository.findById(eventNotificationDto.getEventId()).isEmpty())
-            return ResponseEntity.status(404).body("Event with given ID does not exist");
-
-        Event event = eventRepository.findById(eventNotificationDto.getEventId()).get();
-        int sentNotificationCount = sendEventNotification(event, eventNotificationDto, false);
-
-        return ResponseEntity.ok().body("Notifications have been sent to " + sentNotificationCount + " members.");
     }
 
     private int sendEventNotification(Event event, EventNotificationDto eventNotificationDto, boolean employeesOrAll) {
