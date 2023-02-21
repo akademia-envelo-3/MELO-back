@@ -5,13 +5,14 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import pl.envelo.melo.authorization.AuthSucceded;
 import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
+import pl.envelo.melo.authorization.employee.dto.EmployeeListDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
-import pl.envelo.melo.exceptions.EmployeeNotFound;
+import pl.envelo.melo.exceptions.EmployeeNotFoundException;
+import pl.envelo.melo.mappers.EmployeeListMapper;
 import pl.envelo.melo.mappers.EmployeeMapper;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.event.Event;
@@ -31,11 +32,12 @@ public class EmployeeService {
     private final UnitMapper unitMapper;
     private PersonRepository personRepository;
     private final EmployeeMapper employeeMapper;
+    private final EmployeeListMapper employeeListMapper;
     private final AuthorizationService authorizationService;
 
     public ResponseEntity<EmployeeDto> getEmployee(int id, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (id != employee.getId())
             return ResponseEntity.status(403).build();
         EmployeeDto employeeDto = employeeMapper.toDto(employee);
@@ -49,9 +51,20 @@ public class EmployeeService {
         return null;
     }
 
-    public ResponseEntity<List<EmployeeDto>> getEmployees() {
-//        return employeeRepository.findAll();
-        return null;
+    public ResponseEntity<Set<EmployeeListDto>> getEmployees(String q) {
+        if(q==null) {
+            return ResponseEntity.ok(employeeRepository.findAll().stream().map(employeeListMapper::toDto).collect(Collectors.toSet()));
+        }
+        else{
+            String[] listQ = q.split(" ");
+            Set<Employee> employeeSet = new HashSet<>();
+            if(listQ.length==1){
+               employeeSet.addAll(employeeRepository.findByUserPersonFirstNameContainingIgnoreCaseOrUserPersonLastNameContainingIgnoreCase(listQ[0],listQ[0]).get());
+            } else if (listQ.length==2) {
+                employeeSet.addAll(employeeRepository.findByUserPersonFirstNameContainingIgnoreCaseAndUserPersonLastNameContainingIgnoreCase(listQ[0],listQ[1]).get());
+            }
+            return ResponseEntity.ok(employeeSet.stream().map(employeeListMapper::toDto).collect(Collectors.toSet()));
+        }
     }
 
     public boolean addToOwnedEvents(int employeeId, Event event) {
@@ -174,7 +187,7 @@ public class EmployeeService {
 
     public ResponseEntity<?> getSetOfOwnedEvents(int id, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (id != employee.getId())
             return ResponseEntity.status(403).build();
         Set<Event> events = employee.getOwnedEvents();
@@ -183,7 +196,7 @@ public class EmployeeService {
 
     public ResponseEntity<?> getListOfJoinedUnits(int id, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (id != employee.getId())
             return ResponseEntity.status(403).build();
         if (employee.getJoinedUnits() == null) {
@@ -199,7 +212,7 @@ public class EmployeeService {
 
     public ResponseEntity<?> getListOfCreatedUnits(int employeeId, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (employeeId != employee.getId())
             return ResponseEntity.status(403).build();
         return ResponseEntity.ok(employee.getOwnedUnits().stream().map(e -> {
