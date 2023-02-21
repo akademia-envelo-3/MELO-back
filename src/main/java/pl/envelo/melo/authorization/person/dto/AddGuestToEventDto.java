@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.envelo.melo.authorization.AuthConst;
 
 @Getter
 @Setter
@@ -14,12 +15,12 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AddGuestToEventDto {
 
-    @NotBlank(message = "first name shouldn't be blank")
+    @NotBlank(message = AuthConst.INVALID_FIRST_NAME)
     private String firstName;
-    @NotBlank(message = "last name shouldn't be blank")
+    @NotBlank(message = AuthConst.INVALID_LAST_NAME)
     private String lastName;
     @Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}",
-            flags = Pattern.Flag.CASE_INSENSITIVE, message = "invalid email")
+            flags = Pattern.Flag.CASE_INSENSITIVE, message = AuthConst.INVALID_MAIL)
     private String email;
 
 }

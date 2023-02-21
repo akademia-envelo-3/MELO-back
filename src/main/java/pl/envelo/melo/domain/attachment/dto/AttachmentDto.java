@@ -7,19 +7,20 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.URL;
+import pl.envelo.melo.domain.attachment.AttachmentConst;
 import pl.envelo.melo.domain.attachment.AttachmentType;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class AttachmentDto {
 
-    @NotBlank(message = "name of attachment can't be blank")
+    @NotBlank(message = AttachmentConst.INVALID_NAME)
     @Max(255)
     private String name;
 
-    @URL(message = "Wrong format of attachment URL")
+    @URL(message = AttachmentConst.INVALID_URL)
     private String attachmentUrl;
 
-    @NotNull(message = "temporary validation. attachmentType can't be null")
+    @NotNull(message = AttachmentConst.INVALID_TYPE)
     private AttachmentType attachmentType;
 }

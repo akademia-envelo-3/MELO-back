@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.attachment.uploadmultiple;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import pl.envelo.melo.domain.attachment.AttachmentConst;
 import pl.envelo.melo.domain.attachment.uploadmultiple.ResponseMessage;
 
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,6 @@ public class FileUploadExceptionAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity<ResponseMessage> handleMaxSizeException(MaxUploadSizeExceededException exc) {
         return ResponseEntity
                 .status(HttpStatus.EXPECTATION_FAILED)
-                .body(new ResponseMessage("One or more files are too large!"));
+                .body(new ResponseMessage(AttachmentConst.FILE_TOO_LARGE));
     }
 }
