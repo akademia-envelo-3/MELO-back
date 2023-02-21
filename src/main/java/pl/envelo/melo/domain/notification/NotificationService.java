@@ -5,13 +5,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.AuthorizationService;
-import pl.envelo.melo.authorization.admin.Admin;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
 import pl.envelo.melo.domain.notification.dto.NotificationDto;
 import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
 import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
+import pl.envelo.melo.exceptions.EmployeeNotFoundException;
+import pl.envelo.melo.exceptions.NotificationNotFoundException;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import pl.envelo.melo.mappers.NotificationMapper;
 
 import java.security.Principal;
@@ -21,11 +28,9 @@ import java.util.*;
 @AllArgsConstructor
 public class NotificationService {
     private NotificationRepository notificationRepository;
-
-    @Autowired
-    private final AuthorizationService authorizationService;
-    private final EmployeeRepository employeeRepository;
-    private final NotificationMapper notificationMapper;
+    private AuthorizationService authorizationService;
+    private EmployeeRepository employeeRepository;
+    private NotificationMapper notificationMapper;
 
     public ResponseEntity<EventNotificationDto> insertEventNotification(EventNotificationDto eventNotificationDto) {
         return null;
@@ -42,8 +47,8 @@ public class NotificationService {
     public ResponseEntity<List<NotificationDto>> listAllNotification(Principal principal) {
         authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
-        if(Objects.nonNull(employee)) {
-            if(Objects.isNull(employee.getNotificationsBox())) {
+        if (Objects.nonNull(employee)) {
+            if (Objects.isNull(employee.getNotificationsBox())) {
                 return ResponseEntity.ok(new ArrayList<>());
             }
             List<Notification> checkedNotifications = new ArrayList<>(employee.getNotificationsBox().stream().filter(Notification::isChecked).toList());
@@ -61,7 +66,15 @@ public class NotificationService {
         return null;
     }
 
-    public ResponseEntity<?> setNotificationAsChecked(int notificationId) {
-        return null;
+    public ResponseEntity<?> setNotificationAsChecked(int notificationId, Principal principal) {
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
+        Notification notification = notificationRepository.findById(notificationId).orElseThrow(NotificationNotFoundException::new);
+        Set<Notification> notificationsBox = employee.getNotificationsBox();
+        if (notificationsBox.contains(notification)) {
+            notification.setChecked(true);
+            notificationRepository.save(notification);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.status(403).build();
     }
 }

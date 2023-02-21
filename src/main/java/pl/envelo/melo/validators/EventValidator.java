@@ -10,6 +10,7 @@ import pl.envelo.melo.domain.event.dto.NewEventDto;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class EventValidator {
             errors.put(EventType.class.getName() + " error", "You cannot edit eventType");
         else {
             if (event.getType().name().startsWith("LIMITED")) {
-                if (eventDto.getMemberLimit() < 2) {
+                if (Objects.isNull(eventDto.getMemberLimit()) || eventDto.getMemberLimit() < 2) {
                     errors.put("memberLimit" + " error", "You cannot set memberLimit to less than 2");
                 }
                 if (eventDto.getMemberLimit() < event.getMembers().size()) {
@@ -57,7 +58,7 @@ public class EventValidator {
 
 
         if (eventDto.getEventType().name().startsWith("LIMITED")) {
-            if (eventDto.getMemberLimit() < 2) {
+            if (Objects.isNull(eventDto.getMemberLimit()) || eventDto.getMemberLimit() < 2) {
                 errors.put("memberLimit" + " error", "You cannot set memberLimit to less than 2");
             }
         }
