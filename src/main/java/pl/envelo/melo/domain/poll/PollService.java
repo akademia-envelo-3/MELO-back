@@ -10,12 +10,8 @@ import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.poll.dto.*;
-<<<<<<< HEAD
-import pl.envelo.melo.exceptions.EmployeeNotFound;
 import pl.envelo.melo.exceptions.EventNotFoundException;
-=======
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
->>>>>>> a53398e9a0d560e39d4627c8a09fc29b824dc178
 import pl.envelo.melo.mappers.*;
 
 import java.security.Principal;
@@ -39,7 +35,7 @@ public class PollService {
 
     public ResponseEntity<?> insertNewPoll(NewPollDto newPollDto, int eventId, Principal principal) {
         authorizationService.inflateUser(principal);
-        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFound::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
 
         if (eventRepository.findById(eventId).isEmpty()) {
             return ResponseEntity.status(404).body(String.format(PollConst.EVENT_NOT_FOUND, eventId));
