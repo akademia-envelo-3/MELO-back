@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -558,6 +559,35 @@ public class EventService {
             eventNotificationDto.setEmployeeId(employee.getId());
             notificationService.insertEventNotification(eventNotificationDto);
         }
+    }
+
+    @Transactional
+    public ResponseEntity<?> deleteEvent(int eventId, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Optional<Event> event = eventRepository.findById(eventId);//TODO Exeption
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
+        if(!event.get().getOrganizer().equals(employee)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only owner can delete event");
+        }
+        employee.getJoinedEvents().remove(event.get());
+        employeeService.removeFromOwnedEvents(employee.getId(),event.get());
+        if(event.get().getStartTime().compareTo(LocalDateTime.now())<=0){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Past events cannot be deleted");
+        }
+        for (Hashtag h: event.get().getHashtags()) {
+            hashtagService.decrementHashtagGlobalCount(h.getId());
+        }
+        for(Person p: event.get().getMembers()){
+            if(employeeRepository.findByUserPerson(p).isPresent()){
+                employeeService.removeFromJoinedEvents(employeeRepository.findByUserPerson(p).get().getId(),event.get());
+            }
+        }
+
+        eventRepository.delete(event.get());
+        if(eventRepository.existsById(eventId))
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Event still exist");
+        return ResponseEntity.ok("Event was deleted");
+
     }
 }
 

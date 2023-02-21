@@ -46,20 +46,20 @@ public class Event {
     @Column(nullable = false)
     private LocalDateTime endTime;
     @NotNull
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     private Employee organizer;
     @NotNull
     @Column(nullable = false)
     @Enumerated
     private EventType type;
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     private Set<Person> members;
     private PeriodicType periodicType;
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     private Set<Employee> invited;
     @ManyToOne
     private Unit unit;
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     private Set<Hashtag> hashtags;
     private Long memberLimit;
     @ManyToOne
@@ -67,13 +67,13 @@ public class Event {
     private Category category;
     @OneToMany(cascade=CascadeType.ALL)
     private Set<Attachment> attachments;
-    @OneToOne
+    @OneToOne(cascade=CascadeType.ALL)
     private Attachment mainPhoto;
-    @OneToMany
+    @OneToMany(cascade=CascadeType.ALL)
     private List<Comment> comments;
-    @OneToMany
+    @OneToMany(cascade=CascadeType.ALL)
     private Set<Poll> polls;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private Location location;
     @Column(nullable = false)
     private Theme theme;
