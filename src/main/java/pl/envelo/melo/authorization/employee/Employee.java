@@ -38,7 +38,12 @@ public class Employee {
     private User user;
     @OneToMany
     private Set<Notification> notificationsBox;
-
+    public String getFirstName(){
+        return user.getPerson().getFirstName();
+    }
+    public String getLastName(){
+        return user.getPerson().getLastName();
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

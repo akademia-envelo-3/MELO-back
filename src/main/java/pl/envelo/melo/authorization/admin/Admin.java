@@ -24,8 +24,6 @@ public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-    @ManyToMany
-    private Set<CategoryRequest> adminInbox;
     @OneToOne(optional = false)
     @NotNull
     private User user;
