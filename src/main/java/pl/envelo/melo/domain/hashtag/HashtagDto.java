@@ -15,7 +15,7 @@ import java.util.Objects;
 @Getter
 public class HashtagDto {
     @NotBlank
-    @Size(max = 50, min = 2, message = "Wrong size")
+    @Size(max = HashtagConst.MAX_CONTENT_LENGTH, min = HashtagConst.MIN_CONTENT_LENGTH, message = HashtagConst.INVALID_CONTENT)
     private String content;
 
     @Override
@@ -37,7 +37,7 @@ public class HashtagDto {
 
     public void setContent(String content) {
         if (content.length() < 2 || content.length() > 50){
-            throw new ArithmeticBadRequestException("Hashtag length should be between 2 to 50 chars");
+            throw new ArithmeticBadRequestException(HashtagConst.INVALID_CONTENT);
         }
         this.content = content;
     }
