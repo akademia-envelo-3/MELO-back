@@ -10,6 +10,7 @@ import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.poll.dto.*;
+import pl.envelo.melo.exceptions.EventNotFoundException;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.mappers.*;
 
@@ -32,11 +33,21 @@ public class PollService {
     private final AuthorizationService authorizationService;
 
 
-    public ResponseEntity<?> insertNewPoll(NewPollDto newPollDto, int eventId) {
+    public ResponseEntity<?> insertNewPoll(NewPollDto newPollDto, int eventId, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
 
         if (eventRepository.findById(eventId).isEmpty()) {
             return ResponseEntity.status(404).body(String.format(PollConst.EVENT_NOT_FOUND, eventId));
         }
+
+        Event event = eventRepository.findById(eventId).get();
+        if (event.getPolls() == null) {
+            event.setPolls(new HashSet<>());
+        }
+
+        if(event.getOrganizer().getId()!=employee.getId())
+            return ResponseEntity.status(400).body("You're not organizer of this event.");
 
         PollDto pollDto = newPollMapper.toDto(newPollDto);
 
@@ -73,11 +84,6 @@ public class PollService {
 
         for (PollAnswer pollAnswer : poll.getPollAnswers()) {
             pollAnswer.setPoll(poll);
-        }
-
-        Event event = eventRepository.findById(eventId).get();
-        if (event.getPolls() == null) {
-            event.setPolls(new HashSet<>());
         }
 
         event.getPolls().add(poll);
@@ -126,6 +132,13 @@ public class PollService {
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         int employeeId = employee.getId(); //employee token
         Poll poll;
+
+        if(eventRepository.findById(eventId).isPresent()) {
+            Event event = eventRepository.findById(eventId).get();
+            if(event.getMembers().stream().noneMatch(person -> Objects.equals(person.getEmail(), authorizationService.getEmail(principal)))) {
+                return ResponseEntity.status(400).body("Employee is not member of this event.");
+            }
+        } else throw new EventNotFoundException();
 
         if (checkPollValidation(eventId, pollSendResultDto.getPollId()).getStatusCode().is2xxSuccessful()) {
             poll = pollRepository.findById(pollSendResultDto.getPollId()).get();
