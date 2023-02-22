@@ -1,7 +1,6 @@
 package pl.envelo.melo.domain.notification;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.AuthorizationService;
@@ -13,13 +12,8 @@ import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
 import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.exceptions.NotificationNotFoundException;
-
-import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import pl.envelo.melo.mappers.NotificationMapper;
+import pl.envelo.melo.mappers.RequestNotificationMapper;
 
 import java.security.Principal;
 import java.util.*;
@@ -27,17 +21,32 @@ import java.util.*;
 @Service
 @AllArgsConstructor
 public class NotificationService {
-    private NotificationRepository notificationRepository;
-    private AuthorizationService authorizationService;
-    private EmployeeRepository employeeRepository;
-    private NotificationMapper notificationMapper;
+    private final NotificationRepository notificationRepository;
+    private final AuthorizationService authorizationService;
+    private final EmployeeRepository employeeRepository;
+    private final NotificationMapper notificationMapper;
+    private final RequestNotificationMapper requestNotificationMapper;
 
     public ResponseEntity<EventNotificationDto> insertEventNotification(EventNotificationDto eventNotificationDto) {
         return null;
     }
 
-    public ResponseEntity<RequestNotificationDto> insertRequestNotification(RequestNotificationDto requestNotificationDto) {
-        return null;
+    public ResponseEntity<?> insertRequestNotification(RequestNotificationDto requestNotificationDto) {
+        Employee employee;
+        if (employeeRepository.findById(requestNotificationDto.getEmployeeId()).isPresent()) {
+            employee = employeeRepository.findById(requestNotificationDto.getEmployeeId()).get();
+        } else
+            throw new EmployeeNotFoundException();
+
+        Notification notification = requestNotificationMapper.toEntity(requestNotificationDto);
+        saveNotificationAndEmployee(notification, employee);
+        return ResponseEntity.ok("Notification " + notification.getNotificationType() + " has been sent to employee ID: " + employee.getId());
+    }
+
+    private void saveNotificationAndEmployee(Notification notification, Employee employee) {
+        notification = notificationRepository.save(notification);
+        employee.getNotificationsBox().add(notification);
+        employeeRepository.save(employee);
     }
 
     public ResponseEntity<UnitNotificationDto> insertUnitNotification(UnitNotificationDto unitNotificationDto) {

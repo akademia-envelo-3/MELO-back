@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,11 +14,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import pl.envelo.melo.domain.category.CategoryDto;
 import pl.envelo.melo.domain.category.CategoryService;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
 import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
 
+import java.security.Principal;
 import java.util.List;
 
 @RequestMapping("/v1/categoryrequests")
@@ -29,11 +32,14 @@ public class CategoryRequestController {
     private final NotificationService notificationService;
     private final CategoryService categoryService;
 
-    public ResponseEntity<CategoryRequest> addNewCategoryRequest(CategoryRequestDto categoryRequestDto) {
-        return categoryRequestService.insertNewCategoryRequest(categoryRequestDto);
+    @PostMapping("")
+    @Operation(summary = "Add new category request")
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
+    public ResponseEntity<?> addNewCategoryRequest(@RequestBody @Valid CategoryDto categoryDto, Principal principal) {
+        return categoryRequestService.insertNewCategoryRequest(categoryDto, principal);
     }
     @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
-    @GetMapping
+    @GetMapping("")
     public ResponseEntity<List<CategoryRequestToDisplayOnListDto>> showAllCategoryRequests(@RequestParam("resolved") boolean resolved) {
         return categoryRequestService.listCategoryRequests(resolved);
     }
@@ -53,7 +59,7 @@ public class CategoryRequestController {
     @PatchMapping("/{id}")
     public ResponseEntity<?> acceptCategoryRequest(@PathVariable("id") int categoryRequestId, @RequestParam("accept") boolean accept, @RequestParam(required = false, name = "message") String message) {
         if (accept)
-            return categoryRequestService.setCategoryRequestAsAccepted(categoryRequestId);
+            return categoryRequestService.setCategoryRequestAsAccepted(categoryRequestId, message);
         return categoryRequestService.setCategoryRequestAsDeclined(categoryRequestId, message);
     }
 }
