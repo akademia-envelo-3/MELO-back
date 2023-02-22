@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.jdbc.object.UpdatableSqlQuery;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.EmployeeService;
@@ -50,6 +51,7 @@ import pl.envelo.melo.domain.poll.dto.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -104,9 +106,13 @@ public class EventController {
 //    }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
-    @PostMapping("/{id}")
-    public ResponseEntity<?> editEvent(@RequestParam("id") int id, @RequestBody NewEventDto newEventDto, Principal principal) {
-        return eventService.updateEvent(id, newEventDto, principal);
+    @PatchMapping(value = "/{eventId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> editEvent(@PathVariable("eventId") int id,
+                                       @RequestPart(value = "update") @Parameter(schema = @Schema(type = "string", format = "binary")) Map<String, Map<String,Object>> update,
+                                       @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
+                                       @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments,
+                                       Principal principal) {
+        return eventService.updateEvent(id, update.get("updates"), update.get("adds"), update.get("deletes"),mainPhoto,additionalAttachments,principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")

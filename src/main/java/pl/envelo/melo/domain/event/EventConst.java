@@ -16,4 +16,13 @@ public class EventConst {
     public static final String EVENT_ORGANIZER_LEAVE_ATTEMPT = "Event organizer cant be remove from his event";
     public static final String PERSON_STILL_ON_LIST = "Person removed successful";
     public static final String GUEST_ADDITION_ATTEMPT = "Event is not external, guest can't be added.";
+    public static final String FORBIDDEN_ACTION = "forbidden error";
+    public static final String INVALID_START_TIME = "startTime error";
+    public static final String INVALID_END_TIME = "endTime error";
+    public static final String START_TIME_SAME_AS_OLD = "New StartTime is the same as old.";
+    public static final String END_TIME_SAME_AS_OLD = "New EndTime is the same as old.";
+    public static final String PAST_TIME = "You cannot set past date";
+    public static final String ARCHIVED_EVENT_EDIT_ATTEMPT = "You cannot edit archived event";
+    public static final String END_TIME_AFTER_START_TIME = "You must set endTime to be after startTime";
+    public static final String START_TIME_BEFORE_END_TIME = "You must set startTime to be before endTime";
 }

@@ -51,8 +51,16 @@ public class HashtagService {
         }
     }
 
-    public ResponseEntity<Hashtag> decrementHashtagGlobalCount(int id) {
-        return null;
+    public Boolean decrementHashtagGlobalCount(int id) {
+        if (hashtagRepository.existsById(id)){
+            Hashtag hashtag = hashtagRepository.getById(id);
+            hashtag.setGlobalUsageCount(hashtag.getGlobalUsageCount()-1);
+            hashtagRepository.save(hashtag);
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     public ResponseEntity<?> setHashtagHiddenFlag(int id, boolean hide) {

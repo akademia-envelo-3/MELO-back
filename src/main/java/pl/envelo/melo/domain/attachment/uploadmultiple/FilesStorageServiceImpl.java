@@ -19,7 +19,10 @@ import pl.envelo.melo.domain.attachment.AttachmentConst;
 
 @Service
 public class FilesStorageServiceImpl implements FilesStorageService {
-
+    public FilesStorageServiceImpl(){
+        this.deleteAll();
+        this.init();
+    }
     private final Path root = Paths.get("uploads");
 
     @Override
