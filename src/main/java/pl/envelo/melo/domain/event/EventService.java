@@ -203,7 +203,7 @@ public class EventService {
 
         if (category.isPresent() && !category.get().isHidden()) {
             event.setCategory(category.get());
-        } else if (category.isPresent() && category.get().isHidden()){
+        } else if (category.isPresent() && category.get().isHidden()) {
             return ResponseEntity.status(404).body("Category you tried to add is not available anymore");
         } else if (!category.isPresent() && newEventDto.getCategoryId() != null) {
             return ResponseEntity.status(404).body("Category you tried to add does not exist");
@@ -278,7 +278,7 @@ public class EventService {
         Set<HashtagDto> hashtagDtoFromTitleAndDescription = findHashtagFromEvent(newEventDto.getName(), newEventDto.getDescription());
         if (newEventDto.getHashtags() != null) {
             Map<String, String> validationIsHidden = hashtagValidator.validateIsHidden(newEventDto.getHashtags());
-            if (validationIsHidden.size() != 0){
+            if (validationIsHidden.size() != 0) {
                 return ResponseEntity.badRequest().body(validationIsHidden);
             }
             hashtagDtoFromTitleAndDescription.addAll(newEventDto.getHashtags());
@@ -361,7 +361,7 @@ public class EventService {
             EventNotificationDto eventNotificationDto = new EventNotificationDto();
             eventNotificationDto.setEventId(eventId);
             eventNotificationDto.setType(NotificationType.EVENT_ORGANIZER_UPDATED);
-                    //todo set content of eventNotificationDto
+            eventNotificationDto.setContent("Nowym organizatorem wydarzenia \""+event.getName()+"\" jest "+employee.getFirstName()+" "+employee.getLastName()+".");
             notificationService.insertEventMembersNotification(eventNotificationDto, false);
 
             return ResponseEntity.status(200).body("The organizer of the event with id "
@@ -372,7 +372,7 @@ public class EventService {
     }
 
 
-    public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes, MultipartFile mainPhoto, MultipartFile[] additionalAttachments,Principal principal) {
+    public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes, MultipartFile mainPhoto, MultipartFile[] additionalAttachments, Principal principal) {
         boolean general_change = false;
         authorizationService.inflateUser(principal);
         Optional<Event> optionalEvent = eventRepository.findById(id);
@@ -407,16 +407,12 @@ public class EventService {
             if (!Objects.isNull(updates.get("startTime")) || !Objects.isNull(updates.get("endTime"))) {
                 Optional<?> updateDates = eventUpdater.updateDate(event, updates.get("startTime"), updates.get("endTime"));
                 if (updateDates.get() instanceof Boolean) {
-                    for (Person p : event.getMembers()) {
-                        Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
-                        if (e.isPresent()) {
-                            EventNotificationDto eventNotificationDto = new EventNotificationDto();
-                            eventNotificationDto.setContent("Czas wydarzenia się zmienił na: " + event.getStartTime() + "-" + event.getEndTime());
-                            eventNotificationDto.setEventId(event.getId());
-                            eventNotificationDto.setType(NotificationType.EVENT_DATE_CHANGED);
-                            notificationService.insertEventMembersNotification(eventNotificationDto, false);
-                        }
-                    }
+                    EventNotificationDto eventNotificationDto = new EventNotificationDto();
+                    eventNotificationDto.setContent("Czas wydarzenia \""+event.getName()+"\" został zmieniony. "
+                            + "Rozpoczęcie wydarzenia: "+event.getStartTime() + " Zakończenie wydarzenia: " + event.getEndTime());
+                    eventNotificationDto.setEventId(event.getId());
+                    eventNotificationDto.setType(NotificationType.EVENT_DATE_CHANGED);
+                    notificationService.insertEventMembersNotification(eventNotificationDto, false);
                 } else if (updateDates.get() instanceof Map) {
                     return ResponseEntity.status(404).body(updateDates.get());
                 }
@@ -447,16 +443,11 @@ public class EventService {
             }
             if (!Objects.isNull(updates.get("location"))) {
                 if (eventUpdater.updateLocation(event, updates.get("location"))) {
-                    for (Person p : event.getMembers()) {
-                        Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
-                        if (e.isPresent()) {
-                            EventNotificationDto eventNotificationDto = new EventNotificationDto();
-                            eventNotificationDto.setContent("Lokalizacja wydareznia się zmieniłą");
-                            eventNotificationDto.setEventId(event.getId());
-                            eventNotificationDto.setType(NotificationType.EVENT_LOCATION_CHANGED);
-                            notificationService.insertEventMembersNotification(eventNotificationDto, false);
-                        }
-                    }
+                    EventNotificationDto eventNotificationDto = new EventNotificationDto();
+                    eventNotificationDto.setContent("Lokalizacja wydareznia się zmieniłą");
+                    eventNotificationDto.setEventId(event.getId());
+                    eventNotificationDto.setType(NotificationType.EVENT_LOCATION_CHANGED);
+                    notificationService.insertEventMembersNotification(eventNotificationDto, false);
                 } else {
                     return ResponseEntity.status(404).body("Location of new event is the same as old");
                 }
@@ -482,7 +473,7 @@ public class EventService {
         }
         if (!Objects.isNull(deletes)) {
             if (!Objects.isNull(deletes.get("hashtags"))) {
-                if (!eventUpdater.removeHashtags(event, deletes.get("hashtags"),findHashtagFromEvent(event.getName(),event.getDescription()))) {
+                if (!eventUpdater.removeHashtags(event, deletes.get("hashtags"), findHashtagFromEvent(event.getName(), event.getDescription()))) {
                     return ResponseEntity.status(404).body("Hashtags are in wrong format");
                 }
                 general_change = true;
@@ -514,7 +505,7 @@ public class EventService {
             }
         }
         if (!Objects.isNull(additionalAttachments)) {
-            if(event.getAttachments().size()+additionalAttachments.length>10){
+            if (event.getAttachments().size() + additionalAttachments.length > 10) {
                 return ResponseEntity.status(404).body("You can upload max 10 attachments to Your Event");
             }
             if (eventUpdater.addAttachments(event, additionalAttachments)) {
@@ -531,18 +522,11 @@ public class EventService {
             }
         }
         if (general_change) {
-            for (Person p : event.getMembers()) {
-                Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
-                if (e.isPresent()) {
-                    EventNotificationDto eventNotificationDto = new EventNotificationDto();
-                    eventNotificationDto.setEventId(event.getId());
-                    eventNotificationDto.setType(NotificationType.EVENT_UPDATED);
-                    eventNotificationDto.setContent("Wydarzenie " + event.getName() + "został zmieniony");
-
-                    eventNotificationDto.setEmployeeId(e.get().getId());
-                    notificationService.insertEventMembersNotification(eventNotificationDto, false);
-                }
-            }
+            EventNotificationDto eventNotificationDto = new EventNotificationDto();
+            eventNotificationDto.setEventId(event.getId());
+            eventNotificationDto.setType(NotificationType.EVENT_UPDATED);
+            eventNotificationDto.setContent("Wydarzenie " + event.getName() + " zostało zmienione");
+            notificationService.insertEventMembersNotification(eventNotificationDto, false);
         }
 //        eventNotificationHandler.editNotification(event, newEventDto);
 //        eventUpdater.update(event, newEventDto);
@@ -711,6 +695,7 @@ public class EventService {
         EventNotificationDto eventNotificationDto = new EventNotificationDto();
         eventNotificationDto.setEventId(event.getId());
         eventNotificationDto.setType(notificationType);
+        eventNotificationDto.setContent("Masz nowe zaproszenie do wydarzenia \""+event.getName()+"\".");
         notificationService.insertEventInvitedNotification(eventNotificationDto);
     }
 }

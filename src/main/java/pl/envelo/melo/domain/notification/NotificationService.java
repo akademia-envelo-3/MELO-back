@@ -4,31 +4,25 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
-import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
 import pl.envelo.melo.domain.notification.dto.NotificationDto;
 import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
 import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitRepository;
+import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.exceptions.EventNotFoundException;
+import pl.envelo.melo.exceptions.NotificationNotFoundException;
 import pl.envelo.melo.mappers.EventNotificationMapper;
+import pl.envelo.melo.mappers.NotificationMapper;
 import pl.envelo.melo.mappers.RequestNotificationMapper;
 import pl.envelo.melo.mappers.UnitNotificationMapper;
-import pl.envelo.melo.exceptions.EmployeeNotFoundException;
-import pl.envelo.melo.exceptions.NotificationNotFoundException;
-
-import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import pl.envelo.melo.mappers.NotificationMapper;
 
 import java.security.Principal;
 import java.util.*;
@@ -51,8 +45,8 @@ public class NotificationService {
 
 
     public ResponseEntity<?> insertEventMembersNotification(EventNotificationDto eventNotificationDto, boolean employeesOrAll) {
-        //boolean employeesOrAll -> 0: notification for employees only.
-        //                          1: notification for employees and persons (email)
+        //boolean employeesOrAll -> false: notification for employees only.
+        //                          true: notification for employees and persons (email)
         if (eventRepository.findById(eventNotificationDto.getEventId()).isEmpty())
             throw new EventNotFoundException();
 
@@ -76,7 +70,7 @@ public class NotificationService {
     private int sendEventNotification(Event event, EventNotificationDto eventNotificationDto, boolean employeesOrAll) {
         int sentNotificationCount = 0;
         for (Person person : event.getMembers()) {
-            Optional<Employee> employeeOptional = employeeRepository.findByUserPersonEmail(person.getEmail());
+            Optional<Employee> employeeOptional = employeeRepository.findByUserPerson(person);
             if (employeeOptional.isPresent()) {
                 Employee employee = employeeOptional.get();
                 if (employee.getId() != event.getOrganizer().getId()) {
@@ -86,7 +80,7 @@ public class NotificationService {
                     sentNotificationCount++;
                 }
             } else {
-                if(employeesOrAll) {
+                if (employeesOrAll) {
                     //todo send email
                 }
             }
@@ -112,7 +106,7 @@ public class NotificationService {
 
         Notification notification = requestNotificationMapper.toEntity(requestNotificationDto);
         saveNotificationAndEmployee(notification, employee);
-        return ResponseEntity.ok("Notification " +notification.getNotificationType() + " has been sent to employee ID: " + employee.getId());
+        return ResponseEntity.ok("Notification " + notification.getNotificationType() + " has been sent to employee ID: " + employee.getId());
     }
 
     public ResponseEntity<?> insertUnitMembersNotification(UnitNotificationDto unitNotificationDto) {
@@ -122,7 +116,7 @@ public class NotificationService {
         Unit unit = unitRepository.findById(unitNotificationDto.getUnitId()).get();
 
         for (Employee employee : unit.getMembers()) {
-            if(employee.getId()!=unit.getOwner().getId()) {
+            if (employee.getId() != unit.getOwner().getId()) {
                 Notification notification = unitNotificationMapper.toEntity(unitNotificationDto, unitRepository);
                 notification.setUnit(unit);
                 saveNotificationAndEmployee(notification, employee);
@@ -136,6 +130,10 @@ public class NotificationService {
         Unit unit = unitRepository.findById(unitNotificationDto.getUnitId()).get();
         notification.setUnit(unit);
         Employee employee = employeeRepository.findById(unitNotificationDto.getEmployeeId()).get();
+        if (unitNotificationDto.getNotificationType().equals(NotificationType.UNIT_OWNERSHIP_GRANTED))
+            notification.setContent("Zostałeś nowym właścicielem koła \"" + unit.getName() + "\".");
+        if (unitNotificationDto.getNotificationType().equals(NotificationType.UNIT_OWNERSHIP_REVOKED))
+            notification.setContent("Nie jesteś już właścicielem koła \"" + unit.getName() + "\".");
         saveNotificationAndEmployee(notification, employee);
         return ResponseEntity.ok().body("Added new notification for employee with ID " + employee.getId() +
                 ": " + notification.getNotificationType());

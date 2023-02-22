@@ -47,11 +47,11 @@ public class CategoryRequestService {
         return null;
     }
 
-    public ResponseEntity<?> setCategoryRequestAsAccepted(int categoryRequestId) {
+    public ResponseEntity<?> setCategoryRequestAsAccepted(int categoryRequestId, String message) {
         CategoryRequest categoryRequest = setCategoryRequestAsResolved(categoryRequestId);
         Category category = categoryRepository.findByName(categoryRequest.getCategoryName());
         if (Objects.isNull(category) || category.isHidden())
-            sendCategoryRequestNotification(categoryRequest, null, NotificationType.CATEGORY_REQUEST_ACCEPTED);
+            sendCategoryRequestNotification(categoryRequest, message, NotificationType.CATEGORY_REQUEST_ACCEPTED);
         if (Objects.isNull(category))
             return categoryService.insertNewCategory(new CategoryDto(categoryRequest.getCategoryName()));
         if (category.isHidden())
@@ -78,7 +78,16 @@ public class CategoryRequestService {
     private void sendCategoryRequestNotification(CategoryRequest categoryRequest, String message, NotificationType notificationType) {
         RequestNotificationDto requestNotificationDto = new RequestNotificationDto();
         requestNotificationDto.setEmployeeId(categoryRequest.getEmployee().getId());
-        requestNotificationDto.setReason(message);
+        if(notificationType.equals(NotificationType.CATEGORY_REQUEST_ACCEPTED)) {
+            requestNotificationDto.setReason("Twoja propozycja kategorii \""
+                    +categoryRequest.getCategoryName()+"\" została zatwierdzona.");
+        }
+        if(notificationType.equals(NotificationType.CATEGORY_REQUEST_REJECTED)) {
+            requestNotificationDto.setReason("Twoja propozycja kategorii \""
+                    +categoryRequest.getCategoryName()+"\" została odrzucona.");
+        }
+        if(!message.isEmpty())
+            requestNotificationDto.setReason(requestNotificationDto.getReason()+" Komentarz: "+message);
         requestNotificationDto.setNotificationType(notificationType);
         notificationService.insertRequestNotification(requestNotificationDto);
     }

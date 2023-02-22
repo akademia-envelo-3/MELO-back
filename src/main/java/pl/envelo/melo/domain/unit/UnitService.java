@@ -86,6 +86,8 @@ public class UnitService {
         } else if (unit.get().getOwner().getId() != oldOwner.getId()) {
             return ResponseEntity.status(400).body("You are not the organizer of the event you " +
                     "do not have the authority to make changes");
+        } else if (newEmployeeId == oldOwner.getId()) {
+            return ResponseEntity.status(400).body("You can't assign ownership to yourself.");
         } else {
             employeeService.removeFromOwnedUnits(oldOwner.getId(), unit.get());
             unit.get().setOwner(newOwner.get());
@@ -109,7 +111,7 @@ public class UnitService {
         if (unit.isEmpty() || nextOwner.isEmpty())
             return ResponseEntity.status(404).body("Atleast one of the provided entity ids does not exist in the database");
         if (unit.get().getOwner().getId() == nextOwnerId)
-            return ResponseEntity.ok().build();
+            return ResponseEntity.status(400).body("This employee is already an owner.");
         Employee currentOwner = unit.get().getOwner();
         unit.get().setOwner(nextOwner.get());
         employeeService.removeFromOwnedUnits(currentOwner.getId(), unit.get());
