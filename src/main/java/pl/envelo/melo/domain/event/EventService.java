@@ -44,6 +44,8 @@ import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
 import pl.envelo.melo.domain.location.LocationService;
+import pl.envelo.melo.domain.notification.Notification;
+import pl.envelo.melo.domain.notification.NotificationRepository;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
@@ -88,6 +90,7 @@ public class EventService {
     private final CommentRepository commentRepository;
     private final PersonRepository personRepository;
     private final MailTokenRepository mailTokenRepository;
+    private final NotificationRepository notificationRepository;
     //Mappers
     private EventDetailsMapper eventDetailsMapper;
     private final PollToDisplayOnListDtoMapper pollToDisplayOnListDtoMapper;
@@ -734,10 +737,22 @@ public class EventService {
                 employeeService.removeFromJoinedEvents(employeeRepository.findByUserPerson(p).get().getId(),event.get());
             }
         }
-
+        Optional<List<MailToken>> tokens = mailTokenRepository.findAllByEvent(event.get());
+        if(tokens.isPresent()){
+            for (MailToken token: tokens.get()) {
+                mailTokenRepository.delete(token);
+            }
+        }
+        Optional<List<Notification>> notifications = notificationRepository.findAllByEvent(event.get());
+        if(notifications.isPresent()){
+            for (Notification notification: notifications.get()) {
+                notification.setEvent(null);
+            }
+        }
         eventRepository.delete(event.get());
         if(eventRepository.existsById(eventId))
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Event still exist");
+        //TODO Maybe notification
         return ResponseEntity.ok("Event was deleted");
 
     }
