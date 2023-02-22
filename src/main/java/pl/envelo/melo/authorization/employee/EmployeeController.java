@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.employee.dto.EmployeeListDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
@@ -22,7 +21,6 @@ import java.util.Set;
 @RequestMapping("v1/users")
 public class EmployeeController {
     private final EmployeeService employeeService;
-    private final AuthorizationService authorizationService;
 
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping()

@@ -26,20 +26,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
-import pl.envelo.melo.domain.attachment.AttachmentService;
-import pl.envelo.melo.domain.category.CategoryService;
 import pl.envelo.melo.domain.comment.CommentService;
 import pl.envelo.melo.domain.comment.dto.CommentDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.event.utils.PagingHeaders;
 import pl.envelo.melo.domain.event.utils.PagingResponse;
-import pl.envelo.melo.domain.hashtag.HashtagService;
-import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.poll.PollService;
 import pl.envelo.melo.domain.poll.dto.NewPollDto;
 import pl.envelo.melo.domain.poll.dto.PollDto;
@@ -59,11 +54,6 @@ import java.util.UUID;
 public class EventController {
 
     private final EventService eventService;
-    private final EmployeeService employeeService;
-    private final HashtagService hashtagService;
-    private final CategoryService categoryService;
-    private final AttachmentService attachmentService;
-    private final LocationService locationService;
     private final PollService pollService;
     private final CommentService commentService;
 

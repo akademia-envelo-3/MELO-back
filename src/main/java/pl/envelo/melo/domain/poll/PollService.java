@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
-import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.poll.dto.NewPollDto;
@@ -15,7 +14,9 @@ import pl.envelo.melo.domain.poll.dto.PollDto;
 import pl.envelo.melo.domain.poll.dto.PollSendResultDto;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.exceptions.EventNotFoundException;
-import pl.envelo.melo.mappers.*;
+import pl.envelo.melo.mappers.NewPollMapper;
+import pl.envelo.melo.mappers.PollMapper;
+import pl.envelo.melo.mappers.PollResultMapper;
 
 import java.security.Principal;
 import java.util.HashSet;
@@ -31,9 +32,6 @@ public class PollService {
     private final PollMapper pollMapper;
     private final PollResultMapper pollResultMapper;
     private final NewPollMapper newPollMapper;
-    private final PollToDisplayOnListDtoMapper pollToDisplayOnListDtoMapper;
-    private final EmployeeService employeeService;
-    private final EmployeeMapper employeeMapper;
     private final EmployeeRepository employeeRepository;
     private final AuthorizationService authorizationService;
 

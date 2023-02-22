@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.unit.dto.UnitDetailsDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
@@ -26,7 +25,6 @@ import java.util.List;
 @AllArgsConstructor
 public class UnitController {
     private final UnitService unitService;
-    private final AuthorizationService authorizationService;
 
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}")

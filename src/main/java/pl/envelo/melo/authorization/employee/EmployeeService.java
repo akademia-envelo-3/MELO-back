@@ -9,7 +9,6 @@ import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.employee.dto.EmployeeListDto;
 import pl.envelo.melo.authorization.person.Person;
-import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
@@ -31,7 +30,6 @@ public class EmployeeService {
     private EmployeeRepository employeeRepository;
     private final EventMapper eventMapper;
     private final UnitMapper unitMapper;
-    private PersonRepository personRepository;
     private final EmployeeMapper employeeMapper;
     private final EmployeeListMapper employeeListMapper;
     private final AuthorizationService authorizationService;
