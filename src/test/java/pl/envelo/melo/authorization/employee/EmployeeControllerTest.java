@@ -25,7 +25,7 @@ class EmployeeControllerTest extends EventContextTest {
     @Transactional
     void getOwnedEvents() {
         //Testy
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
         event.setName("Test name");
         event.getOrganizer().setOwnedEvents(new HashSet<>());
         event.getOrganizer().setJoinedEvents(new HashSet<>());

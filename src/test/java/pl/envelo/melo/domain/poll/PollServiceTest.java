@@ -8,7 +8,7 @@ import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.user.UserRepository;
 import pl.envelo.melo.domain.event.EventRepository;
-import pl.envelo.melo.domain.event.SimpleEventMocker;
+import pl.envelo.melo.domain.event.SimpleEventGenerator;
 
 @Transactional
 @SpringBootTest
@@ -23,11 +23,11 @@ class PollServiceTest {
     PersonRepository personRepository;
     @Autowired
     EventRepository eventRepository;
-    SimpleEventMocker simpleEventMocker;
+    SimpleEventGenerator simpleEventGenerator;
 
     @BeforeEach
     void setUp() {
-        simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
+        simpleEventGenerator = new SimpleEventGenerator(employeeRepository, eventRepository, personRepository, userRepository);
     }
 
     //@Test
@@ -36,7 +36,7 @@ class PollServiceTest {
 
 //    @Test
 //    void insertNewPollTemplate() {
-//        Event event = simpleEventMocker.mockEvent(LocalDateTime.now(), EventType.UNLIMITED_EXTERNAL);
+//        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now(), EventType.UNLIMITED_EXTERNAL);
 //        PollTemplateDto pollTemplateDto = new PollTemplateDto();
 //        pollTemplateDto.setPollOptions(new HashSet<>());
 //        pollTemplateDto.setPollQuestion("question");

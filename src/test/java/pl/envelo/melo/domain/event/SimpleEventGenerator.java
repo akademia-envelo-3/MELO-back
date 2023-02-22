@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @AllArgsConstructor
-public class SimpleEventMocker {
+public class SimpleEventGenerator {
     private EmployeeRepository employeeRepository;
     private EventRepository eventRepository;
     private PersonRepository personRepository;

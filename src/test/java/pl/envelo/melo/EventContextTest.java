@@ -8,7 +8,7 @@ import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.user.UserRepository;
 import pl.envelo.melo.domain.event.EventRepository;
-import pl.envelo.melo.domain.event.SimpleEventMocker;
+import pl.envelo.melo.domain.event.SimpleEventGenerator;
 import pl.envelo.melo.utils.H2Utils;
 
 import javax.sql.DataSource;
@@ -22,7 +22,7 @@ public abstract class EventContextTest {
     protected EmployeeRepository employeeRepository;
     @Autowired
     protected EventRepository eventRepository;
-    protected SimpleEventMocker simpleEventMocker;
+    protected SimpleEventGenerator simpleEventGenerator;
     @Autowired
     protected PersonRepository personRepository;
     @Autowired
@@ -31,7 +31,7 @@ public abstract class EventContextTest {
     @BeforeEach
     void setUp() {
         H2Utils.clearDb(dataSource);
-        if (simpleEventMocker == null)
-            simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
+        if (simpleEventGenerator == null)
+            simpleEventGenerator = new SimpleEventGenerator(employeeRepository, eventRepository, personRepository, userRepository);
     }
 }

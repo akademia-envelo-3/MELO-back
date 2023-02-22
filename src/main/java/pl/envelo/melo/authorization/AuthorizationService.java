@@ -34,7 +34,7 @@ public class AuthorizationService {
     private static final int ADMIN_CREATED = 3;
     private static final int ADMIN_AND_EMPLOYEE_CREATED = 4;
 
-    public AuthStatus inflateUser(Principal principal) {
+    public AuthStatus createUser(Principal principal) {
         JwtAuthenticationToken tokenPrincipal = (JwtAuthenticationToken) principal;
         UUID principalId = UUID.fromString(tokenPrincipal.getTokenAttributes().get("sub").toString());
         if (userRepository.existsById(principalId)) {
@@ -45,10 +45,12 @@ public class AuthorizationService {
     }
 
     public UUID getUUID(Principal principal) {
+        createUser(principal);
         return UUID.fromString((String) ((JwtAuthenticationToken) principal).getTokenAttributes().get("sub"));
     }
 
     public String getEmail(Principal principal) {
+        createUser(principal);
         return (String) ((JwtAuthenticationToken) principal).getTokenAttributes().get("email");
     }
 

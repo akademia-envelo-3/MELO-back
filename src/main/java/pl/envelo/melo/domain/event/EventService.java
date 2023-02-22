@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import pl.envelo.melo.authorization.AuthSucceded;
 import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
@@ -104,7 +103,6 @@ public class EventService {
     private AuthorizationService authorizationService;
 
     public ResponseEntity<?> getEvent(int id, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
@@ -190,7 +188,6 @@ public class EventService {
 
     @Transactional
     public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto, MultipartFile[] additionalAttachments, Principal principal) {
-        authorizationService.inflateUser(principal);
         Event event = eventMapper.newEvent(newEventDto);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Optional<Category> category = Optional.empty();
@@ -340,7 +337,6 @@ public class EventService {
     }
 
     public ResponseEntity<?> changeEventOrganizer(int eventId, int newOrganizerId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Event event = eventRepository.findById(eventId).orElse(null);
         if (Objects.isNull(event)) {
@@ -369,7 +365,6 @@ public class EventService {
 
     public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes, MultipartFile mainPhoto, MultipartFile[] additionalAttachments, Principal principal) {
         boolean general_change = false;
-        authorizationService.inflateUser(principal);
         Optional<Event> optionalEvent = eventRepository.findById(id);
         if (optionalEvent.isEmpty())
             return ResponseEntity.badRequest().body("Event with id " + id + " not found");
@@ -546,15 +541,13 @@ public class EventService {
         if (!eventRepository.existsById(id))
             return ResponseEntity.status(HttpStatusCode.valueOf(404)).body("Event with " + id + " does not exists");
         Event event = eventRepository.getReferenceById(id);
-        if (authorizationService.inflateUser(principal) instanceof AuthSucceded)
-            if (event.getOrganizer().getId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new).getId())
-                return ResponseEntity.status(403).build();
+        if (event.getOrganizer().getId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new).getId())
+            return ResponseEntity.status(403).build();
         return ResponseEntity.ok(eventEditMapper.convert(event));
     }
 
     @Transactional
     public ResponseEntity<?> addEmployeeToEvent(int eventId, Principal principal) { //void?
-        authorizationService.inflateUser(principal);
         Optional<Event> event = eventRepository.findById(eventId);
         if (event.isPresent()) {
             if (event.get().getType().toString().startsWith("LIMITED")) {
@@ -582,8 +575,6 @@ public class EventService {
     }
 
     public ResponseEntity<?> removeEmployeeFromEvent(int eventId, Principal principal) {
-
-        authorizationService.inflateUser(principal);
         Optional<Event> event = eventRepository.findById(eventId);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (event.isEmpty()) {

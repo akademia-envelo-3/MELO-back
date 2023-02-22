@@ -28,7 +28,7 @@ public class SecurityTestController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatusCode.valueOf(401)).build();
         }
-        return ResponseEntity.ok(authorizationService.inflateUser(principal));
+        return ResponseEntity.ok(authorizationService.createUser(principal));
     }
 
     @GetMapping("/test/security/mail")

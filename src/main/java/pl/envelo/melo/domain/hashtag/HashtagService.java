@@ -70,7 +70,6 @@ public class HashtagService {
     }
 
     public ResponseEntity<List<HashtagDto>> listAllHashtag(Principal principal) {
-        authorizationService.inflateUser(principal);
         List<Hashtag> hashtagSet = null;
         if (Objects.nonNull(employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null))) {
             hashtagSet = hashtagRepository.findAllByHidden(false);

@@ -64,7 +64,6 @@ public class CategoryService {
     }
 
     public ResponseEntity<?> getCategory(int id, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         Admin admin = adminRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         Optional<Category> categoryOptional = categoryRepository.findById(id);
@@ -78,7 +77,6 @@ public class CategoryService {
     }
 
     public ResponseEntity<List<Category>> listAllCategory(Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         Admin admin = adminRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         List<Category> listOfCategories = categoryRepository.findAll();

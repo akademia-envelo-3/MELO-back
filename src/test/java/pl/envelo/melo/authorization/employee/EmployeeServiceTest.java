@@ -32,7 +32,7 @@ class EmployeeServiceTest extends EventContextTest {
         //Testy
         ResponseEntity<?> responseEntity = employeeService.getSetOfOwnedEvents(1);
         assertEquals(HttpStatus.NOT_FOUND, employeeService.getSetOfOwnedEvents(1).getStatusCode());
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
         event.setName("Test name");
         event.getOrganizer().setOwnedEvents(new HashSet<>());
         event.getOrganizer().setJoinedEvents(new HashSet<>());
@@ -50,9 +50,9 @@ class EmployeeServiceTest extends EventContextTest {
 
     @Test
     void addToOwnedEvents() {
-        Employee employee = simpleEventMocker.mockEmployee("test");
-        Event event1 = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
+        Employee employee = simpleEventGenerator.mockEmployee("test");
+        Event event1 = simpleEventGenerator.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
         employeeService.addToOwnedEvents(employee.getId(), event1);
         int len = employeeService.getEmployee(employee.getId()).getBody().getOwnedEvents().size();
         employeeService.addToOwnedEvents(employee.getId(), event);
@@ -63,9 +63,9 @@ class EmployeeServiceTest extends EventContextTest {
     @Test
     void removeFromOwnedEvents() {
         //Dane
-        Employee employee = simpleEventMocker.mockEmployee("test");
-        Event event1 = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
+        Employee employee = simpleEventGenerator.mockEmployee("test");
+        Event event1 = simpleEventGenerator.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
         employeeService.addToOwnedEvents(employee.getId(), event);
         employeeService.addToOwnedEvents(employee.getId(), event1);
         //Test
@@ -77,9 +77,9 @@ class EmployeeServiceTest extends EventContextTest {
     @Test
     void addToJoinedEvents() {
         //Dane
-        Employee employee = simpleEventMocker.mockEmployee("test");
-        Event event1 = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
+        Employee employee = simpleEventGenerator.mockEmployee("test");
+        Event event1 = simpleEventGenerator.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
         //Test
         employeeService.addToJoinedEvents(employee.getId(), event1);
         int len = employee.getJoinedEvents().size();
@@ -91,10 +91,10 @@ class EmployeeServiceTest extends EventContextTest {
     @Test
     void removeFromJoinedEvents() {
         //Dane
-        Employee employee = simpleEventMocker.mockEmployee("test");
-        Employee employee1 = simpleEventMocker.mockEmployee("test");
-        Event event1 = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
+        Employee employee = simpleEventGenerator.mockEmployee("test");
+        Employee employee1 = simpleEventGenerator.mockEmployee("test");
+        Event event1 = simpleEventGenerator.mockEvent(LocalDateTime.now().plusMonths(1), EventType.UNLIMITED_EXTERNAL, employee);
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
         //Test
         employeeService.addToJoinedEvents(employee.getId(), event);
         employeeService.addToJoinedEvents(employee1.getId(), event);
@@ -108,7 +108,7 @@ class EmployeeServiceTest extends EventContextTest {
     @Test
     void addToOwnedUnits() {
         //Dane
-        Employee employee = simpleEventMocker.mockEmployee("test");
+        Employee employee = simpleEventGenerator.mockEmployee("test");
         int len;
         Unit unit = new Unit();
         unit.setId(1);
@@ -130,7 +130,7 @@ class EmployeeServiceTest extends EventContextTest {
     @Test
     void removeFromOwnedUnits() {
         //Dane
-        Employee employee = simpleEventMocker.mockEmployee("test");
+        Employee employee = simpleEventGenerator.mockEmployee("test");
         int len;
         Unit unit = new Unit();
         unit.setId(1);
@@ -153,7 +153,7 @@ class EmployeeServiceTest extends EventContextTest {
     @Test
     void addToJoinedUnits() {
         //Dane
-        Employee employee = simpleEventMocker.mockEmployee("test");
+        Employee employee = simpleEventGenerator.mockEmployee("test");
         int len;
         Unit unit = new Unit();
         unit.setId(1);
@@ -176,7 +176,7 @@ class EmployeeServiceTest extends EventContextTest {
     @Test
     void removeFromJoinedUnits() {
         //Dane
-        Employee employee = simpleEventMocker.mockEmployee("test");
+        Employee employee = simpleEventGenerator.mockEmployee("test");
         int len;
         Unit unit = new Unit();
         unit.setId(1);
@@ -204,8 +204,8 @@ class EmployeeServiceTest extends EventContextTest {
         String unitDesc = "unit for pros";
         String nextUnitName = "noobs";
         String nextUnitDesc = "unit for noobs";
-        Employee owner = simpleEventMocker.mockEmployee(ownerName);
-        Employee employee = simpleEventMocker.mockEmployee("employee");
+        Employee owner = simpleEventGenerator.mockEmployee(ownerName);
+        Employee employee = simpleEventGenerator.mockEmployee("employee");
 
         Unit unit = new Unit();
         unit.setName(unitName);
@@ -249,8 +249,8 @@ class EmployeeServiceTest extends EventContextTest {
     @Test
     void getListOfCreatedUnits() {
         //Dane
-        Employee employee1 = simpleEventMocker.mockEmployee("test1");
-        Employee employee2 = simpleEventMocker.mockEmployee("test2");
+        Employee employee1 = simpleEventGenerator.mockEmployee("test1");
+        Employee employee2 = simpleEventGenerator.mockEmployee("test2");
         Unit unit1 = new Unit();
         unit1.setName("unit1");
         unit1.setDescription("unit");

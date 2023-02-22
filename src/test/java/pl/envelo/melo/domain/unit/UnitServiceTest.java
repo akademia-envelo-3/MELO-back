@@ -32,7 +32,7 @@ class UnitServiceTest extends EventContextTest {
         String unitDesc = "unit for pros";
         String nextUnitName = "noobs";
         String nextUnitDesc = "unit for noobs";
-        Employee owner = simpleEventMocker.mockEmployee(ownerName);
+        Employee owner = simpleEventGenerator.mockEmployee(ownerName);
         Unit unit = new Unit();
         unit.setName(unitName);
         unit.setDescription(unitDesc);
@@ -64,8 +64,8 @@ class UnitServiceTest extends EventContextTest {
         String ownerName = "owner";
         String unitName = "pros";
         String unitDesc = "unit for pros";
-        Employee owner = simpleEventMocker.mockEmployee(ownerName);
-        Employee employee = simpleEventMocker.mockEmployee("Test");
+        Employee owner = simpleEventGenerator.mockEmployee(ownerName);
+        Employee employee = simpleEventGenerator.mockEmployee("Test");
         Unit unit = new Unit();
         unit.setName(unitName);
         unit.setDescription(unitDesc);
@@ -99,8 +99,8 @@ class UnitServiceTest extends EventContextTest {
         String ownerName = "owner";
         String unitName = "pros";
         String unitDesc = "unit for pros";
-        Employee owner = simpleEventMocker.mockEmployee(ownerName);
-        Employee employee = simpleEventMocker.mockEmployee("Test");
+        Employee owner = simpleEventGenerator.mockEmployee(ownerName);
+        Employee employee = simpleEventGenerator.mockEmployee("Test");
         Unit unit = new Unit();
         unit.setName(unitName);
         unit.setDescription(unitDesc);
@@ -130,8 +130,8 @@ class UnitServiceTest extends EventContextTest {
         String unitDesc = "unit for pros";
         String nextUnitName = "noobs";
         String nextUnitDesc = "unit for noobs";
-        Employee owner = simpleEventMocker.mockEmployee(ownerName);
-        Employee test = simpleEventMocker.mockEmployee("test");
+        Employee owner = simpleEventGenerator.mockEmployee(ownerName);
+        Employee test = simpleEventGenerator.mockEmployee("test");
         Set<Employee> members = new HashSet<>();
         members.add(owner);
         members.add(test);
@@ -181,7 +181,7 @@ class UnitServiceTest extends EventContextTest {
         String ownerName = "owner";
         String unitName = "pros";
         String unitDesc = "unit for pros";
-        Employee owner = simpleEventMocker.mockEmployee(ownerName);
+        Employee owner = simpleEventGenerator.mockEmployee(ownerName);
         UnitNewDto unit = new UnitNewDto();
         unit.setName(unitName);
         unit.setDescription(unitDesc);
@@ -208,8 +208,8 @@ class UnitServiceTest extends EventContextTest {
 
     @Test
     void changeOwnershipByAdmin() {
-        Employee firstOwner = simpleEventMocker.mockEmployee("test");
-        Employee nextOwner = simpleEventMocker.mockEmployee("test");
+        Employee firstOwner = simpleEventGenerator.mockEmployee("test");
+        Employee nextOwner = simpleEventGenerator.mockEmployee("test");
         Unit unit = new Unit();
         unit.setName("TEST");
         unit.setDescription("TEST");

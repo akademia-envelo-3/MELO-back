@@ -37,7 +37,6 @@ public class EmployeeService {
     private final AuthorizationService authorizationService;
 
     public ResponseEntity<EmployeeDto> getEmployee(int id, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (id != employee.getId())
             return ResponseEntity.status(403).build();
@@ -186,7 +185,6 @@ public class EmployeeService {
 
 
     public ResponseEntity<?> getSetOfOwnedEvents(int id, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (id != employee.getId())
             return ResponseEntity.status(403).build();
@@ -195,7 +193,6 @@ public class EmployeeService {
     }
 
     public ResponseEntity<?> getListOfJoinedUnits(int id, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (id != employee.getId())
             return ResponseEntity.status(403).build();
@@ -211,7 +208,6 @@ public class EmployeeService {
     }
 
     public ResponseEntity<?> getListOfCreatedUnits(int employeeId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (employeeId != employee.getId())
             return ResponseEntity.status(403).build();

@@ -39,7 +39,6 @@ public class PollService {
 
 
     public ResponseEntity<?> insertNewPoll(NewPollDto newPollDto, int eventId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
 
         if (eventRepository.findById(eventId).isEmpty()) {
@@ -97,7 +96,6 @@ public class PollService {
     }
 
     public ResponseEntity<?> getPoll(int eventId, int pollId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         int employeeId = employee.getId();
         if (checkPollValidation(eventId, pollId).getStatusCode().is2xxSuccessful()) {
@@ -133,7 +131,6 @@ public class PollService {
     }
 
     public ResponseEntity<?> insertNewPollAnswer(int eventId, PollSendResultDto pollSendResultDto, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         int employeeId = employee.getId(); //employee token
         Poll poll;

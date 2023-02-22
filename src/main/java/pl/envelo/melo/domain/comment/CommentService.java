@@ -39,8 +39,6 @@ public class CommentService {
 
     @Transactional
     public ResponseEntity<?> insertNewComment(int eventId, CommentDto commentToSave, MultipartFile[] multipartFiles, Principal principal) {
-        String userIdFromJWT = "1";   ////Zaciągnij mordo z UserDetailsDto
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         /// Obsługa błędu - brak czegokolwiek - i kontentu i atachmentu
         if (Objects.isNull(commentToSave) && Objects.isNull(multipartFiles)) {
