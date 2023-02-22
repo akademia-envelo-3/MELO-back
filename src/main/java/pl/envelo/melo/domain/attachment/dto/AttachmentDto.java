@@ -15,7 +15,7 @@ import pl.envelo.melo.domain.attachment.AttachmentType;
 public class AttachmentDto {
 
     @NotBlank(message = AttachmentConst.INVALID_NAME)
-    @Max(255)
+    @Max(AttachmentConst.MAX_ATTACHMENT_NAME_LENGTH)
     private String name;
 
     @URL(message = AttachmentConst.INVALID_URL)

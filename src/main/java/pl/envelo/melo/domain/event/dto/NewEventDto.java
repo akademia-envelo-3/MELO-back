@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
-import pl.envelo.melo.domain.event.EventType;
-import pl.envelo.melo.domain.event.PeriodicType;
-import pl.envelo.melo.domain.event.Theme;
+import pl.envelo.melo.domain.event.*;
 import pl.envelo.melo.domain.hashtag.HashtagDto;
 import pl.envelo.melo.domain.location.dto.LocationDto;
 
@@ -34,13 +32,13 @@ public class NewEventDto {
     private LocalDateTime startTime;
     @DateTimeFormat(pattern = "")
     private LocalDateTime endTime;
-    @NotNull(message = "Event type cant be null")
+    @NotNull(message = EventConst.INVALID_EVENT_TYPE)
     private EventType eventType;
     @NotNull
     private int organizerId;
-    @NotNull(message = "Periodic type can not be null")
+    @NotNull(message = EventConst.INVALID_PERIODIC_TYPE)
     private PeriodicType periodicType;
-    @Size(max = 100)
+    @Size(max = EventConst.MAX_HASHTAG_COUNT)
     private Set<HashtagDto> hashtags;
     private Long memberLimit;
     private Set<Integer> invitedMembers;

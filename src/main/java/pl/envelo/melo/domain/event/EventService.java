@@ -25,6 +25,8 @@ import pl.envelo.melo.authorization.mailtoken.MailTokenRepository;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
+import pl.envelo.melo.domain.attachment.*;
+import pl.envelo.melo.domain.category.CategoryConst;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnUnitDetailsList;
 import pl.envelo.melo.domain.event.utils.PagingHeaders;
@@ -41,10 +43,6 @@ import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollService;
 import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.UnitRepository;
-import pl.envelo.melo.domain.attachment.Attachment;
-import pl.envelo.melo.domain.attachment.AttachmentRepository;
-import pl.envelo.melo.domain.attachment.AttachmentService;
-import pl.envelo.melo.domain.attachment.AttachmentType;
 import pl.envelo.melo.domain.category.Category;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.comment.CommentRepository;
@@ -126,7 +124,7 @@ public class EventService {
             }
             return ResponseEntity.ok(eventDetailsDto);
         } else {
-            return ResponseEntity.status(404).body("Event with this ID does not exist");
+            return ResponseEntity.status(404).body(EventConst.EVENT_NOT_FOUND);
         }
     }
 
@@ -206,9 +204,9 @@ public class EventService {
         if (category.isPresent() && !category.get().isHidden()) {
             event.setCategory(category.get());
         } else if (category.isPresent() && category.get().isHidden()){
-            return ResponseEntity.status(404).body("Category you tried to add is not available anymore");
+            return ResponseEntity.status(404).body(CategoryConst.CATEGORY_NOT_AVAILABLE_ANYMORE);
         } else if (!category.isPresent() && newEventDto.getCategoryId() != null) {
-            return ResponseEntity.status(404).body("Category you tried to add does not exist");
+            return ResponseEntity.status(404).body(CategoryConst.CATEGORY_NOT_FOUND);
         }
 
         Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
@@ -241,7 +239,7 @@ public class EventService {
                 AttachmentType attachmentType = attachmentService.validateAttachmentType(multipartFile);
                 if (Objects.isNull(attachmentType)) {
                     return ResponseEntity.badRequest()
-                            .body("Illegal format of attachment. WTF ARE U DOING? TURBO ERROR!");
+                            .body(AttachmentConst.INVALID_FORMAT);
                 }
             }
 
@@ -249,7 +247,7 @@ public class EventService {
                 Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
                 if (attachmentFromServer == null) {
                     return ResponseEntity.badRequest()
-                            .body("Illegal format of attachment. WTF ARE U DOING?");
+                            .body(AttachmentConst.INVALID_FORMAT);
                 }
                 if (Objects.isNull(event.getAttachments())) {
                     event.setAttachments(new HashSet<>());
@@ -263,11 +261,11 @@ public class EventService {
             Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
             if (mainPhotoFromServer == null) {
                 return ResponseEntity.badRequest()
-                        .body("Illegal format of attachment. WTF ARE U DOING?");
+                        .body(AttachmentConst.INVALID_FORMAT);
             }
             if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
                 return ResponseEntity.badRequest()
-                        .body("Illegal format of event Photo!");
+                        .body(AttachmentConst.INVALID_PHOTO_FORMAT);
             }
             event.setMainPhoto(mainPhotoFromServer);
 

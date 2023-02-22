@@ -37,7 +37,7 @@ public class Event {
     @Column(nullable = false)
     private String name;
     @NotBlank
-    @Column(nullable = false, length = 4000)
+    @Column(nullable = false, length = EventConst.MAX_DESCRIPTION_LENGTH)
     private String description;
     @NotNull
     @Column(nullable = false)
