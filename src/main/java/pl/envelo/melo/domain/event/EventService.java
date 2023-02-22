@@ -25,11 +25,21 @@ import pl.envelo.melo.authorization.mailtoken.MailTokenRepository;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
+import pl.envelo.melo.domain.attachment.Attachment;
+import pl.envelo.melo.domain.attachment.AttachmentRepository;
+import pl.envelo.melo.domain.attachment.AttachmentService;
+import pl.envelo.melo.domain.attachment.AttachmentType;
+import pl.envelo.melo.domain.category.Category;
+import pl.envelo.melo.domain.category.CategoryRepository;
+import pl.envelo.melo.domain.comment.CommentRepository;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
-import pl.envelo.melo.domain.event.dto.EventToDisplayOnUnitDetailsList;
+import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
+import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.event.utils.PagingHeaders;
 import pl.envelo.melo.domain.event.utils.PagingResponse;
 import pl.envelo.melo.domain.hashtag.Hashtag;
+import pl.envelo.melo.domain.hashtag.HashtagDto;
+import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
 import pl.envelo.melo.domain.location.LocationService;
@@ -40,27 +50,15 @@ import pl.envelo.melo.domain.poll.PollAnswerRepository;
 import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollService;
 import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
-import pl.envelo.melo.domain.unit.UnitRepository;
-import pl.envelo.melo.domain.attachment.Attachment;
-import pl.envelo.melo.domain.attachment.AttachmentRepository;
-import pl.envelo.melo.domain.attachment.AttachmentService;
-import pl.envelo.melo.domain.attachment.AttachmentType;
-import pl.envelo.melo.domain.category.Category;
-import pl.envelo.melo.domain.category.CategoryRepository;
-import pl.envelo.melo.domain.comment.CommentRepository;
-import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
-import pl.envelo.melo.domain.event.dto.NewEventDto;
-import pl.envelo.melo.domain.hashtag.HashtagDto;
-import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.unit.Unit;
-
+import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 import pl.envelo.melo.validators.HashtagValidator;
 
-import java.security.Principal;
 import java.net.URI;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -364,7 +362,7 @@ public class EventService {
             eventNotificationDto.setEventId(eventId);
             eventNotificationDto.setType(NotificationType.EVENT_ORGANIZER_UPDATED);
                     //todo set content of eventNotificationDto
-            notificationService.insertEventEmployeeMembersNotification(eventNotificationDto);
+            notificationService.insertEventMembersNotification(eventNotificationDto, false);
 
             return ResponseEntity.status(200).body("The organizer of the event with id "
                     + eventId + " has been correctly changed to "
@@ -373,23 +371,181 @@ public class EventService {
         }
     }
 
-    public ResponseEntity<?> updateEvent(int id, NewEventDto newEventDto, Principal principal) {
-        //TODO dostosować do funkcjonalnosci wysyłania plików na serwer
+
+    public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes, MultipartFile mainPhoto, MultipartFile[] additionalAttachments,Principal principal) {
+        boolean general_change = false;
         authorizationService.inflateUser(principal);
-        if (newEventDto.getOrganizerId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new).getId())
-            return ResponseEntity.status(403).build();
         Optional<Event> optionalEvent = eventRepository.findById(id);
         if (optionalEvent.isEmpty())
             return ResponseEntity.badRequest().body("Event with id " + id + " not found");
         Event event = optionalEvent.get();
-
-        Map<String, String> validationResult = eventValidator.validateToEdit(event, newEventDto);
-        validationResult.forEach((k, v) -> System.out.println(k + " " + v));
-        if (validationResult.size() != 0) {
-            return ResponseEntity.badRequest().body(validationResult);
+        if (event.getOrganizer().getId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new).getId())
+            return ResponseEntity.status(403).build();
+        if (!Objects.isNull(updates)) {
+            if (!Objects.isNull(updates.get("name"))) {
+                Set<HashtagDto> oldHashtagDtos = findHashtagFromEvent(event.getName(), "");
+                if (eventUpdater.updateName(event, updates.get("name").toString())) {
+                    Set<HashtagDto> hashtagDtos = findHashtagFromEvent(updates.get("name").toString(), "");
+                    if (hashtagDtos != null || !hashtagDtos.isEmpty())
+                        eventUpdater.updateHashtags(event, hashtagDtos, oldHashtagDtos);
+                    general_change = true;
+                } else {
+                    return ResponseEntity.status(404).body("Name is the same as was");
+                }
+            }
+            if (!Objects.isNull(updates.get("description"))) {
+                Set<HashtagDto> oldHashtagDtos = findHashtagFromEvent("", event.getDescription());
+                if (eventUpdater.updateDescription(event, updates.get("description").toString())) {
+                    Set<HashtagDto> hashtagDtos = findHashtagFromEvent("", updates.get("description").toString());
+                    if (hashtagDtos != null || !hashtagDtos.isEmpty())
+                        eventUpdater.updateHashtags(event, hashtagDtos, oldHashtagDtos);
+                    general_change = true;
+                } else {
+                    return ResponseEntity.status(404).body("Description is the same as was");
+                }
+            }
+            if (!Objects.isNull(updates.get("startTime")) || !Objects.isNull(updates.get("endTime"))) {
+                Optional<?> updateDates = eventUpdater.updateDate(event, updates.get("startTime"), updates.get("endTime"));
+                if (updateDates.get() instanceof Boolean) {
+                    for (Person p : event.getMembers()) {
+                        Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
+                        if (e.isPresent()) {
+                            EventNotificationDto eventNotificationDto = new EventNotificationDto();
+                            eventNotificationDto.setContent("Czas wydarzenia się zmienił na: " + event.getStartTime() + "-" + event.getEndTime());
+                            eventNotificationDto.setEventId(event.getId());
+                            eventNotificationDto.setType(NotificationType.EVENT_DATE_CHANGED);
+                            notificationService.insertEventMembersNotification(eventNotificationDto, false);
+                        }
+                    }
+                } else if (updateDates.get() instanceof Map) {
+                    return ResponseEntity.status(404).body(updateDates.get());
+                }
+            }
+            if (!Objects.isNull(updates.get("periodicType"))) {
+                if (eventUpdater.updatePeriodic(event, updates.get("periodicType"))) {
+                    //TODO in eventUpdater add implementation for periodic event
+                    general_change = true;
+                } else {
+                    return ResponseEntity.status(404).body("Periodic type of new event is the same as old");
+                }
+            }
+            if (!Objects.isNull(updates.get("memberLimit"))) {
+                if (event.getType().toString().startsWith("LIMITED")) {
+                    if (eventUpdater.updateMemberLimit(event, Integer.parseInt(updates.get("memberLimit").toString()))) {
+                        general_change = true;
+                    } else {
+                        return ResponseEntity.status(404).body("You can not set this member limit");
+                    }
+                } else return ResponseEntity.status(400).body("You can not change memberLimit for this type of event");
+            }
+            if (!Objects.isNull(updates.get("categoryId"))) {
+                if (eventUpdater.updateCategory(event, Integer.parseInt(updates.get("categoryId").toString()))) {
+                    general_change = true;
+                } else {
+                    return ResponseEntity.status(404).body("There is problem with changing category");//fixme
+                }
+            }
+            if (!Objects.isNull(updates.get("location"))) {
+                if (eventUpdater.updateLocation(event, updates.get("location"))) {
+                    for (Person p : event.getMembers()) {
+                        Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
+                        if (e.isPresent()) {
+                            EventNotificationDto eventNotificationDto = new EventNotificationDto();
+                            eventNotificationDto.setContent("Lokalizacja wydareznia się zmieniłą");
+                            eventNotificationDto.setEventId(event.getId());
+                            eventNotificationDto.setType(NotificationType.EVENT_LOCATION_CHANGED);
+                            notificationService.insertEventMembersNotification(eventNotificationDto, false);
+                        }
+                    }
+                } else {
+                    return ResponseEntity.status(404).body("Location of new event is the same as old");
+                }
+            }
+            if (!Objects.isNull(updates.get("theme"))) {
+                if (eventUpdater.updateTheme(event, updates.get("theme"))) {
+                    //notification
+                } else return ResponseEntity.status(404).body("Theme is the same as was");
+            }
         }
-        eventNotificationHandler.editNotification(event, newEventDto);
-        eventUpdater.update(event, newEventDto);
+        if (!Objects.isNull(adds)) {
+            if (!Objects.isNull(adds.get("hashtags"))) {
+                if (!eventUpdater.addHashtags(event, adds.get("hashtags")))
+                    return ResponseEntity.status(404).body("Hashtags are in wrong format");
+                general_change = true;
+            }
+            if (!Objects.isNull(adds.get("invitedMembers"))) {
+                Optional<?> addMembers = eventUpdater.addInvitedMembers(event, adds.get("invitedMembers"));
+                if (!(addMembers.get() instanceof Boolean)) {
+                    return ResponseEntity.status(404).body(addMembers.get().toString());
+                }
+            }
+        }
+        if (!Objects.isNull(deletes)) {
+            if (!Objects.isNull(deletes.get("hashtags"))) {
+                if (!eventUpdater.removeHashtags(event, deletes.get("hashtags"),findHashtagFromEvent(event.getName(),event.getDescription()))) {
+                    return ResponseEntity.status(404).body("Hashtags are in wrong format");
+                }
+                general_change = true;
+            }
+            if (!Objects.isNull(deletes.get("invitedMembers"))) {
+                if (!eventUpdater.removeInvitedMembers(event, deletes.get("invitedMembers")))
+                    return ResponseEntity.status(404).body("InvitedMembers are in wrong format");
+            }
+            if (!Objects.isNull(deletes.get("categoryId"))) {
+                if (eventUpdater.removeCategory(event, Integer.parseInt(deletes.get("categoryId").toString()))) {
+                    general_change = true;
+                } else {
+                    return ResponseEntity.status(404).body("There is problem with changing category");//fixme
+                }
+            }
+            if (!Objects.isNull((deletes.get("attachments")))) {
+                if (eventUpdater.removeAttachments(event, deletes.get("attachments"))) {
+                    general_change = true;
+                } else {
+                    return ResponseEntity.status(404).body("Attachments was not remove correctly");
+                }
+            }
+            if (!Objects.isNull((deletes.get("mainPhoto")))) {
+                if (eventUpdater.removeMainPhoto(event, deletes.get("mainPhoto"))) {
+                    general_change = true;
+                } else {
+                    return ResponseEntity.status(404).body("Main Photo was not remove correctly");
+                }
+            }
+        }
+        if (!Objects.isNull(additionalAttachments)) {
+            if(event.getAttachments().size()+additionalAttachments.length>10){
+                return ResponseEntity.status(404).body("You can upload max 10 attachments to Your Event");
+            }
+            if (eventUpdater.addAttachments(event, additionalAttachments)) {
+                general_change = true;
+            } else {
+                return ResponseEntity.status(404).body("Attachments was not added correctly");
+            }
+        }
+        if (!Objects.isNull(mainPhoto)) {
+            if (eventUpdater.addMainPhoto(event, mainPhoto)) {
+                general_change = true;
+            } else {
+                return ResponseEntity.status(404).body("Main Photo was not added correctly");
+            }
+        }
+        if (general_change) {
+            for (Person p : event.getMembers()) {
+                Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
+                if (e.isPresent()) {
+                    EventNotificationDto eventNotificationDto = new EventNotificationDto();
+                    eventNotificationDto.setEventId(event.getId());
+                    eventNotificationDto.setType(NotificationType.EVENT_UPDATED);
+                    eventNotificationDto.setContent("Wydarzenie " + event.getName() + "został zmieniony");
+
+                    eventNotificationDto.setEmployeeId(e.get().getId());
+                    notificationService.insertEventMembersNotification(eventNotificationDto, false);
+                }
+            }
+        }
+//        eventNotificationHandler.editNotification(event, newEventDto);
+//        eventUpdater.update(event, newEventDto);
         return ResponseEntity.ok(eventDetailsMapper.convert(eventRepository.save(event)));
     }
 
@@ -526,7 +682,6 @@ public class EventService {
         }
         return ResponseEntity.status(404).body("Email was not sent");
     }
-
 
     private Set<HashtagDto> findHashtagFromEvent(String eventName, String eventDescription) {
         Set<HashtagDto> hashtagSet = new HashSet<>();
