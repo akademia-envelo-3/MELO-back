@@ -9,13 +9,18 @@ import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
-import pl.envelo.melo.domain.poll.dto.*;
-import pl.envelo.melo.exceptions.EventNotFoundException;
+import pl.envelo.melo.domain.poll.dto.NewPollDto;
+import pl.envelo.melo.domain.poll.dto.PollAnswerDto;
+import pl.envelo.melo.domain.poll.dto.PollDto;
+import pl.envelo.melo.domain.poll.dto.PollSendResultDto;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
+import pl.envelo.melo.exceptions.EventNotFoundException;
 import pl.envelo.melo.mappers.*;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -46,7 +51,7 @@ public class PollService {
             event.setPolls(new HashSet<>());
         }
 
-        if(event.getOrganizer().getId()!=employee.getId())
+        if (event.getOrganizer().getId() != employee.getId())
             return ResponseEntity.status(400).body("You're not organizer of this event.");
 
         PollDto pollDto = newPollMapper.toDto(newPollDto);
@@ -133,9 +138,9 @@ public class PollService {
         int employeeId = employee.getId(); //employee token
         Poll poll;
 
-        if(eventRepository.findById(eventId).isPresent()) {
+        if (eventRepository.findById(eventId).isPresent()) {
             Event event = eventRepository.findById(eventId).get();
-            if(event.getMembers().stream().noneMatch(person -> Objects.equals(person.getEmail(), authorizationService.getEmail(principal)))) {
+            if (event.getMembers().stream().noneMatch(person -> Objects.equals(person.getEmail(), authorizationService.getEmail(principal)))) {
                 return ResponseEntity.status(400).body("Employee is not member of this event.");
             }
         } else throw new EventNotFoundException();

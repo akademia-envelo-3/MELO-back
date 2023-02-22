@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import pl.envelo.melo.domain.poll.PollAnswer;
 import pl.envelo.melo.domain.poll.PollConst;
 
 import java.util.Set;

@@ -1,15 +1,15 @@
 package pl.envelo.melo.domain.location.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.envelo.melo.exceptions.LocationBadRequestException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.MatchResult;
-import lombok.Setter;
-import pl.envelo.melo.exceptions.LocationBadRequestException;
 
 @Data
 @NoArgsConstructor
@@ -48,7 +48,7 @@ public class LocationDto {
                         || c >= (int) 45 && c <= (int) 57
                         || c == (int) 211 || c == (int) 243
                         || c == ' ') {
-                    this.streetName = streetName.replaceAll("( +)"," ").trim();
+                    this.streetName = streetName.replaceAll("( +)", " ").trim();
                 } else
                     throw new LocationBadRequestException("Invalid street name, " +
                             "street name shouldn't have strange characters except '.', '-' and '/'");
@@ -61,7 +61,7 @@ public class LocationDto {
         String regexNumbersWithLetter = "^\\d+(?:[/\\S]\\d+)?(?:[/\\S]\\d+)?[A-Za-z]";
         Pattern patternNum = Pattern.compile(regexOnlyNumbers);
         Pattern patternLet = Pattern.compile(regexNumbersWithLetter);
-        if(patternNum.matcher(streetNumber.trim()).matches()
+        if (patternNum.matcher(streetNumber.trim()).matches()
                 || patternLet.matcher(streetNumber.trim()).matches()
                 || streetNumber.trim().equals("")) {
             this.streetNumber = streetNumber.trim();
@@ -75,9 +75,9 @@ public class LocationDto {
         String regexNumbersWithLetter = "^\\d+[A-Za-z]";
         Pattern patternNum = Pattern.compile(regexOnlyNumbers);
         Pattern patternLet = Pattern.compile(regexNumbersWithLetter);
-        if(patternNum.matcher(apartmentNumber.trim()).matches() && apartmentNumber.length() <= 5
-                || patternLet.matcher(apartmentNumber.trim()).matches()&& apartmentNumber.length() <= 5
-                || apartmentNumber.trim().equals("") ) {
+        if (patternNum.matcher(apartmentNumber.trim()).matches() && apartmentNumber.length() <= 5
+                || patternLet.matcher(apartmentNumber.trim()).matches() && apartmentNumber.length() <= 5
+                || apartmentNumber.trim().equals("")) {
             this.apartmentNumber = apartmentNumber.trim();
         } else
             throw new LocationBadRequestException("Invalid apartment number, " +
@@ -88,7 +88,7 @@ public class LocationDto {
         String regex = "^[0-9]{2}-[0-9]{3}";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(postalCode.trim());
-        if (matcher.matches() || postalCode.trim().equals("")){
+        if (matcher.matches() || postalCode.trim().equals("")) {
             this.postalCode = postalCode.trim();
         } else
             throw new LocationBadRequestException("Invalid postal code, " +
@@ -107,7 +107,7 @@ public class LocationDto {
                         || c >= (int) 260 && c <= (int) 380
                         || c == (int) 211 || c == (int) 243
                         || c == (int) 45 || c == ' ') {
-                    this.city = city.replaceAll("( +)"," ").trim();
+                    this.city = city.replaceAll("( +)", " ").trim();
                 } else
                     throw new LocationBadRequestException("Invalid city name, " +
                             "city name should have only letters");

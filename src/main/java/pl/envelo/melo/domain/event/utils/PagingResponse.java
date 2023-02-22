@@ -3,7 +3,6 @@ package pl.envelo.melo.domain.event.utils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 
 import java.util.List;

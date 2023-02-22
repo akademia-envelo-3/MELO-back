@@ -7,7 +7,7 @@ import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeListDto;
 
-@Mapper(componentModel = "spring", uses = { EmployeeService.class })
+@Mapper(componentModel = "spring", uses = {EmployeeService.class})
 public interface EmployeeListMapper extends EntityMapper<EmployeeListDto, Employee> {
     @Mapping(source = "firstName", target = "user.person.firstName")
     @Mapping(source = "lastName", target = "user.person.lastName")

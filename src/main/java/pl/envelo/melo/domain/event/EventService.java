@@ -203,7 +203,7 @@ public class EventService {
 
         if (category.isPresent() && !category.get().isHidden()) {
             event.setCategory(category.get());
-        } else if (category.isPresent() && category.get().isHidden()){
+        } else if (category.isPresent() && category.get().isHidden()) {
             return ResponseEntity.status(404).body("Category you tried to add is not available anymore");
         } else if (!category.isPresent() && newEventDto.getCategoryId() != null) {
             return ResponseEntity.status(404).body("Category you tried to add does not exist");
@@ -278,7 +278,7 @@ public class EventService {
         Set<HashtagDto> hashtagDtoFromTitleAndDescription = findHashtagFromEvent(newEventDto.getName(), newEventDto.getDescription());
         if (newEventDto.getHashtags() != null) {
             Map<String, String> validationIsHidden = hashtagValidator.validateIsHidden(newEventDto.getHashtags());
-            if (validationIsHidden.size() != 0){
+            if (validationIsHidden.size() != 0) {
                 return ResponseEntity.badRequest().body(validationIsHidden);
             }
             hashtagDtoFromTitleAndDescription.addAll(newEventDto.getHashtags());
@@ -367,7 +367,7 @@ public class EventService {
         }
     }
 
-    public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes, MultipartFile mainPhoto, MultipartFile[] additionalAttachments,Principal principal) {
+    public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes, MultipartFile mainPhoto, MultipartFile[] additionalAttachments, Principal principal) {
         boolean general_change = false;
         authorizationService.inflateUser(principal);
         Optional<Event> optionalEvent = eventRepository.findById(id);
@@ -477,7 +477,7 @@ public class EventService {
         }
         if (!Objects.isNull(deletes)) {
             if (!Objects.isNull(deletes.get("hashtags"))) {
-                if (!eventUpdater.removeHashtags(event, deletes.get("hashtags"),findHashtagFromEvent(event.getName(),event.getDescription()))) {
+                if (!eventUpdater.removeHashtags(event, deletes.get("hashtags"), findHashtagFromEvent(event.getName(), event.getDescription()))) {
                     return ResponseEntity.status(404).body("Hashtags are in wrong format");
                 }
                 general_change = true;
@@ -509,7 +509,7 @@ public class EventService {
             }
         }
         if (!Objects.isNull(additionalAttachments)) {
-            if(event.getAttachments().size()+additionalAttachments.length>10){
+            if (event.getAttachments().size() + additionalAttachments.length > 10) {
                 return ResponseEntity.status(404).body("You can upload max 10 attachments to Your Event");
             }
             if (eventUpdater.addAttachments(event, additionalAttachments)) {

@@ -3,13 +3,10 @@ package pl.envelo.melo.authorization.person;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import pl.envelo.melo.authorization.user.User;
 
 import java.util.Objects;
 
@@ -31,6 +28,7 @@ public class Person {
     @Column(nullable = false)
     @Email
     private String email;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

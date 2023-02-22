@@ -14,30 +14,34 @@ import java.security.Principal;
 @RestController
 public class SecurityTestController {
     private AuthorizationService authorizationService;
+
     @GetMapping("/test/security")
-    public ResponseEntity<?> getRoles(Principal principal){
-        if(principal == null){
+    public ResponseEntity<?> getRoles(Principal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatusCode.valueOf(401)).build();
         }
-        return ResponseEntity.ok(((JwtAuthenticationToken)principal).getAuthorities());
+        return ResponseEntity.ok(((JwtAuthenticationToken) principal).getAuthorities());
     }
+
     @GetMapping("/test/security/auth")
-    public ResponseEntity<?> createOrGetUser(Principal principal){
-        if(principal == null){
+    public ResponseEntity<?> createOrGetUser(Principal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatusCode.valueOf(401)).build();
         }
         return ResponseEntity.ok(authorizationService.inflateUser(principal));
     }
+
     @GetMapping("/test/security/mail")
-    public ResponseEntity<?> getUserMail(Principal principal){
-        if(principal == null){
+    public ResponseEntity<?> getUserMail(Principal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatusCode.valueOf(401)).build();
         }
         return ResponseEntity.ok(authorizationService.getEmail(principal));
     }
+
     @GetMapping("/test/security/uuid")
-    public ResponseEntity<?> getUserUUID(Principal principal){
-        if(principal == null){
+    public ResponseEntity<?> getUserUUID(Principal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatusCode.valueOf(401)).build();
         }
         return ResponseEntity.ok(authorizationService.getUUID(principal));

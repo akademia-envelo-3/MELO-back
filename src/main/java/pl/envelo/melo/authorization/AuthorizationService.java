@@ -1,12 +1,10 @@
 package pl.envelo.melo.authorization;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.admin.Admin;
 import pl.envelo.melo.authorization.admin.AdminRepository;
@@ -45,12 +43,15 @@ public class AuthorizationService {
             return returnCode(createdEntities(tokenPrincipal, principalId));
         }
     }
-    public UUID getUUID(Principal principal){
-        return UUID.fromString((String) ((JwtAuthenticationToken)principal).getTokenAttributes().get("sub"));
+
+    public UUID getUUID(Principal principal) {
+        return UUID.fromString((String) ((JwtAuthenticationToken) principal).getTokenAttributes().get("sub"));
     }
-    public String getEmail(Principal principal){
-        return (String)((JwtAuthenticationToken)principal).getTokenAttributes().get("email");
+
+    public String getEmail(Principal principal) {
+        return (String) ((JwtAuthenticationToken) principal).getTokenAttributes().get("email");
     }
+
     private int createdEntities(JwtAuthenticationToken tokenPrincipal, UUID principalId) {
         Person person;
         try {
@@ -85,7 +86,7 @@ public class AuthorizationService {
                     createdEntities += 3;
                 }
             }
-             return createdEntities;
+            return createdEntities;
         }
         return -1;
     }

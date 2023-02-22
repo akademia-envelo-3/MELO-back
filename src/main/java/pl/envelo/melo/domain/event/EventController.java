@@ -1,11 +1,11 @@
 package pl.envelo.melo.domain.event;
 
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
@@ -24,30 +24,27 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.jdbc.object.UpdatableSqlQuery;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
 import pl.envelo.melo.authorization.person.Person;
-import pl.envelo.melo.authorization.person.PersonService;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
-import pl.envelo.melo.domain.event.utils.PagingHeaders;
-import pl.envelo.melo.domain.event.utils.PagingResponse;
-import pl.envelo.melo.domain.hashtag.HashtagService;
-import pl.envelo.melo.domain.location.LocationService;
-import pl.envelo.melo.domain.poll.PollAnswer;
-import pl.envelo.melo.domain.poll.PollService;
-import pl.envelo.melo.domain.poll.dto.NewPollDto;
-import pl.envelo.melo.domain.poll.dto.PollAnswerDto;
-import pl.envelo.melo.domain.poll.dto.PollDto;
 import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.category.CategoryService;
 import pl.envelo.melo.domain.comment.CommentService;
 import pl.envelo.melo.domain.comment.dto.CommentDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
-import pl.envelo.melo.domain.poll.dto.*;
+import pl.envelo.melo.domain.event.utils.PagingHeaders;
+import pl.envelo.melo.domain.event.utils.PagingResponse;
+import pl.envelo.melo.domain.hashtag.HashtagService;
+import pl.envelo.melo.domain.location.LocationService;
+import pl.envelo.melo.domain.poll.PollService;
+import pl.envelo.melo.domain.poll.dto.NewPollDto;
+import pl.envelo.melo.domain.poll.dto.PollDto;
+import pl.envelo.melo.domain.poll.dto.PollResultDto;
+import pl.envelo.melo.domain.poll.dto.PollSendResultDto;
 
 import java.security.Principal;
 import java.util.List;
@@ -69,7 +66,6 @@ public class EventController {
     private final LocationService locationService;
     private final PollService pollService;
     private final CommentService commentService;
-    private final PersonService personService;
 
     @Transactional
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
@@ -106,13 +102,13 @@ public class EventController {
 //    }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
-    @PatchMapping(value = "/{eventId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{eventId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> editEvent(@PathVariable("eventId") int id,
-                                       @RequestPart(value = "update") @Parameter(schema = @Schema(type = "string", format = "binary")) Map<String, Map<String,Object>> update,
+                                       @RequestPart(value = "update") @Parameter(schema = @Schema(type = "string", format = "binary")) Map<String, Map<String, Object>> update,
                                        @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
                                        @RequestPart(value = "additionalAttachments", required = false) MultipartFile[] additionalAttachments,
                                        Principal principal) {
-        return eventService.updateEvent(id, update.get("updates"), update.get("adds"), update.get("deletes"),mainPhoto,additionalAttachments,principal);
+        return eventService.updateEvent(id, update.get("updates"), update.get("adds"), update.get("deletes"), mainPhoto, additionalAttachments, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")

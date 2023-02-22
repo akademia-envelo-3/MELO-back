@@ -11,15 +11,14 @@ import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.domain.unit.UnitService;
-import pl.envelo.melo.domain.unit.dto.UnitNewDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 class EmployeeServiceTest extends EventContextTest {
     @Autowired
     EmployeeService employeeService;
@@ -27,12 +26,13 @@ class EmployeeServiceTest extends EventContextTest {
     private UnitRepository unitRepository;
     @Autowired
     private UnitService unitService;
+
     @Test
     void getSetOfOwnedEvents() {
         //Testy
         ResponseEntity<?> responseEntity = employeeService.getSetOfOwnedEvents(1);
         assertEquals(HttpStatus.NOT_FOUND, employeeService.getSetOfOwnedEvents(1).getStatusCode());
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),EventType.LIMITED_PUBLIC_INTERNAL);
+        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
         event.setName("Test name");
         event.getOrganizer().setOwnedEvents(new HashSet<>());
         event.getOrganizer().setJoinedEvents(new HashSet<>());
@@ -102,7 +102,7 @@ class EmployeeServiceTest extends EventContextTest {
         int len = employee1.getJoinedEvents().size();
         assertTrue(employeeService.removeFromJoinedEvents(employee1.getId(), event));
         assertEquals(len - 1, employee1.getJoinedEvents().size());
-        assertFalse(employeeService.removeFromJoinedEvents(employee.getId(),event));
+        assertFalse(employeeService.removeFromJoinedEvents(employee.getId(), event));
     }
 
     @Test
@@ -146,7 +146,7 @@ class EmployeeServiceTest extends EventContextTest {
         employeeService.addToOwnedUnits(employee.getId(), unit2);
         //Test
         len = employee.getOwnedUnits().size();
-        assertTrue(employeeService.removeFromOwnedUnits(unit.getOwner().getId(),unit));
+        assertTrue(employeeService.removeFromOwnedUnits(unit.getOwner().getId(), unit));
         assertEquals(len - 1, employee.getOwnedUnits().size());
     }
 
@@ -168,7 +168,7 @@ class EmployeeServiceTest extends EventContextTest {
         //Test
         employeeService.addToJoinedUnits(employee.getId(), unit);
         len = employee.getJoinedUnits().size();
-        assertTrue(employeeService.addToJoinedUnits(employee.getId(),unit2));
+        assertTrue(employeeService.addToJoinedUnits(employee.getId(), unit2));
         assertEquals(len + 1, employee.getJoinedUnits().size());
 
     }
@@ -192,9 +192,9 @@ class EmployeeServiceTest extends EventContextTest {
         employeeService.addToJoinedUnits(employee.getId(), unit);
         //Test
         len = employee.getJoinedUnits().size();
-        assertTrue(employeeService.removeFromJoinedUnits(employee.getId(),unit2));
-        assertEquals(len -1 , employee.getJoinedUnits().size());
-        assertFalse(employeeService.removeFromJoinedUnits(employee.getId(),unit2));
+        assertTrue(employeeService.removeFromJoinedUnits(employee.getId(), unit2));
+        assertEquals(len - 1, employee.getJoinedUnits().size());
+        assertFalse(employeeService.removeFromJoinedUnits(employee.getId(), unit2));
     }
 
     @Test
@@ -229,9 +229,9 @@ class EmployeeServiceTest extends EventContextTest {
 
         ResponseEntity<?> responseEntity = employeeService.getListOfJoinedUnits(employee.getId());
         Set<UnitToDisplayOnListDto> unitToDisplayOnList = (Set<UnitToDisplayOnListDto>) responseEntity.getBody();
-        assertEquals(1,unitToDisplayOnList.size());
-        assertEquals(unitName,unitToDisplayOnList.stream().findFirst().get().getName());
-        assertNotEquals(nextUnit,unitToDisplayOnList.stream().findFirst().get().getName());
+        assertEquals(1, unitToDisplayOnList.size());
+        assertEquals(unitName, unitToDisplayOnList.stream().findFirst().get().getName());
+        assertNotEquals(nextUnit, unitToDisplayOnList.stream().findFirst().get().getName());
         assertEquals(HttpStatus.valueOf(404), employeeService.getSetOfOwnedEvents(4).getStatusCode());
 
         joinedUnits.add(nextUnit);
@@ -239,9 +239,9 @@ class EmployeeServiceTest extends EventContextTest {
 
         ResponseEntity<?> responseEntity2 = employeeService.getListOfJoinedUnits(employee.getId());
         Set<UnitToDisplayOnListDto> unitToDisplayOnList2 = (Set<UnitToDisplayOnListDto>) responseEntity2.getBody();
-        assertEquals(2,unitToDisplayOnList2.size());
-        assertTrue(((UnitToDisplayOnListDto)(((Set<?>) responseEntity2.getBody()).stream().findFirst().get())).getName().equals(unitName) ||
-                ((UnitToDisplayOnListDto)(((Set<?>) responseEntity2.getBody()).stream().findFirst().get())).getName().equals(nextUnitName)
+        assertEquals(2, unitToDisplayOnList2.size());
+        assertTrue(((UnitToDisplayOnListDto) (((Set<?>) responseEntity2.getBody()).stream().findFirst().get())).getName().equals(unitName) ||
+                ((UnitToDisplayOnListDto) (((Set<?>) responseEntity2.getBody()).stream().findFirst().get())).getName().equals(nextUnitName)
         );
 
     }
@@ -251,32 +251,32 @@ class EmployeeServiceTest extends EventContextTest {
         //Dane
         Employee employee1 = simpleEventMocker.mockEmployee("test1");
         Employee employee2 = simpleEventMocker.mockEmployee("test2");
-        Unit unit1= new Unit();
+        Unit unit1 = new Unit();
         unit1.setName("unit1");
         unit1.setDescription("unit");
         unit1.setOwner(employee1);
         unitRepository.save(unit1);
-        employeeService.addToOwnedUnits(employee1.getId(),unit1);
-        Unit unit2= new Unit();
+        employeeService.addToOwnedUnits(employee1.getId(), unit1);
+        Unit unit2 = new Unit();
         unit2.setName("unit2");
         unit2.setDescription("unit");
         unit2.setOwner(employee1);
         unitRepository.save(unit2);
-        employeeService.addToOwnedUnits(employee1.getId(),unit2);
-        Unit unit3= new Unit();
+        employeeService.addToOwnedUnits(employee1.getId(), unit2);
+        Unit unit3 = new Unit();
         unit3.setName("unit3");
         unit3.setDescription("unit");
         unit3.setOwner(employee2);
         unitRepository.save(unit3);
-        employeeService.addToOwnedUnits(employee2.getId(),unit3);
+        employeeService.addToOwnedUnits(employee2.getId(), unit3);
         //Testy
         ResponseEntity<?> entity = employeeService.getListOfCreatedUnits(employee1.getId());
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         assertTrue(entity.getBody() instanceof Set<?>);
-        assertEquals(2, ((Set<?>)entity.getBody()).size());
+        assertEquals(2, ((Set<?>) entity.getBody()).size());
         ResponseEntity<?> entity2 = employeeService.getListOfCreatedUnits(employee2.getId());
         assertEquals(HttpStatus.OK, entity2.getStatusCode());
         assertTrue(entity2.getBody() instanceof Set<?>);
-        assertEquals(1, ((Set<?>)entity2.getBody()).size());
+        assertEquals(1, ((Set<?>) entity2.getBody()).size());
     }
 }

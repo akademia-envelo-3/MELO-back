@@ -27,10 +27,11 @@ public abstract class EventContextTest {
     protected PersonRepository personRepository;
     @Autowired
     protected UserRepository userRepository;
+
     @BeforeEach
-    void setUp(){
+    void setUp() {
         H2Utils.clearDb(dataSource);
-        if(simpleEventMocker==null)
+        if (simpleEventMocker == null)
             simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
     }
 }

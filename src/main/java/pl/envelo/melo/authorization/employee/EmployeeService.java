@@ -9,18 +9,19 @@ import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.employee.dto.EmployeeListDto;
 import pl.envelo.melo.authorization.person.Person;
+import pl.envelo.melo.authorization.person.PersonRepository;
+import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.mappers.EmployeeListMapper;
 import pl.envelo.melo.mappers.EmployeeMapper;
-import pl.envelo.melo.authorization.person.PersonRepository;
-import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.mappers.EventMapper;
 import pl.envelo.melo.mappers.UnitMapper;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -52,16 +53,15 @@ public class EmployeeService {
     }
 
     public ResponseEntity<Set<EmployeeListDto>> getEmployees(String q) {
-        if(q==null) {
+        if (q == null) {
             return ResponseEntity.ok(employeeRepository.findAll().stream().map(employeeListMapper::toDto).collect(Collectors.toSet()));
-        }
-        else{
+        } else {
             String[] listQ = q.split(" ");
             Set<Employee> employeeSet = new HashSet<>();
-            if(listQ.length==1){
-               employeeSet.addAll(employeeRepository.findByUserPersonFirstNameContainingIgnoreCaseOrUserPersonLastNameContainingIgnoreCase(listQ[0],listQ[0]).get());
-            } else if (listQ.length==2) {
-                employeeSet.addAll(employeeRepository.findByUserPersonFirstNameContainingIgnoreCaseAndUserPersonLastNameContainingIgnoreCase(listQ[0],listQ[1]).get());
+            if (listQ.length == 1) {
+                employeeSet.addAll(employeeRepository.findByUserPersonFirstNameContainingIgnoreCaseOrUserPersonLastNameContainingIgnoreCase(listQ[0], listQ[0]).get());
+            } else if (listQ.length == 2) {
+                employeeSet.addAll(employeeRepository.findByUserPersonFirstNameContainingIgnoreCaseAndUserPersonLastNameContainingIgnoreCase(listQ[0], listQ[1]).get());
             }
             return ResponseEntity.ok(employeeSet.stream().map(employeeListMapper::toDto).collect(Collectors.toSet()));
         }

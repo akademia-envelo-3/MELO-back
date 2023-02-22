@@ -1,9 +1,7 @@
 package pl.envelo.melo.domain.request;
 
 import lombok.AllArgsConstructor;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.domain.category.Category;
@@ -14,13 +12,13 @@ import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
 import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
+import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
 import pl.envelo.melo.exceptions.CategoryRequestAlreadyResolvedException;
 import pl.envelo.melo.exceptions.ResourceNotFoundException;
+import pl.envelo.melo.mappers.CategoryRequestMapper;
 
 import java.util.List;
 import java.util.Objects;
-import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
-import pl.envelo.melo.mappers.CategoryRequestMapper;
 import java.util.stream.Collectors;
 
 @Service

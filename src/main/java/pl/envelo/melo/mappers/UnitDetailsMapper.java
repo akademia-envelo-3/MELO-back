@@ -4,8 +4,6 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import pl.envelo.melo.domain.event.Event;
-import pl.envelo.melo.domain.event.dto.EventToDisplayOnUnitDetailsList;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.dto.UnitDetailsDto;
 
@@ -13,8 +11,9 @@ import pl.envelo.melo.domain.unit.dto.UnitDetailsDto;
 public interface UnitDetailsMapper {
     @Mapping(source = "eventList", target = "events")
     UnitDetailsDto convert(Unit unit);
+
     @AfterMapping
-    default void updateResult(Unit unit, @MappingTarget UnitDetailsDto unitDetailsDto){
+    default void updateResult(Unit unit, @MappingTarget UnitDetailsDto unitDetailsDto) {
         unitDetailsDto.setMemberCount(unit.getMembers().size());
     }
 }
