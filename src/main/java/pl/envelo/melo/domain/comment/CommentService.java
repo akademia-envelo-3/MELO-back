@@ -43,7 +43,7 @@ public class CommentService {
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         /// Obsługa błędu - brak czegokolwiek - i kontentu i atachmentu
         if(Objects.isNull(commentToSave) && Objects.isNull(multipartFiles)) {
-            return ResponseEntity.badRequest().body("Comment is empty. You must add CONTENT, ATTACHMENT or both together.");
+            return ResponseEntity.badRequest().body(CommentConst.COMMENT_EMPTY);
         }
 
         /// Stworzenie nowej encji
@@ -74,7 +74,7 @@ public class CommentService {
                     Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
                     if (attachmentFromServer == null) {
                         return ResponseEntity.badRequest()
-                                .body("Illegal format of attachment. WTF ARE U DOING?");
+                                .body(CommentConst.ILLEGAL_ATTACHMENT_FORMAT);
                     }
                     if(Objects.isNull(mappedComment.getAttachments())) {
                         mappedComment.setAttachments(new ArrayList<>());

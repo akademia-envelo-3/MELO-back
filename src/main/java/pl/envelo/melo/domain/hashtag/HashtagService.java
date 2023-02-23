@@ -47,12 +47,20 @@ public class HashtagService {
             hashtagRepository.save(hashtag);
             return ResponseEntity.ok(hashtag);
         } else {
-            return ResponseEntity.status(404).body("Hashtag by this ID do not exist");
+            return ResponseEntity.status(404).body(HashtagConst.HASHTAG_DOES_NOT_EXIST);
         }
     }
 
-    public ResponseEntity<Hashtag> decrementHashtagGlobalCount(int id) {
-        return null;
+    public Boolean decrementHashtagGlobalCount(int id) {
+        if (hashtagRepository.existsById(id)){
+            Hashtag hashtag = hashtagRepository.getById(id);
+            hashtag.setGlobalUsageCount(hashtag.getGlobalUsageCount()-1);
+            hashtagRepository.save(hashtag);
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     public ResponseEntity<?> setHashtagHiddenFlag(int id, boolean hide) {
@@ -62,9 +70,11 @@ public class HashtagService {
             hashtagRepository.save(hashtag.get());
             return ResponseEntity.ok(hashtag.get().isHidden());
         }
+        return hashtagDoesNotExist(id);
+    }
+    private ResponseEntity<?> hashtagDoesNotExist(int id){
         return ResponseEntity.status(404).body("Hashtag with Id " + id + " does not exist");
     }
-
     public ResponseEntity<List<HashtagDto>> listAllHashtag(Principal principal) {
         authorizationService.inflateUser(principal);
         List<Hashtag> hashtagSet = null;
@@ -94,7 +104,7 @@ public class HashtagService {
             }
             return ResponseEntity.ok(hashtagStatistic);
         } else {
-            return ResponseEntity.status(404).body("There is no hashtags to display");
+            return ResponseEntity.status(404).body(HashtagConst.NO_HASHTAG_TO_DISPLAY);
         }
     }
 }

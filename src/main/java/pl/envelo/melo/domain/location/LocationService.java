@@ -31,8 +31,7 @@ public class LocationService {
                 || locationDto.getStreetNumber().trim().equals("")
                 || locationDto.getPostalCode().trim().equals("")
                 || locationDto.getCity().trim().equals("")){
-            throw new LocationBadRequestException("Location fields (street name, number, postal code, city)" +
-                                                    " must be filled in, or all must be left blank");
+            throw new LocationBadRequestException(LocationConst.MISSING_LOCATION_DATA);
         }
 
         Location newLocation = new Location();

@@ -13,18 +13,8 @@ import pl.envelo.melo.domain.attachment.uploadmultiple.FilesStorageService;
 import pl.envelo.melo.domain.event.EditEventNotificationHandler;
 
 @SpringBootApplication
-public class MeloApplication implements CommandLineRunner {
-
-    @Resource
-    FilesStorageService storageService;
-
+public class MeloApplication {
     public static void main(String[] args) {
         SpringApplication.run(MeloApplication.class, args);
-    }
-
-    @Override
-    public void run(String... arg) throws Exception {
-    storageService.deleteAll();
-        storageService.init();
     }
 }
