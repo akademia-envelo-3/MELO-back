@@ -48,7 +48,7 @@ public class Event {
     private Employee organizer;
     @NotNull
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Enumerated
     private EventType type;
     @ManyToMany
     private Set<Person> members;
