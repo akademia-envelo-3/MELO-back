@@ -10,11 +10,8 @@ import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.poll.dto.*;
-
 import pl.envelo.melo.exceptions.EventNotFoundException;
-
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
-
 import pl.envelo.melo.mappers.*;
 
 import java.security.Principal;
