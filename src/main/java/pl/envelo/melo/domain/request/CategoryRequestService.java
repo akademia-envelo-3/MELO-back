@@ -15,7 +15,6 @@ import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
 import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
 import pl.envelo.melo.exceptions.CategoryNotFoundException;
 import pl.envelo.melo.exceptions.CategoryRequestAlreadyResolvedException;
-import pl.envelo.melo.exceptions.ResourceNotFoundException;
 import pl.envelo.melo.mappers.CategoryRequestMapper;
 
 import java.util.List;

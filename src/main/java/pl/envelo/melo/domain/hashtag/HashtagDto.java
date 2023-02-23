@@ -35,7 +35,7 @@ public class HashtagDto {
     }
 
     public void setContent(String content) {
-        if (content.length() < 2 || content.length() > 50){
+        if (content.length() < 2 || content.length() > 50) {
             throw new ArithmeticBadRequestException(HashtagConst.INVALID_CONTENT);
         }
         this.content = content;

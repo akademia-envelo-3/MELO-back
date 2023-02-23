@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.AuthConst;
-import pl.envelo.melo.authorization.AuthSucceded;
 import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.MailConst;
 import pl.envelo.melo.authorization.employee.Employee;
@@ -27,12 +26,12 @@ import pl.envelo.melo.authorization.mailtoken.MailTokenRepository;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
-import pl.envelo.melo.domain.attachment.*;
-import pl.envelo.melo.domain.category.CategoryConst;
 import pl.envelo.melo.domain.attachment.Attachment;
+import pl.envelo.melo.domain.attachment.AttachmentConst;
 import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.attachment.AttachmentType;
 import pl.envelo.melo.domain.category.Category;
+import pl.envelo.melo.domain.category.CategoryConst;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
@@ -49,9 +48,9 @@ import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
 import pl.envelo.melo.domain.poll.PollService;
 import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
+import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitConst;
 import pl.envelo.melo.domain.unit.UnitRepository;
-import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
@@ -364,7 +363,8 @@ public class EventService {
                 + newOrganizer.getUser().getPerson().getFirstName() + " "
                 + newOrganizer.getUser().getPerson().getLastName());
     }
-    public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes, MultipartFile mainPhoto, MultipartFile[] additionalAttachments,Principal principal) {
+
+    public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes, MultipartFile mainPhoto, MultipartFile[] additionalAttachments, Principal principal) {
         boolean general_change = false;
         Optional<Event> optionalEvent = eventRepository.findById(id);
         if (optionalEvent.isEmpty())

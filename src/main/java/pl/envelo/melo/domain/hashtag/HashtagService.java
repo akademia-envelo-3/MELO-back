@@ -68,9 +68,11 @@ public class HashtagService {
         }
         return hashtagDoesNotExist(id);
     }
-    private ResponseEntity<?> hashtagDoesNotExist(int id){
+
+    private ResponseEntity<?> hashtagDoesNotExist(int id) {
         return ResponseEntity.status(404).body("Hashtag with Id " + id + " does not exist");
     }
+
     public ResponseEntity<List<HashtagDto>> listAllHashtag(Principal principal) {
         List<Hashtag> hashtagSet = null;
         if (Objects.nonNull(employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null))) {

@@ -26,7 +26,7 @@ public class LocationService {
         } else if (locationDto.getStreetName().trim().equals("")
                 || locationDto.getStreetNumber().trim().equals("")
                 || locationDto.getPostalCode().trim().equals("")
-                || locationDto.getCity().trim().equals("")){
+                || locationDto.getCity().trim().equals("")) {
             throw new LocationBadRequestException(LocationConst.MISSING_LOCATION_DATA);
         }
 

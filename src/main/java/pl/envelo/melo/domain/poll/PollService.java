@@ -51,7 +51,7 @@ public class PollService {
             event.setPolls(new HashSet<>());
         }
 
-        if(event.getOrganizer().getId()!=employee.getId())
+        if (event.getOrganizer().getId() != employee.getId())
             return ResponseEntity.status(400).body(EventConst.UNAUTHORIZED_EMPLOYEE);
 
         PollDto pollDto = newPollMapper.toDto(newPollDto);
@@ -138,7 +138,7 @@ public class PollService {
 
         if (eventRepository.findById(eventId).isPresent()) {
             Event event = eventRepository.findById(eventId).get();
-            if(event.getMembers().stream().noneMatch(person -> Objects.equals(person.getEmail(), authorizationService.getEmail(principal)))) {
+            if (event.getMembers().stream().noneMatch(person -> Objects.equals(person.getEmail(), authorizationService.getEmail(principal)))) {
                 return ResponseEntity.status(400).body(EventConst.EMPLOYEE_NOT_IN_MEMBER_LIST);
             }
         } else throw new EventNotFoundException();

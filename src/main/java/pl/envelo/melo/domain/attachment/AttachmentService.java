@@ -9,12 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 import pl.envelo.melo.domain.attachment.uploadmultiple.FilesStorageService;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static pl.envelo.melo.domain.attachment.AttachmentConst.*;
-import static pl.envelo.melo.domain.attachment.MimeTypes.*;
 
 
 @RequiredArgsConstructor
