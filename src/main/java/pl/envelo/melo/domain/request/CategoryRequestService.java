@@ -14,6 +14,7 @@ import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
 import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
+import pl.envelo.melo.exceptions.CategoryNotFoundException;
 import pl.envelo.melo.exceptions.CategoryRequestAlreadyResolvedException;
 import pl.envelo.melo.exceptions.ResourceNotFoundException;
 
@@ -66,7 +67,7 @@ public class CategoryRequestService {
 
     private CategoryRequest setCategoryRequestAsResolved(int categoryRequestId) {
         CategoryRequest categoryRequest = categoryRequestRepository.findById(categoryRequestId).orElseThrow(() -> {
-            throw new ResourceNotFoundException("Category request not found");
+            throw new CategoryNotFoundException();
         });
         if (categoryRequest.isResolved())
             throw new CategoryRequestAlreadyResolvedException();

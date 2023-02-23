@@ -3,6 +3,7 @@ package pl.envelo.melo.domain.request.dto;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.validator.constraints.Range;
+import pl.envelo.melo.domain.category.CategoryConst;
 
 @Getter
 @Setter
@@ -10,7 +11,7 @@ import org.hibernate.validator.constraints.Range;
 public class CategoryRequestDto {
 
     @NotNull
-    @Range(min = 2, max = 255, message = "wrong category name size (must be between 2 and 255)")
+    @Range(min = 2, max = 255, message = CategoryConst.INVALID_NAME)
     private String categoryName;
     @NotNull
     private int employeeId;

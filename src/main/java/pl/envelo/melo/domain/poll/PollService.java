@@ -8,6 +8,7 @@ import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
 import pl.envelo.melo.domain.event.Event;
+import pl.envelo.melo.domain.event.EventConst;
 import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.poll.dto.*;
 import pl.envelo.melo.exceptions.EventNotFoundException;
@@ -16,6 +17,8 @@ import pl.envelo.melo.mappers.*;
 
 import java.security.Principal;
 import java.util.*;
+
+import static pl.envelo.melo.domain.poll.PollConst.*;
 
 @Service
 @AllArgsConstructor
@@ -47,7 +50,7 @@ public class PollService {
         }
 
         if(event.getOrganizer().getId()!=employee.getId())
-            return ResponseEntity.status(400).body("You're not organizer of this event.");
+            return ResponseEntity.status(400).body(EventConst.UNAUTHORIZED_EMPLOYEE);
 
         PollDto pollDto = newPollMapper.toDto(newPollDto);
 
@@ -136,7 +139,7 @@ public class PollService {
         if(eventRepository.findById(eventId).isPresent()) {
             Event event = eventRepository.findById(eventId).get();
             if(event.getMembers().stream().noneMatch(person -> Objects.equals(person.getEmail(), authorizationService.getEmail(principal)))) {
-                return ResponseEntity.status(400).body("Employee is not member of this event.");
+                return ResponseEntity.status(400).body(EventConst.EMPLOYEE_NOT_IN_MEMBER_LIST);
             }
         } else throw new EventNotFoundException();
 
@@ -146,15 +149,15 @@ public class PollService {
 
         if (poll.getPollAnswers().stream().anyMatch(e ->
                 e.getEmployee().stream().anyMatch(emp -> emp.getId() == employeeId))) {
-            return ResponseEntity.status(400).body("Employee already voted in this Poll.");
+            return ResponseEntity.status(400).body(ALREADY_VOTED);
         }
 
         if (pollSendResultDto.getPollAnswerId().isEmpty()) {
-            return ResponseEntity.status(400).body("PollAnswer must have at least one value.");
+            return ResponseEntity.status(400).body(NO_ANSWER_SELECTED);
         }
 
         if (pollSendResultDto.getPollAnswerId().size() > 1 && !poll.isMultichoice()) {
-            return ResponseEntity.status(400).body("This Poll is not multichoice, you can only put 1 PollAnswer.");
+            return ResponseEntity.status(400).body(TOO_MANY_ANSWERS_SELECTED);
         }
 
         Set<PollAnswer> pollAnswerSet = new HashSet<>();

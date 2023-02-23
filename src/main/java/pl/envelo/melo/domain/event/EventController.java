@@ -161,7 +161,7 @@ public class EventController {
         if (!Objects.isNull(additionalAttachments)) {
             if (additionalAttachments.length > 10) {
                 return ResponseEntity.badRequest()
-                        .body("You can upload max 10 attachments to Your Event");
+                        .body(EventConst.EVENT_ATTACHMENT_COUNT_LIMIT_REACHED);
             }
         }
         return eventService.insertNewEvent(newEventDto, mainPhoto, additionalAttachments, principal);
@@ -179,7 +179,7 @@ public class EventController {
         if (!Objects.isNull(multipartFiles)) {
             if (multipartFiles.length > 10) {
                 return ResponseEntity.badRequest()
-                        .body("You can upload max 10 attachments to each Comment");
+                        .body(EventConst.COMMENT_ATTACHMENT_COUNT_LIMIT_REACHED);
             }
         }
         return commentService.insertNewComment(id, commentDto, multipartFiles, principal);

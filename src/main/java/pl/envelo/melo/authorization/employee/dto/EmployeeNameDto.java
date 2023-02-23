@@ -5,14 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.envelo.melo.authorization.AuthConst;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmployeeNameDto {
-    @NotBlank(message = "first name shouldn't be blank")
+    @NotBlank(message = AuthConst.INVALID_FIRST_NAME)
     private String firstName;
-    @NotBlank(message = "last name shouldn't be blank")
+    @NotBlank(message = AuthConst.INVALID_LAST_NAME)
     private String lastName;
 }
