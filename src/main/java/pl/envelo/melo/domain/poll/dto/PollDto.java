@@ -17,9 +17,13 @@ import java.util.Set;
 public class PollDto {
 
 
-    @Size(min = PollConst.MIN_QUESTION_CHARACTER_LIMIT, max = PollConst.MAX_QUESTION_CHARACTER_LIMIT)
+    @Size(min = PollConst.MIN_QUESTION_CHARACTER_LIMIT, max = PollConst.MAX_QUESTION_CHARACTER_LIMIT
+            , message = "Poll answer must not contain less than " + PollConst.MIN_QUESTION_CHARACTER_LIMIT +
+            " and more than " + PollConst.MAX_QUESTION_CHARACTER_LIMIT)
     private String pollQuestion;
-    @Size(min = PollConst.MIN_OPTION_COUNT, max = PollConst.MAX_OPTION_COUNT)
+    @Size(min = PollConst.MIN_OPTION_COUNT, max = PollConst.MAX_OPTION_COUNT
+            , message = "Poll must not have less than " + PollConst.MIN_OPTION_COUNT +
+            " and more than " + PollConst.MAX_OPTION_COUNT)
     private Set<PollAnswerDto> pollAnswers;
     private boolean multichoice;
 

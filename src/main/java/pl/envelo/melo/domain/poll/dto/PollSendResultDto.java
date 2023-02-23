@@ -12,7 +12,7 @@ import java.util.Set;
 @Getter
 public class PollSendResultDto {
 
-    @NotNull
+    @NotNull(message = "Poll id must not be null")
     private int pollId;
 
     private Set<Integer> pollAnswerId;

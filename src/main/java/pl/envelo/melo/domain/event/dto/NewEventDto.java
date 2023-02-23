@@ -22,11 +22,11 @@ import java.util.Set;
 @NoArgsConstructor
 public class NewEventDto {
 
-    @NotBlank
-    @Size(max = 255)
+    @NotBlank(message = EventConst.BLANK_TITLE)
+    @Size(max = EventConst.MAX_TITLE_LENGTH, message = EventConst.INVALID_TITLE)
     private String name;
-    @NotBlank
-    @Size(max = 4000)
+    @NotBlank(message = EventConst.BLANK_DESCRIPTION)
+    @Size(max = EventConst.MAX_DESCRIPTION_LENGTH, message = EventConst.INVALID_DESCRIPTION)
     private String description;
     @DateTimeFormat(pattern = "")
     private LocalDateTime startTime;
@@ -34,11 +34,11 @@ public class NewEventDto {
     private LocalDateTime endTime;
     @NotNull(message = EventConst.INVALID_EVENT_TYPE)
     private EventType eventType;
-    @NotNull
+    @NotNull(message = EventConst.INVALID_ORGANIZER)
     private int organizerId;
     @NotNull(message = EventConst.INVALID_PERIODIC_TYPE)
     private PeriodicType periodicType;
-    @Size(max = EventConst.MAX_HASHTAG_COUNT)
+    @Size(max = EventConst.MAX_HASHTAG_COUNT, message = EventConst.HASHTAG_LIMIT_REACHED)
     private Set<HashtagDto> hashtags;
     private Long memberLimit;
     private Set<Integer> invitedMembers;

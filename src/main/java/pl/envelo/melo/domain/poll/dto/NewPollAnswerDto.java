@@ -10,8 +10,10 @@ import pl.envelo.melo.domain.poll.PollConst;
 @Setter
 @Getter
 public class NewPollAnswerDto {
-
-    @Size(min= PollConst.MIN_QUESTION_CHARACTER_LIMIT, max=PollConst.MAX_QUESTION_CHARACTER_LIMIT)
+    @Size(min = PollConst.MIN_QUESTION_CHARACTER_LIMIT, max = PollConst.MAX_QUESTION_CHARACTER_LIMIT
+            , message = "Poll answer must not contain less than " + PollConst.MIN_QUESTION_CHARACTER_LIMIT +
+            " and more than " + PollConst.MAX_QUESTION_CHARACTER_LIMIT)
     private String pollAnswer;
+
 
 }
