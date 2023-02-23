@@ -29,6 +29,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static pl.envelo.melo.domain.event.EventConst.*;
+
 @Component
 @AllArgsConstructor
 public class EventUpdater {
@@ -88,42 +90,42 @@ public class EventUpdater {
 
         Map<String, String> errors = new HashMap<>();
         if (event.getStartTime().compareTo(LocalDateTime.now()) <= 0) {
-            errors.put("forbidden error", "You cannot edit archived event");
+            errors.put(FORBIDDEN_ACTION, ARCHIVED_EVENT_EDIT_ATTEMPT);
         }
         if (startTime == null && endTime != null) {
             if (endTime.compareTo(LocalDateTime.now()) <= 0) {
-                errors.put("forbidden error", "You cannot set past date");
+                errors.put(FORBIDDEN_ACTION, PAST_TIME);
             }
             if (event.getEndTime().equals(endTime)) {
-                errors.put("endTime error", "New EndTime is the same as old.");
+                errors.put(INVALID_END_TIME, END_TIME_SAME_AS_OLD);
             } else if (event.getStartTime().compareTo(endTime) >= 0) {
-                errors.put("endTime error", "You must set endTime to be after startTime");
+                errors.put(INVALID_END_TIME, END_TIME_AFTER_START_TIME);
             } else {
                 event.setEndTime(endTime);
             }
         } else if (startTime != null && endTime == null) {
             if (startTime.compareTo(LocalDateTime.now()) <= 0) {
-                errors.put("forbidden error", "You cannot set past date");
+                errors.put(FORBIDDEN_ACTION, PAST_TIME);
             }
             if (event.getStartTime().equals(startTime)) {
-                errors.put("startTime error", "New StartTime is the same as old.");
+                errors.put(INVALID_START_TIME, START_TIME_SAME_AS_OLD);
             } else if (event.getEndTime().compareTo(startTime) <= 0) {
-                errors.put("startTime error", "You must set startTime to be before endTime");
+                errors.put(INVALID_START_TIME, START_TIME_BEFORE_END_TIME);
             } else {
                 event.setStartTime(startTime);
             }
         } else if (startTime != null && endTime != null) {
             if (endTime.compareTo(LocalDateTime.now()) <= 0 || startTime.compareTo(LocalDateTime.now()) <= 0) {
-                errors.put("forbidden error", "You cannot set past date");
+                errors.put(FORBIDDEN_ACTION, PAST_TIME);
             }
             if (event.getEndTime().equals(endTime)) {
-                errors.put("endTime error", "New EndTime is the same as old.");
+                errors.put(INVALID_END_TIME, END_TIME_SAME_AS_OLD);
             }
             if (event.getStartTime().equals(startTime)) {
-                errors.put("startTime error", "New StartTime is the same as old.");
+                errors.put(INVALID_START_TIME, START_TIME_SAME_AS_OLD);
             }
             if (startTime.compareTo(endTime) >= 0) {
-                errors.put("endTime error", "You must set endTime to be after startTime");
+                errors.put(INVALID_END_TIME, END_TIME_AFTER_START_TIME);
             } else {
                 event.setEndTime(endTime);
                 event.setStartTime(startTime);

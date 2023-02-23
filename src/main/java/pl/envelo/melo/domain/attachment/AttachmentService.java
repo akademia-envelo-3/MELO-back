@@ -11,6 +11,10 @@ import pl.envelo.melo.domain.attachment.uploadmultiple.FilesStorageService;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static pl.envelo.melo.domain.attachment.AttachmentConst.*;
+import static pl.envelo.melo.domain.attachment.MimeTypes.*;
 
 
 @RequiredArgsConstructor
@@ -85,9 +89,7 @@ public class AttachmentService {
     public AttachmentType validateAttachmentType(MultipartFile uploadedAttachment) {
 
         /// W miarę czasu pokombinować z MIMETypes. Rozwiązanie tymczasowe.
-        final List ALLOWED_PHOTO_FORMATS = List.of("png", "jpg", "jpeg");
-        final List ALLOWED_VIDEO_FORMATS = List.of("mp4");
-        final List ALLOWED_DOCUMENT_FORMATS = List.of("pdf", "doc", "docx", "txt", "odt");
+
 
         /// Pobieram absolutną nazwę pliku
         String fileName = uploadedAttachment.getOriginalFilename();

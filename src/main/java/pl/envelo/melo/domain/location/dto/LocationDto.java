@@ -11,28 +11,30 @@ import pl.envelo.melo.exceptions.LocationBadRequestException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static pl.envelo.melo.domain.location.LocationConst.*;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class LocationDto {
 
-    @NotEmpty(message = "streetName field can't be blank")
-    @Max(value = 255, message = "the length of streetName must not be greater than 255")
+    @NotEmpty(message = BLANK_STREET_NAME)
+    @Max(value = 255, message = INVALID_STREET_NAME_LENGTH)
     private String streetName;
 
-    @NotEmpty(message = "streetNumber field can't be blank")
-    @Max(value = 100, message = "streetNumber is greater than world's highest street address number.")
+    @NotEmpty(message = BLANK_STREET_NUMBER)
+    @Max(value = 100, message = INVALID_STREET_NUMBER_LENGTH)
     private String streetNumber;
 
-    @Max(value = 100, message = "apartmentNumber is to big. Really? SBM Validation Error.")
+    @Max(value = 100, message = INVALID_APARTMENT_NUMBER_LENGTH)
     private String apartmentNumber;
 
-    @NotEmpty(message = "postalCode field can't be blank")
+    @NotEmpty(message = BLANK_POSTAL_CODE)
     @Size(min = 6, max = 6)
     private String postalCode;
 
-    @NotEmpty(message = "city field can't be blank")
-    @Max(value = 255, message = "the length of city must not be greater than 255")
+    @NotEmpty(message = BLANK_CITY)
+    @Max(value = 255, message = INVALID_CITY_LENGTH)
     private String city;
 
     public void setStreetName(String streetName) {
@@ -42,16 +44,15 @@ public class LocationDto {
             this.streetName = streetName;
         } else {
             for (char c : charStreet) {
-                if (c >= (int) 65 && c <= (int) 90
-                        || c >= (int) 97 && c <= (int) 122
-                        || c >= (int) 260 && c <= (int) 380
-                        || c >= (int) 45 && c <= (int) 57
-                        || c == (int) 211 || c == (int) 243
+                if (c >= 65 && c <= 90
+                        || c >= 97 && c <= 122
+                        || c >= 260 && c <= 380
+                        || c >= 45 && c <= 57
+                        || c == 211 || c == 243
                         || c == ' ') {
                     this.streetName = streetName.replaceAll("( +)", " ").trim();
                 } else
-                    throw new LocationBadRequestException("Invalid street name, " +
-                            "street name shouldn't have strange characters except '.', '-' and '/'");
+                    throw new LocationBadRequestException(INVALID_STREET_NAME);
             }
         }
     }
@@ -66,8 +67,7 @@ public class LocationDto {
                 || streetNumber.trim().equals("")) {
             this.streetNumber = streetNumber.trim();
         } else
-            throw new LocationBadRequestException("Invalid street number, " +
-                    "enter a valid number according to format X - XXXX/XXXX/XXXX or Xa-z - XXXX/XXXX/XXXXa-z");
+            throw new LocationBadRequestException(INVALID_STREET_NUMBER);
     }
 
     public void setApartmentNumber(String apartmentNumber) {
@@ -80,8 +80,7 @@ public class LocationDto {
                 || apartmentNumber.trim().equals("")) {
             this.apartmentNumber = apartmentNumber.trim();
         } else
-            throw new LocationBadRequestException("Invalid apartment number, " +
-                    "enter a valid number according to format 1-99999 or 1a-z-9999a-z");
+            throw new LocationBadRequestException(INVALID_APARTMENT_NUMBER);
     }
 
     public void setPostalCode(String postalCode) {
@@ -91,8 +90,7 @@ public class LocationDto {
         if (matcher.matches() || postalCode.trim().equals("")) {
             this.postalCode = postalCode.trim();
         } else
-            throw new LocationBadRequestException("Invalid postal code, " +
-                    "enter a valid code according to format XX-XXX");
+            throw new LocationBadRequestException(INVALID_POST_NUMBER);
     }
 
     public void setCity(String city) {
@@ -102,15 +100,14 @@ public class LocationDto {
             this.city = city.trim();
         } else {
             for (char c : charCity) {
-                if (c >= (int) 65 && c <= (int) 90
-                        || c >= (int) 97 && c <= (int) 122
-                        || c >= (int) 260 && c <= (int) 380
-                        || c == (int) 211 || c == (int) 243
-                        || c == (int) 45 || c == ' ') {
+                if (c >= 65 && c <= 90
+                        || c >= 97 && c <= 122
+                        || c >= 260 && c <= 380
+                        || c == 211 || c == 243
+                        || c == 45 || c == ' ') {
                     this.city = city.replaceAll("( +)", " ").trim();
                 } else
-                    throw new LocationBadRequestException("Invalid city name, " +
-                            "city name should have only letters");
+                    throw new LocationBadRequestException(INVALID_CITY);
             }
 
         }

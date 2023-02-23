@@ -14,7 +14,7 @@ import pl.envelo.melo.domain.poll.PollConst;
 public class PollAnswerResultDto {
 
     @NotBlank
-    @Size(max = PollConst.OPTION_CHARACTER_LIMIT)
+    @Size(max=PollConst.OPTION_CHARACTER_LIMIT, message = "Poll answer must not have more than "+PollConst.OPTION_CHARACTER_LIMIT)
     private String pollAnswer;
     @NotNull
     private int result;

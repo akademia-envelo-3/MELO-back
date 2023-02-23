@@ -44,7 +44,7 @@ public class CategoryService {
                 ResponseEntity<?> categoryWithSwappedStatus = changeStatusCategory(findByName(category.getName()).getId());
                 return ResponseEntity.status(200).body(categoryWithSwappedStatus.getBody());
             } else {
-                return ResponseEntity.status(404).body("This category is already visible in database.");
+                return ResponseEntity.status(404).body(CategoryConst.CATEGORY_ALREADY_VISIBLE);
             }
         }
         category.setHidden(false);
@@ -55,12 +55,12 @@ public class CategoryService {
         Optional<Category> categoryOptional = categoryRepository.findById(id);
         if (categoryOptional.isPresent()) {
             if (findByName(categoryDto.getName()) != null) {
-                return ResponseEntity.status(400).body("Category with given name already exists in database");
+                return ResponseEntity.status(400).body(CategoryConst.CATEGORY_ALREADY_EXISTS);
             }
             Category category = categoryOptional.get();
             category.setName(categoryDto.getName());
             return ResponseEntity.ok(categoryRepository.save(category));
-        } else return ResponseEntity.status(404).body("Category with given ID does not exist in database");
+        } else return ResponseEntity.status(404).body(CategoryConst.CATEGORY_NOT_FOUND);
     }
 
     public ResponseEntity<?> getCategory(int id, Principal principal) {
@@ -68,7 +68,7 @@ public class CategoryService {
         Admin admin = adminRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         Optional<Category> categoryOptional = categoryRepository.findById(id);
         if (categoryOptional.isEmpty())
-            return ResponseEntity.status(404).body("Category with given ID does not exist in database");
+            return ResponseEntity.status(404).body(CategoryConst.CATEGORY_NOT_FOUND);
         if (Objects.nonNull(admin))
             return ResponseEntity.ok(categoryOptional.get());
         if (Objects.nonNull(employee) && !categoryOptional.get().isHidden())

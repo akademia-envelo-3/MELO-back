@@ -44,7 +44,7 @@ public class HashtagService {
             hashtagRepository.save(hashtag);
             return ResponseEntity.ok(hashtag);
         } else {
-            return ResponseEntity.status(404).body("Hashtag by this ID do not exist");
+            return ResponseEntity.status(404).body(HashtagConst.HASHTAG_DOES_NOT_EXIST);
         }
     }
 
@@ -66,9 +66,11 @@ public class HashtagService {
             hashtagRepository.save(hashtag.get());
             return ResponseEntity.ok(hashtag.get().isHidden());
         }
+        return hashtagDoesNotExist(id);
+    }
+    private ResponseEntity<?> hashtagDoesNotExist(int id){
         return ResponseEntity.status(404).body("Hashtag with Id " + id + " does not exist");
     }
-
     public ResponseEntity<List<HashtagDto>> listAllHashtag(Principal principal) {
         List<Hashtag> hashtagSet = null;
         if (Objects.nonNull(employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null))) {
@@ -97,7 +99,7 @@ public class HashtagService {
             }
             return ResponseEntity.ok(hashtagStatistic);
         } else {
-            return ResponseEntity.status(404).body("There is no hashtags to display");
+            return ResponseEntity.status(404).body(HashtagConst.NO_HASHTAG_TO_DISPLAY);
         }
     }
 }

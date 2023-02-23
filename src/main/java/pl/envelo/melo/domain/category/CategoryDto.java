@@ -9,6 +9,6 @@ import lombok.Data;
 @Data
 public class CategoryDto {
     @NotBlank
-    @Size(min = 1, max = 255, message = "Size of category name must be between 1 and 255.")
+    @Size(min = CategoryConst.MIN_NAME_LENGTH, max = CategoryConst.MAX_NAME_LENGTH, message = CategoryConst.INVALID_NAME)
     private String name;
 }
