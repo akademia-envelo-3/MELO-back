@@ -1,21 +1,20 @@
 package pl.envelo.melo.domain.unit;
 
-import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.unit.dto.UnitDetailsDto;
-import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitNewDto;
+import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.security.Principal;
 import java.util.List;
@@ -26,7 +25,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UnitController {
     private final UnitService unitService;
-    private final AuthorizationService authorizationService;
+
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}")
     @Operation(summary = "Retrieve concrete unit by id",
@@ -107,6 +106,7 @@ public class UnitController {
     public ResponseEntity<?> addNewUnit(@RequestBody @Valid UnitNewDto unitDto, Principal principal) {
         return unitService.insertNewUnit(unitDto, principal);
     }
+
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PatchMapping("/{unit-id}")
     @Operation(summary = "Edit unit", responses = {

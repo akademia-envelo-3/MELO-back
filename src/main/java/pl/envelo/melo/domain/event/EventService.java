@@ -9,12 +9,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import pl.envelo.melo.authorization.AuthSucceded;
+import pl.envelo.melo.authorization.AuthConst;
 import pl.envelo.melo.authorization.AuthorizationService;
+import pl.envelo.melo.authorization.MailConst;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
@@ -26,12 +28,12 @@ import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
 import pl.envelo.melo.domain.attachment.Attachment;
-import pl.envelo.melo.domain.attachment.AttachmentRepository;
+import pl.envelo.melo.domain.attachment.AttachmentConst;
 import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.attachment.AttachmentType;
 import pl.envelo.melo.domain.category.Category;
+import pl.envelo.melo.domain.category.CategoryConst;
 import pl.envelo.melo.domain.category.CategoryRepository;
-import pl.envelo.melo.domain.comment.CommentRepository;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
@@ -41,18 +43,19 @@ import pl.envelo.melo.domain.hashtag.Hashtag;
 import pl.envelo.melo.domain.hashtag.HashtagDto;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.hashtag.HashtagService;
-import pl.envelo.melo.domain.location.LocationRepository;
 import pl.envelo.melo.domain.location.LocationService;
+import pl.envelo.melo.domain.notification.Notification;
+import pl.envelo.melo.domain.notification.NotificationRepository;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
-import pl.envelo.melo.domain.poll.PollAnswerRepository;
-import pl.envelo.melo.domain.poll.PollRepository;
 import pl.envelo.melo.domain.poll.PollService;
 import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.Unit;
+import pl.envelo.melo.domain.unit.UnitConst;
 import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
+import pl.envelo.melo.exceptions.EventNotFoundException;
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 import pl.envelo.melo.validators.HashtagValidator;
@@ -79,14 +82,10 @@ public class EventService {
     private final EmployeeRepository employeeRepository;
     private final HashtagRepository hashtagRepository;
     private final CategoryRepository categoryRepository;
-    private final AttachmentRepository attachmentRepository;
-    private final LocationRepository locationRepository;
     private final UnitRepository unitRepository;
-    private final PollRepository pollRepository;
-    private final PollAnswerRepository pollAnswerRepository;
-    private final CommentRepository commentRepository;
     private final PersonRepository personRepository;
     private final MailTokenRepository mailTokenRepository;
+    private final NotificationRepository notificationRepository;
     //Mappers
     private EventDetailsMapper eventDetailsMapper;
     private final PollToDisplayOnListDtoMapper pollToDisplayOnListDtoMapper;
@@ -104,7 +103,6 @@ public class EventService {
     private AuthorizationService authorizationService;
 
     public ResponseEntity<?> getEvent(int id, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();
@@ -124,7 +122,7 @@ public class EventService {
             }
             return ResponseEntity.ok(eventDetailsDto);
         } else {
-            return ResponseEntity.status(404).body("Event with this ID does not exist");
+            return ResponseEntity.status(404).body(EventConst.EVENT_NOT_FOUND);
         }
     }
 
@@ -190,7 +188,6 @@ public class EventService {
 
     @Transactional
     public ResponseEntity<?> insertNewEvent(NewEventDto newEventDto, MultipartFile mainPhoto, MultipartFile[] additionalAttachments, Principal principal) {
-        authorizationService.inflateUser(principal);
         Event event = eventMapper.newEvent(newEventDto);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Optional<Category> category = Optional.empty();
@@ -204,9 +201,9 @@ public class EventService {
         if (category.isPresent() && !category.get().isHidden()) {
             event.setCategory(category.get());
         } else if (category.isPresent() && category.get().isHidden()) {
-            return ResponseEntity.status(404).body("Category you tried to add is not available anymore");
+            return ResponseEntity.status(404).body(CategoryConst.CATEGORY_NOT_AVAILABLE_ANYMORE);
         } else if (!category.isPresent() && newEventDto.getCategoryId() != null) {
-            return ResponseEntity.status(404).body("Category you tried to add does not exist");
+            return ResponseEntity.status(404).body(CategoryConst.CATEGORY_NOT_FOUND);
         }
 
         Map<String, String> validationResult = eventValidator.validateToCreateEvent(newEventDto);
@@ -239,7 +236,7 @@ public class EventService {
                 AttachmentType attachmentType = attachmentService.validateAttachmentType(multipartFile);
                 if (Objects.isNull(attachmentType)) {
                     return ResponseEntity.badRequest()
-                            .body("Illegal format of attachment. WTF ARE U DOING? TURBO ERROR!");
+                            .body(AttachmentConst.INVALID_FORMAT);
                 }
             }
 
@@ -247,7 +244,7 @@ public class EventService {
                 Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
                 if (attachmentFromServer == null) {
                     return ResponseEntity.badRequest()
-                            .body("Illegal format of attachment. WTF ARE U DOING?");
+                            .body(AttachmentConst.INVALID_FORMAT);
                 }
                 if (Objects.isNull(event.getAttachments())) {
                     event.setAttachments(new HashSet<>());
@@ -261,11 +258,11 @@ public class EventService {
             Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
             if (mainPhotoFromServer == null) {
                 return ResponseEntity.badRequest()
-                        .body("Illegal format of attachment. WTF ARE U DOING?");
+                        .body(AttachmentConst.INVALID_FORMAT);
             }
             if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
                 return ResponseEntity.badRequest()
-                        .body("Illegal format of event Photo!");
+                        .body(AttachmentConst.INVALID_PHOTO_FORMAT);
             }
             event.setMainPhoto(mainPhotoFromServer);
 
@@ -323,7 +320,7 @@ public class EventService {
                     unit.get().getEventList().add(event);
                 }
             } else {
-                return ResponseEntity.status(404).body("Unit you tried to add is not available");
+                return ResponseEntity.status(404).body(UnitConst.UNIT_NOT_AVAILABLE);
             }
         }
         event.setInvited(invitedCopyMembers);
@@ -339,17 +336,19 @@ public class EventService {
         return null;
     }
 
+    private String eventDoesNotExist(int eventId) {
+        return "Event with Id " + eventId + " does not exist";
+    }
+
     public ResponseEntity<?> changeEventOrganizer(int eventId, int newOrganizerId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Event event = eventRepository.findById(eventId).orElse(null);
         if (Objects.isNull(event)) {
-            return ResponseEntity.status(404).body("Event with Id " + eventId + " does not exist");
+            return ResponseEntity.status(404).body(eventDoesNotExist(eventId));
         } else if (employee.getId() != event.getOrganizer().getId()) {
-            return ResponseEntity.status(401).body("You are not the organizer of the event you " +
-                    "do not have the authority to make changes");
+            return ResponseEntity.status(401).body(EventConst.UNAUTHORIZED_EMPLOYEE);
         } else if (newOrganizerId == event.getOrganizer().getId()) {
-            return ResponseEntity.status(400).body("You are event organizer already");
+            return ResponseEntity.status(400).body(EventConst.ALREADY_EVENT_ORGANIZER);
         } else {
             Employee newOrganizer = employeeRepository.findById(newOrganizerId).orElseThrow(EmployeeNotFoundException::new);
             employeeService.removeFromOwnedEvents(event.getOrganizer().getId(), event);
@@ -361,23 +360,26 @@ public class EventService {
             EventNotificationDto eventNotificationDto = new EventNotificationDto();
             eventNotificationDto.setEventId(eventId);
             eventNotificationDto.setType(NotificationType.EVENT_ORGANIZER_UPDATED);
-            eventNotificationDto.setContent("Nowym organizatorem wydarzenia \""+event.getName()+"\" jest "+employee.getFirstName()+" "+employee.getLastName()+".");
-            notificationService.insertEventMembersNotification(eventNotificationDto, false);
+            eventNotificationDto.setContent("Nowym organizatorem wydarzenia \"" + event.getName() + "\" jest " + employee.getFirstName() + " " + employee.getLastName() + ".");
 
-            return ResponseEntity.status(200).body("The organizer of the event with id "
-                    + eventId + " has been correctly changed to "
-                    + newOrganizer.getUser().getPerson().getFirstName() + " "
-                    + newOrganizer.getUser().getPerson().getLastName());
+            notificationService.insertEventMembersNotification(eventNotificationDto, false);
+            return changeEventOrganizerSuccessMessage(eventId, newOrganizer);
         }
     }
 
 
+    private ResponseEntity<?> changeEventOrganizerSuccessMessage(int eventId, Employee newOrganizer) {
+        return ResponseEntity.status(200).body("The organizer of the event with id "
+                + eventId + " has been correctly changed to "
+                + newOrganizer.getUser().getPerson().getFirstName() + " "
+                + newOrganizer.getUser().getPerson().getLastName());
+    }
+
     public ResponseEntity<?> updateEvent(int id, Map<String, Object> updates, Map<String, Object> adds, Map<String, Object> deletes, MultipartFile mainPhoto, MultipartFile[] additionalAttachments, Principal principal) {
         boolean general_change = false;
-        authorizationService.inflateUser(principal);
         Optional<Event> optionalEvent = eventRepository.findById(id);
         if (optionalEvent.isEmpty())
-            return ResponseEntity.badRequest().body("Event with id " + id + " not found");
+            return ResponseEntity.badRequest().body(eventDoesNotExist(id));
         Event event = optionalEvent.get();
         if (event.getOrganizer().getId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new).getId())
             return ResponseEntity.status(403).build();
@@ -408,8 +410,8 @@ public class EventService {
                 Optional<?> updateDates = eventUpdater.updateDate(event, updates.get("startTime"), updates.get("endTime"));
                 if (updateDates.get() instanceof Boolean) {
                     EventNotificationDto eventNotificationDto = new EventNotificationDto();
-                    eventNotificationDto.setContent("Czas wydarzenia \""+event.getName()+"\" został zmieniony. "
-                            + "Rozpoczęcie wydarzenia: "+event.getStartTime() + " Zakończenie wydarzenia: " + event.getEndTime());
+                    eventNotificationDto.setContent("Czas wydarzenia \"" + event.getName() + "\" został zmieniony. "
+                            + "Rozpoczęcie wydarzenia: " + event.getStartTime() + " Zakończenie wydarzenia: " + event.getEndTime());
                     eventNotificationDto.setEventId(event.getId());
                     eventNotificationDto.setType(NotificationType.EVENT_DATE_CHANGED);
                     notificationService.insertEventMembersNotification(eventNotificationDto, false);
@@ -535,22 +537,20 @@ public class EventService {
 
     public ResponseEntity<?> editEventForm(int id, Principal principal) {
         if (!eventRepository.existsById(id))
-            return ResponseEntity.status(HttpStatusCode.valueOf(404)).body("Event with " + id + " does not exists");
+            return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(eventDoesNotExist(id));
         Event event = eventRepository.getReferenceById(id);
-        if (authorizationService.inflateUser(principal) instanceof AuthSucceded)
-            if (event.getOrganizer().getId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new).getId())
-                return ResponseEntity.status(403).build();
+        if (event.getOrganizer().getId() != employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new).getId())
+            return ResponseEntity.status(403).build();
         return ResponseEntity.ok(eventEditMapper.convert(event));
     }
 
     @Transactional
     public ResponseEntity<?> addEmployeeToEvent(int eventId, Principal principal) { //void?
-        authorizationService.inflateUser(principal);
         Optional<Event> event = eventRepository.findById(eventId);
         if (event.isPresent()) {
             if (event.get().getType().toString().startsWith("LIMITED")) {
                 if (event.get().getMembers().size() >= event.get().getMemberLimit().intValue()) {
-                    return ResponseEntity.status(400).body("Event is full");
+                    return ResponseEntity.status(400).body(EventConst.EVENT_MEMBERS_COUNT_LIMIT_REACHED);
                 }
             }
             Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
@@ -565,32 +565,38 @@ public class EventService {
                 }
                 return ResponseEntity.ok(eventMapper.convert(event.get()));
             } else {
-                return ResponseEntity.status(400).body("Employee already on list");
+                return ResponseEntity.status(400).body(EventConst.ALREADY_IN_MEMBER_LIST);
             }
 
         }
-        return ResponseEntity.status(404).body("Event does not exist");
+        return ResponseEntity.status(404).body(EventConst.EVENT_NOT_FOUND);
+    }
+
+    private ResponseEntity<?> employeeNotAMemberOfEvent(int id) {
+        return ResponseEntity.status(404).body("Employee with Id " + id + " is not a member of this event");
+    }
+
+    private ResponseEntity<?> employeeLeaveSuccessful(int employeeId, int eventId) {
+        return ResponseEntity.status(200).body("Successfully removed an employee with Id "
+                + employeeId + " from the event with Id" + eventId);
     }
 
     public ResponseEntity<?> removeEmployeeFromEvent(int eventId, Principal principal) {
-
-        authorizationService.inflateUser(principal);
         Optional<Event> event = eventRepository.findById(eventId);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         if (event.isEmpty()) {
 
-            return ResponseEntity.status(404).body("Event with Id " + eventId + " does not exist");
+            return ResponseEntity.status(404).body(eventDoesNotExist(eventId));
 
         }
         if (!eventRepository.findById(eventId).get()
                 .getMembers()
                 .contains(employee.getUser().getPerson())) {
-
-            return ResponseEntity.status(404).body("Employee with Id " + employee.getId() + " is not a member of this event");
+            return employeeNotAMemberOfEvent(employee.getId());
 
         } else if (eventRepository.findById(eventId).get().getOrganizer().getId() == employee.getId()) {
 
-            return ResponseEntity.status(403).body("Event organizer cant be remove from his event");
+            return ResponseEntity.status(403).body(EventConst.EVENT_ORGANIZER_LEAVE_ATTEMPT);
 
         } else {
             eventRepository.findById(eventId).get()
@@ -599,15 +605,14 @@ public class EventService {
                             .getUser()
                             .getPerson());
             employeeService.removeFromJoinedEvents(employee.getId(), eventRepository.findById(eventId).get());
-            return ResponseEntity.status(200).body("Successfully removed an employee with Id "
-                    + employee.getId() + " from the event with Id" + eventId);
+            return employeeLeaveSuccessful(employee.getId(), eventId);
         }
     }
 
     public ResponseEntity<?> toggleParticipation(UUID token) {
         Optional<MailToken> mailToken = mailTokenRepository.findById(token);
         if (!mailToken.isPresent()) {
-            return ResponseEntity.status(404).body("Token is not in database");
+            return ResponseEntity.status(404).body(AuthConst.EXPIRED_MAIL_TOKEN);
         }
         Event event = mailToken.get().getEvent();
         if (eventRepository.findById(event.getId()).isPresent()) {
@@ -617,16 +622,16 @@ public class EventService {
                 event.getMembers().remove(person);
                 mailTokenRepository.delete(mailToken.get());
                 if (event.getMembers().contains(person)) {
-                    return ResponseEntity.status(400).body("Person is still on list");
+                    return ResponseEntity.status(400).body(EventConst.EVENT_ORGANIZER_LEAVE_ATTEMPT);
                 }
                 if (mailTokenRepository.existsById(mailToken.get().getToken())) {
-                    return ResponseEntity.status(400).body("MailToken still exist");
+                    return ResponseEntity.status(400).body(AuthConst.MAIL_TOKEN_STILL_EXISTS);
                 }
-                return ResponseEntity.ok("Person removed successful");
+                return ResponseEntity.ok(EventConst.PERSON_STILL_ON_LIST);
             }
             if (event.getType().toString().startsWith("LIMITED")) {
                 if (event.getMembers().size() >= event.getMemberLimit().intValue()) {
-                    return ResponseEntity.status(400).body("Event is full");
+                    return ResponseEntity.status(400).body(EventConst.EVENT_MEMBERS_COUNT_LIMIT_REACHED);
                 }
             }
             event.getMembers().add(person);
@@ -635,13 +640,13 @@ public class EventService {
             return sendResignationTokenMail(event, person);
         }
 
-        return ResponseEntity.status(404).body("Event does not exist");
+        return ResponseEntity.status(404).body(EventConst.EVENT_NOT_FOUND);
     }
 
     public ResponseEntity<?> sendConfirmationMail(int eventId, AddGuestToEventDto addGuestToEventDto) {
         Person person = addGuestToEventMapper.toEntity(addGuestToEventDto);
         if (!eventRepository.findById(eventId).isPresent()) {
-            return ResponseEntity.status(404).body("Event does not exist");
+            return ResponseEntity.status(404).body(EventConst.EVENT_NOT_FOUND);
         }
         Event event = eventRepository.findById(eventId).get();
 
@@ -649,22 +654,22 @@ public class EventService {
         if (mailTokenList.isPresent()) {
             Person finalPerson = person;
             if (mailTokenList.get().stream().anyMatch(mailToken -> Objects.equals(mailToken.getPerson().getEmail(), finalPerson.getEmail()))) {
-                return ResponseEntity.status(400).body("Token was already created");
+                return ResponseEntity.status(400).body(AuthConst.MAIL_TOKEN_ALREADY_CREATED);
             }
         }
         if (!event.getType().toString().contains("EXTERNAL")) {
-            return ResponseEntity.status(400).body("Event is not external, guest can't be added.");
+            return ResponseEntity.status(400).body(EventConst.GUEST_ADDITION_ATTEMPT);
         }
         if (event.getType().toString().startsWith("LIMITED")) {
             if (event.getMembers().size() >= event.getMemberLimit().intValue()) {
-                return ResponseEntity.status(400).body("Event is full");
+                return ResponseEntity.status(400).body(EventConst.EVENT_ATTACHMENT_COUNT_LIMIT_REACHED);
             }
         }
         personRepository.save(person);
         if (mailService.sendMailWithToken(person, event, true)) {
-            return ResponseEntity.ok("Email was sent");
+            return ResponseEntity.ok(MailConst.MAIL_SENT);
         }
-        return ResponseEntity.status(404).body("Email was not sent");
+        return ResponseEntity.status(404).body(MailConst.MAIL_NOT_SENT);
     }
 
     private Set<HashtagDto> findHashtagFromEvent(String eventName, String eventDescription) {
@@ -686,17 +691,57 @@ public class EventService {
 
     public ResponseEntity<?> sendResignationTokenMail(Event event, Person person) {
         if (mailService.sendMailWithToken(person, event, false)) {
-            return ResponseEntity.ok("Email was sent");
+            return ResponseEntity.ok(MailConst.MAIL_SENT);
         }
-        return ResponseEntity.status(404).body("Email was not sent");
+        return ResponseEntity.status(404).body(MailConst.MAIL_NOT_SENT);
     }
 
     private void sendEventInvitationNotification(Event event, NotificationType notificationType) {
         EventNotificationDto eventNotificationDto = new EventNotificationDto();
         eventNotificationDto.setEventId(event.getId());
         eventNotificationDto.setType(notificationType);
-        eventNotificationDto.setContent("Masz nowe zaproszenie do wydarzenia \""+event.getName()+"\".");
+        eventNotificationDto.setContent("Masz nowe zaproszenie do wydarzenia \"" + event.getName() + "\".");
         notificationService.insertEventInvitedNotification(eventNotificationDto);
+    }
+
+    @Transactional
+    public ResponseEntity<?> deleteEvent(int eventId, Principal principal) {
+        Event event = eventRepository.findById(eventId).orElseThrow(EventNotFoundException::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
+        if (!event.getOrganizer().equals(employee)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only owner can delete event");
+        }
+        employee.getJoinedEvents().remove(event);
+        employeeService.removeFromOwnedEvents(employee.getId(), event);
+        if (event.getStartTime().compareTo(LocalDateTime.now()) <= 0) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Past events cannot be deleted");
+        }
+        for (Hashtag h : event.getHashtags()) {
+            hashtagService.decrementHashtagGlobalCount(h.getId());
+        }
+        for (Person p : event.getMembers()) {
+            if (employeeRepository.findByUserPerson(p).isPresent()) {
+                employeeService.removeFromJoinedEvents(employeeRepository.findByUserPerson(p).get().getId(), event);
+            }
+        }
+        Optional<List<MailToken>> tokens = mailTokenRepository.findAllByEvent(event);
+        if (tokens.isPresent()) {
+            for (MailToken token : tokens.get()) {
+                mailTokenRepository.delete(token);
+            }
+        }
+        Optional<List<Notification>> notifications = notificationRepository.findAllByEvent(event);
+        if (notifications.isPresent()) {
+            for (Notification notification : notifications.get()) {
+                notification.setEvent(null);
+            }
+        }
+        eventRepository.delete(event);
+        if (eventRepository.existsById(eventId))
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Event still exist");
+        //TODO Maybe notification
+        return ResponseEntity.ok("Event was deleted");
+
     }
 }
 

@@ -1,7 +1,6 @@
 package pl.envelo.melo.domain.location;
 
 import jakarta.persistence.*;
-
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +26,7 @@ public class Location {
     private String streetNumber;
     private String apartmentNumber;
     @NotBlank
-    @Column(nullable = false,length = 6)
+    @Column(nullable = false, length = 6)
     private String postalCode;
     @NotBlank
     @Column(nullable = false)

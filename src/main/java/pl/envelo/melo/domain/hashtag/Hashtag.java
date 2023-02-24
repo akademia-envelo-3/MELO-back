@@ -24,6 +24,7 @@ public class Hashtag {
     private int globalUsageCount;
     @Column(nullable = false)
     private boolean hidden;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

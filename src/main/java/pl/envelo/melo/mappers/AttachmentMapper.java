@@ -7,6 +7,6 @@ import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
 
 @Component
 @Mapper(componentModel = "spring")
-public interface AttachmentMapper extends EntityMapper<AttachmentDto, Attachment>{
+public interface AttachmentMapper extends EntityMapper<AttachmentDto, Attachment> {
 
 }

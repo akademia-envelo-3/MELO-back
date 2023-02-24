@@ -1,24 +1,26 @@
 package pl.envelo.melo.domain.event;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.envelo.melo.EventContextTest;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
-import pl.envelo.melo.domain.event.dto.EventToDisplayOnUnitDetailsList;
+import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.mappers.EventDetailsMapper;
-import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 
-import java.util.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class EventServiceTest extends EventContextTest {
+
 
     @Autowired
     EventDetailsMapper eventDetailsMapper;
@@ -28,7 +30,7 @@ class EventServiceTest extends EventContextTest {
     @Test
     void getExistEvent() {
 
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now(),EventType.LIMITED_EXTERNAL);
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now(), EventType.LIMITED_EXTERNAL);
         event.setMemberLimit(10L);
         EventDetailsDto eventDetailsDto = eventDetailsMapper.convert(event);
         ResponseEntity<?> eventDetailsDtoResponseEntity = eventService.getEvent(1, 1);
@@ -52,10 +54,10 @@ class EventServiceTest extends EventContextTest {
 
     @Test
     void listAllEvents() {
-        Event presentEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));
-        Event presentBeforeEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(2), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"),simpleEventMocker.mockEmployee("test3"));
-        Event presentPrivateEvent = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PRIVATE_INTERNAL, simpleEventMocker.mockEmployee("test"), simpleEventMocker.mockEmployee("test2"));
-        Event pastEvent = simpleEventMocker.mockEvent(LocalDateTime.now().minusDays(5), EventType.UNLIMITED_PUBLIC_INTERNAL);
+        Event presentEvent = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventGenerator.mockEmployee("test"), simpleEventGenerator.mockEmployee("test2"));
+        Event presentBeforeEvent = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(2), EventType.LIMITED_PUBLIC_INTERNAL, simpleEventGenerator.mockEmployee("test"), simpleEventGenerator.mockEmployee("test2"), simpleEventGenerator.mockEmployee("test3"));
+        Event presentPrivateEvent = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PRIVATE_INTERNAL, simpleEventGenerator.mockEmployee("test"), simpleEventGenerator.mockEmployee("test2"));
+        Event pastEvent = simpleEventGenerator.mockEvent(LocalDateTime.now().minusDays(5), EventType.UNLIMITED_PUBLIC_INTERNAL);
         EventToDisplayOnListDto eventToDisplayOnListDto = Objects.requireNonNull(eventService.listAllEvents().getBody()).get(0);
         assertEquals(3, eventToDisplayOnListDto.getInvitedMembersNumber());
         eventToDisplayOnListDto = Objects.requireNonNull(eventService.listAllEvents().getBody()).get(1);
@@ -68,10 +70,10 @@ class EventServiceTest extends EventContextTest {
 
     @Test
     void updateEvent() {
-//        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
+//        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
 //        eventRepository.save(event);
 //
-//        Employee employee = simpleEventMocker.mockEmployee("owwneer");
+//        Employee employee = simpleEventGenerator.mockEmployee("owwneer");
 //
 //        NewEventDto newEventDto = new NewEventDto();
 //        newEventDto.setEventType(EventType.LIMITED_PUBLIC_INTERNAL);
@@ -82,8 +84,8 @@ class EventServiceTest extends EventContextTest {
 //        newEventDto.setStartTime(event.getStartTime());
 //        newEventDto.setEndTime(event.getEndTime());
 //
-//        Employee invited = simpleEventMocker.mockEmployee("juh");
-//        Employee invited2 = simpleEventMocker.mockEmployee("juh2");
+//        Employee invited = simpleEventGenerator.mockEmployee("juh");
+//        Employee invited2 = simpleEventGenerator.mockEmployee("juh2");
 //        employeeRepository.save(invited);
 //        employeeRepository.save(invited2);
 //        newEventDto.setInvitedMembers(new HashSet<>());
@@ -109,17 +111,17 @@ class EventServiceTest extends EventContextTest {
 
     @Test
     void editEventForm() {
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
         eventRepository.save(event);
         event.setPeriodicType(PeriodicType.NONE);
-        assertEquals(PeriodicType.NONE, ((NewEventDto) Objects.requireNonNull(eventService.editEventForm(event.getId()).getBody())).getPeriodicType());
+        assertEquals(PeriodicType.NONE, ((NewEventDto) Objects.requireNonNull(eventService.editEventForm(event.getId()).getBody())).getPeriodicType());//TODO Add principal
     }
 
     @Test
-    void removeEmployeeFromEventTest(){
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),
+    void removeEmployeeFromEventTest() {
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5),
                 EventType.LIMITED_PUBLIC_INTERNAL);
-        Employee test = simpleEventMocker.mockEmployee("test");
+        Employee test = simpleEventGenerator.mockEmployee("test");
         event.getMembers().add(test.getUser().getPerson());
 
         Set<Event> eventSet = new HashSet<>();
@@ -130,7 +132,7 @@ class EventServiceTest extends EventContextTest {
         assertTrue(event.getMembers().contains(test.getUser().getPerson()));
         assertTrue(test.getJoinedEvents().contains(event));
 
-        eventService.removeEmployeeFromEvent(test.getId(),event.getId());
+        eventService.removeEmployeeFromEvent(test.getId(), event.getId());
 
         assertTrue(test.getJoinedEvents().isEmpty());
         assertFalse(event.getMembers().contains(test.getUser().getPerson()));
@@ -138,9 +140,9 @@ class EventServiceTest extends EventContextTest {
     }
 
     @Test
-    void removeEmployeeFromEventThrowExceptionTest(){
-        Employee test = simpleEventMocker.mockEmployee("test");
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),
+    void removeEmployeeFromEventThrowExceptionTest() {
+        Employee test = simpleEventGenerator.mockEmployee("test");
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5),
                 EventType.LIMITED_PUBLIC_INTERNAL, test);
 
         Set<Event> eventSet = new HashSet<>();
@@ -150,7 +152,7 @@ class EventServiceTest extends EventContextTest {
         assertFalse(event.getMembers().isEmpty());
         assertTrue(event.getMembers().contains(test.getUser().getPerson()));
         assertTrue(test.getJoinedEvents().contains(event));
-        ResponseEntity responseEntity = eventService.removeEmployeeFromEvent(test.getId(),event.getId());
+        ResponseEntity responseEntity = eventService.removeEmployeeFromEvent(test.getId(), event.getId());
 
         assertEquals(ResponseEntity.status(403).body("Event organizer cant be remove from his event"),
                 responseEntity);
@@ -161,10 +163,10 @@ class EventServiceTest extends EventContextTest {
     }
 
     @Test
-    void changeOrganizerTest(){
-        Employee test = simpleEventMocker.mockEmployee("test");
-        Employee test2 = simpleEventMocker.mockEmployee("test2");
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),
+    void changeOrganizerTest() {
+        Employee test = simpleEventGenerator.mockEmployee("test");
+        Employee test2 = simpleEventGenerator.mockEmployee("test2");
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5),
                 EventType.UNLIMITED_PUBLIC_INTERNAL, test, test2);
 
         Set<Event> eventSet = new HashSet<>();
@@ -172,35 +174,35 @@ class EventServiceTest extends EventContextTest {
         test.setOwnedEvents(eventSet);
 
         assertTrue(test.getOwnedEvents().contains(event));
-        assertEquals(test.getId(),event.getOrganizer().getId());
+        assertEquals(test.getId(), event.getOrganizer().getId());
 
-        eventService.changeEventOrganizer(event.getId(),test2.getId());
+        eventService.changeEventOrganizer(event.getId(), test2.getId());
 
         assertFalse(test.getOwnedEvents().contains(event));
-        assertNotEquals(test.getId(),event.getOrganizer().getId());
+        assertNotEquals(test.getId(), event.getOrganizer().getId());
 
         assertTrue(test2.getOwnedEvents().contains(event));
-        assertEquals(test2.getId(),event.getOrganizer().getId());
+        assertEquals(test2.getId(), event.getOrganizer().getId());
 
 
     }
 
     @Test
     void addEmployeeToEvent() {
-        Employee test = simpleEventMocker.mockEmployee("test");
-        Employee member = simpleEventMocker.mockEmployee("member");
-        Event event = simpleEventMocker.mockEvent(LocalDateTime.now().plusDays(5),
+        Employee test = simpleEventGenerator.mockEmployee("test");
+        Employee member = simpleEventGenerator.mockEmployee("member");
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5),
                 EventType.LIMITED_PUBLIC_INTERNAL, test);
         event.setMemberLimit(3L);
         eventRepository.save(event);
         assertEquals(1, event.getMembers().size());
         ResponseEntity<?> addedMember = eventService.addEmployeeToEvent(member.getId(), event.getId());
         assertEquals(HttpStatus.OK, addedMember.getStatusCode());
-        assertEquals(2,event.getMembers().size());
+        assertEquals(2, event.getMembers().size());
         addedMember = eventService.addEmployeeToEvent(member.getId(), event.getId());
         assertEquals(HttpStatus.valueOf(400), addedMember.getStatusCode());
         assertEquals("Employee already on list", addedMember.getBody());
-        Employee member1 = simpleEventMocker.mockEmployee("member1");
+        Employee member1 = simpleEventGenerator.mockEmployee("member1");
         addedMember = eventService.addEmployeeToEvent(member1.getId(), event.getId());
         addedMember = eventService.addEmployeeToEvent(member1.getId(), event.getId());
         assertEquals("Event is full", addedMember.getBody());
