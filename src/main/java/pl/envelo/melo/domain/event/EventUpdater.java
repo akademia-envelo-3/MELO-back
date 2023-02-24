@@ -47,20 +47,6 @@ public class EventUpdater {
     LocationService locationService;
     AttachmentService attachmentService;
 
-//    public void update(Event event, NewEventDto newEventDto) {
-//        updateName(event, newEventDto);
-//        updateDescription(event, newEventDto);
-//        updateDate(event, newEventDto);
-//        updateUnitsAndInvitedMembers(event, newEventDto);
-//        updatePeriodic(event, newEventDto);
-//        updateHashtags(event, newEventDto);
-//        updateMemberLimit(event, newEventDto);
-//        updateOrganizer(event, newEventDto);
-//        //updateAttachments(event, newEventDto);
-//        updateCategory(event, newEventDto);
-//        updateLocation(event, newEventDto);
-//        //updateMainPhoto(event, newEventDto);
-//    }
 
     public boolean updateName(Event event, String name) {
         if (event.getName().toLowerCase().trim().equals(name)) {
@@ -306,35 +292,6 @@ public class EventUpdater {
         }
     }
 
-
-   /* void updateAttachments(Event event, NewEventDto newEventDto) {
-        if (newEventDto.getAttachments() == null) {
-            if (event.getAttachments() != null || event.getAttachments().size() != 0) {
-                event.getAttachments().clear();
-            }
-        }
-        if (event.getAttachments() != null && newEventDto.getAttachments() != null) {
-            Set<String> attachmentUrl = event.getAttachments().stream().map(Attachment::getAttachmentUrl).collect(Collectors.toSet());
-            newEventDto.getAttachments().forEach(e -> {
-                if (!attachmentUrl.contains(e.getAttachmentUrl())) {
-                    Attachment attachment = attachmentMapper.toEntity(e);
-                    event.getAttachments().add(attachmentRepository.save(attachment));
-                }
-            });
-            attachmentUrl.forEach(e -> {
-                Set<String> newAttachments = newEventDto.getAttachments().stream().map(AttachmentDto::getAttachmentUrl).collect(Collectors.toSet());
-                if (!newAttachments.contains(e)) {
-                    event.getAttachments().forEach(attachment -> {
-                        if (attachment.getAttachmentUrl().equals(e)) {
-                            event.getAttachments().remove(attachment);
-                            attachmentRepository.deleteById(attachment.getId());
-                        }
-                    });
-                }
-            });
-        }
-    }*/
-
     public boolean updateCategory(Event event, int categoryId) {
         if (categoryId != event.getCategory().getId())
             if (categoryRepository.existsById(categoryId))
@@ -363,10 +320,6 @@ public class EventUpdater {
         }
     }
 
-
-    /*void updateMainPhoto(Event event, NewEventDto newEventDto) {
-        event.setMainPhoto(attachmentService.insertOrGetAttachment(newEventDto.getMainPhoto()));
-    }*/
     public boolean updateTheme(Event event, Object newTheme) {
         Theme theme = Theme.valueOf(newTheme.toString());
         if (theme.equals(event.getTheme())) {

@@ -1,7 +1,5 @@
 package pl.envelo.melo.domain.event;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.mockito.InjectMocks;
@@ -22,7 +20,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @RequiredArgsConstructor
-public class SimpleEventMocker {
+public class SimpleEventGenerator {
     private final EmployeeRepository employeeRepository;
     private final EventRepository eventRepository;
     private final PersonRepository personRepository;
@@ -48,7 +46,7 @@ public class SimpleEventMocker {
             Set<Person> employees1 = new HashSet<>();
             employees1.add(employees[0].getUser().getPerson());
             event.setMembers(employees1);
-        }else {
+        } else {
             Employee owner = mockEmployee("owner");
             event.setOrganizer(owner);
             Set<Person> employees1 = new HashSet<>();

@@ -2,7 +2,10 @@ package pl.envelo.melo.authorization.employee.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import pl.envelo.melo.authorization.AuthConst;
 import pl.envelo.melo.domain.event.Event;
 

@@ -9,6 +9,7 @@ import pl.envelo.melo.domain.notification.NotificationType;
 @Getter
 @Setter
 public class UnitNotificationDto {
+    private String content;
     private int unitId;
     private int employeeId;
     private NotificationType notificationType;

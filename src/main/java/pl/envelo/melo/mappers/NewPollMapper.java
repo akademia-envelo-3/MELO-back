@@ -1,7 +1,6 @@
 package pl.envelo.melo.mappers;
 
 import org.mapstruct.Mapper;
-import org.w3c.dom.Entity;
 import pl.envelo.melo.domain.poll.dto.NewPollDto;
 import pl.envelo.melo.domain.poll.dto.PollDto;
 

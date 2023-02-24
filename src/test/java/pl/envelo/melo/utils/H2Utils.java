@@ -1,7 +1,6 @@
 package pl.envelo.melo.utils;
 
 import javax.sql.DataSource;
-import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class H2Utils {
-    public static void clearDb(DataSource dataSource){
+    public static void clearDb(DataSource dataSource) {
         try {
             Connection c = dataSource.getConnection();
             Statement s = c.createStatement();
@@ -29,7 +28,7 @@ public class H2Utils {
             s.execute("SET REFERENTIAL_INTEGRITY TRUE");
             s.close();
             c.close();
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }

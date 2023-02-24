@@ -26,6 +26,7 @@ public class Notification {
     @JoinColumn(name = "unit_id")
     private Unit unit;
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private NotificationType notificationType;
     @Column(nullable = false)
     private LocalDateTime timestamp;

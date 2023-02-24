@@ -2,23 +2,13 @@ package pl.envelo.melo.domain.poll;
 
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.ResponseEntity;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.user.UserRepository;
-import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
-import pl.envelo.melo.domain.event.EventType;
-import pl.envelo.melo.domain.event.SimpleEventMocker;
-
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.util.HashSet;
-
-import static org.junit.jupiter.api.Assertions.*;
+import pl.envelo.melo.domain.event.SimpleEventGenerator;
 
 @Transactional
 @SpringBootTest
@@ -33,11 +23,11 @@ class PollServiceTest {
     PersonRepository personRepository;
     @Autowired
     EventRepository eventRepository;
-    SimpleEventMocker simpleEventMocker;
+    SimpleEventGenerator simpleEventGenerator;
 
     @BeforeEach
     void setUp() {
-        simpleEventMocker = new SimpleEventMocker(employeeRepository, eventRepository, personRepository, userRepository);
+        simpleEventGenerator = new SimpleEventGenerator(employeeRepository, eventRepository, personRepository, userRepository);
     }
 
     //@Test
@@ -46,7 +36,7 @@ class PollServiceTest {
 
 //    @Test
 //    void insertNewPollTemplate() {
-//        Event event = simpleEventMocker.mockEvent(LocalDateTime.now(), EventType.UNLIMITED_EXTERNAL);
+//        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now(), EventType.UNLIMITED_EXTERNAL);
 //        PollTemplateDto pollTemplateDto = new PollTemplateDto();
 //        pollTemplateDto.setPollOptions(new HashSet<>());
 //        pollTemplateDto.setPollQuestion("question");

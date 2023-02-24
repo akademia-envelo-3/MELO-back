@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -35,14 +34,15 @@ public class SecurityConfiguration {
     private String apiVersion;
     @Value("${melo.events.path}")
     private String eventsPath;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests()
-                .requestMatchers(  "/swagger-ui/**").permitAll()
-                .requestMatchers( "/api-docs/**").permitAll()
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/api-docs/**").permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher( "/"+apiVersion+eventsPath+"/participation/**")).permitAll()
-                .requestMatchers(new RegexRequestMatcher("/"+apiVersion+eventsPath+"/\\d+/external", HttpMethod.POST.name())).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/" + apiVersion + eventsPath + "/participation/**")).permitAll()
+                .requestMatchers(new RegexRequestMatcher("/" + apiVersion + eventsPath + "/\\d+/external", HttpMethod.POST.name())).permitAll()
                 .and()
                 .authorizeHttpRequests().anyRequest().authenticated()
                 .and()
@@ -66,13 +66,14 @@ public class SecurityConfiguration {
                 Map<?, ?> resource = resourceAccess.get(appResource);
                 List<?> roles = (List<?>) resource.get("roles");
                 roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.toString())));
-            }catch (NullPointerException e){
+            } catch (NullPointerException e) {
                 return authorities;
             }
             return authorities;
         });
         return jwtAuthenticationConverter;
     }
+
     public String getAdminRole() {
         return adminRole;
     }

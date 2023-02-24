@@ -8,5 +8,4 @@ import pl.envelo.melo.domain.poll.dto.PollResultDto;
 public interface PollResultMapper extends EntityMapper<PollResultDto, Poll> {
 
 
-
 }

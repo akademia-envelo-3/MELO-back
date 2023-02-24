@@ -1,9 +1,7 @@
 package pl.envelo.melo.domain.request;
 
 import lombok.AllArgsConstructor;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.domain.category.Category;
@@ -14,14 +12,13 @@ import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
 import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
+import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
 import pl.envelo.melo.exceptions.CategoryNotFoundException;
 import pl.envelo.melo.exceptions.CategoryRequestAlreadyResolvedException;
-import pl.envelo.melo.exceptions.ResourceNotFoundException;
+import pl.envelo.melo.mappers.CategoryRequestMapper;
 
 import java.util.List;
 import java.util.Objects;
-import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
-import pl.envelo.melo.mappers.CategoryRequestMapper;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,11 +45,11 @@ public class CategoryRequestService {
         return null;
     }
 
-    public ResponseEntity<?> setCategoryRequestAsAccepted(int categoryRequestId) {
+    public ResponseEntity<?> setCategoryRequestAsAccepted(int categoryRequestId, String message) {
         CategoryRequest categoryRequest = setCategoryRequestAsResolved(categoryRequestId);
         Category category = categoryRepository.findByName(categoryRequest.getCategoryName());
         if (Objects.isNull(category) || category.isHidden())
-            sendCategoryRequestNotification(categoryRequest, null, NotificationType.CATEGORY_REQUEST_ACCEPTED);
+            sendCategoryRequestNotification(categoryRequest, message, NotificationType.CATEGORY_REQUEST_ACCEPTED);
         if (Objects.isNull(category))
             return categoryService.insertNewCategory(new CategoryDto(categoryRequest.getCategoryName()));
         if (category.isHidden())
@@ -79,7 +76,16 @@ public class CategoryRequestService {
     private void sendCategoryRequestNotification(CategoryRequest categoryRequest, String message, NotificationType notificationType) {
         RequestNotificationDto requestNotificationDto = new RequestNotificationDto();
         requestNotificationDto.setEmployeeId(categoryRequest.getEmployee().getId());
-        requestNotificationDto.setReason(message);
+        if(notificationType.equals(NotificationType.CATEGORY_REQUEST_ACCEPTED)) {
+            requestNotificationDto.setReason("Twoja propozycja kategorii \""
+                    +categoryRequest.getCategoryName()+"\" została zatwierdzona.");
+        }
+        if(notificationType.equals(NotificationType.CATEGORY_REQUEST_REJECTED)) {
+            requestNotificationDto.setReason("Twoja propozycja kategorii \""
+                    +categoryRequest.getCategoryName()+"\" została odrzucona.");
+        }
+        if(!message.isEmpty())
+            requestNotificationDto.setReason(requestNotificationDto.getReason()+" Komentarz: "+message);
         requestNotificationDto.setNotificationType(notificationType);
         notificationService.insertRequestNotification(requestNotificationDto);
     }

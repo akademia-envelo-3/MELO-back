@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.URL;
 import pl.envelo.melo.domain.attachment.AttachmentConst;
 import pl.envelo.melo.domain.attachment.AttachmentType;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

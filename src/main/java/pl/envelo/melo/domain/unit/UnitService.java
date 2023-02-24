@@ -66,7 +66,6 @@ public class UnitService {
     }
 
     public ResponseEntity<?> changeOwnership(int newEmployeeId, int unitId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee oldOwner = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         Admin admin = adminRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         if (Objects.nonNull(admin))
@@ -88,6 +87,8 @@ public class UnitService {
             return employeeNotFound(newEmployeeId);
         } else if (unit.get().getOwner().getId() != oldOwner.getId()) {
             return ResponseEntity.status(400).body(EventConst.UNAUTHORIZED_EMPLOYEE);
+        } else if (newEmployeeId == oldOwner.getId()) {
+            return ResponseEntity.status(400).body("You can't assign ownership to yourself.");
         } else {
             employeeService.removeFromOwnedUnits(oldOwner.getId(), unit.get());
             unit.get().setOwner(newOwner.get());
@@ -119,7 +120,7 @@ public class UnitService {
         if (unit.isEmpty() || nextOwner.isEmpty())
             return ResponseEntity.status(404).body(ONE_OF_THE_ENTITIES_NOT_FOUND);
         if (unit.get().getOwner().getId() == nextOwnerId)
-            return ResponseEntity.ok().build();
+            return ResponseEntity.status(400).body("This employee is already an owner.");
         Employee currentOwner = unit.get().getOwner();
         unit.get().setOwner(nextOwner.get());
         employeeService.removeFromOwnedUnits(currentOwner.getId(), unit.get());
@@ -148,12 +149,11 @@ public class UnitService {
             unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_REVOKED);
         else
             unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_GRANTED);
-        notificationService.insertUnitNotification(unitNotificationDto);
+        notificationService.insertUnitOwnerChangeNotification(unitNotificationDto);
     }
 
 
     public ResponseEntity<?> addEmployee(int unitId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Optional<Unit> unit = unitRepository.findById(unitId);
         if (unit.isPresent()) {
@@ -175,7 +175,6 @@ public class UnitService {
     }
 
     public ResponseEntity<?> quitUnit(int unitId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Optional<Unit> unit = unitRepository.findById(unitId);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
 
@@ -203,7 +202,6 @@ public class UnitService {
     }
 
     public ResponseEntity<?> insertNewUnit(UnitNewDto unitNewDto, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Unit unit = unitMapper.toEntity(unitNewDto);
         unit.setName(unit.getName().replaceAll("( +)", " ").trim().toLowerCase());
@@ -224,7 +222,6 @@ public class UnitService {
     }
 
     public ResponseEntity<?> updateUnit(int unitId, UnitNewDto unitNewDto, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Unit unit;
         if (unitRepository.findById(unitId).isPresent()) {
@@ -269,12 +266,18 @@ public class UnitService {
         UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
         unitNotificationDto.setUnitId(unit.getId());
         unitNotificationDto.setNotificationType(notificationType);
-
-        for (Employee employee : unit.getMembers()) {
-            // System.out.println("Wysyłam powiadomienie "+notificationType+" do Employee id="+employee.getId());
-            unitNotificationDto.setEmployeeId(employee.getId());
-            notificationService.insertUnitNotification(unitNotificationDto);
+        switch(notificationType) {
+            case UNIT_NAME_UPDATED :
+                unitNotificationDto.setContent("Nazwa koła została zmieniona na \""+unit.getName()+"\".");
+                break;
+            case UNIT_DESCRIPTION_UPDATED :
+                unitNotificationDto.setContent("Opis koła \""+unit.getName()+"\" został zmieniony.");
+                break;
+            case UNIT_UPDATED:
+                unitNotificationDto.setContent("Koło \""+unit.getName()+"\" zostało zaktualizowane.");
+                break;
         }
+        notificationService.insertUnitMembersNotification(unitNotificationDto);
     }
 
 }
