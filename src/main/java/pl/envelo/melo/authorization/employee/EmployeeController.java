@@ -4,22 +4,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import pl.envelo.melo.authorization.AuthSucceded;
-import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
 import pl.envelo.melo.authorization.employee.dto.EmployeeListDto;
-import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @RequiredArgsConstructor
@@ -27,11 +21,10 @@ import java.util.Set;
 @RequestMapping("v1/users")
 public class EmployeeController {
     private final EmployeeService employeeService;
-    private final AuthorizationService authorizationService;
 
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping()
-    public ResponseEntity<Set<EmployeeListDto>> getEmployees(@RequestParam(value = "search", required = false)String q) {
+    public ResponseEntity<Set<EmployeeListDto>> getEmployees(@RequestParam(value = "search", required = false) String q) {
         return employeeService.getEmployees(q);
     }
 

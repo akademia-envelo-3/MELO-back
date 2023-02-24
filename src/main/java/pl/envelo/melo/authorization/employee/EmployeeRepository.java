@@ -12,8 +12,12 @@ import java.util.UUID;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
     Optional<Employee> findByUser(User user);
+
     Optional<Employee> findByUserId(UUID uuid);
+
     Optional<Employee> findByUserPerson(Person person);
-    Optional<List<Employee>> findByUserPersonFirstNameContainingIgnoreCaseOrUserPersonLastNameContainingIgnoreCase(String q,String q2);
-    Optional<List<Employee>> findByUserPersonFirstNameContainingIgnoreCaseAndUserPersonLastNameContainingIgnoreCase(String q,String q2);
+
+    Optional<List<Employee>> findByUserPersonFirstNameContainingIgnoreCaseOrUserPersonLastNameContainingIgnoreCase(String q, String q2);
+
+    Optional<List<Employee>> findByUserPersonFirstNameContainingIgnoreCaseAndUserPersonLastNameContainingIgnoreCase(String q, String q2);
 }

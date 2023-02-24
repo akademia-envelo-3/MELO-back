@@ -1,6 +1,5 @@
 package pl.envelo.melo.domain.event.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,6 +7,7 @@ import pl.envelo.melo.domain.location.dto.LocationDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor

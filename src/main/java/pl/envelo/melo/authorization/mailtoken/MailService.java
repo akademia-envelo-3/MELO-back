@@ -5,10 +5,8 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-import jakarta.validation.Valid;
-import lombok.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
@@ -16,7 +14,6 @@ import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
 
 import java.util.Properties;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +39,6 @@ public class MailService {
     public String email;
 
 
-
     public MailToken generateToken(int eventId, int personId) {
         MailToken token = new MailToken();
         token.setPerson(personRepository.findById(personId).get());
@@ -51,7 +47,7 @@ public class MailService {
         return token;
     }
 
-    public boolean sendMailWithToken(Person person, Event event, Boolean mailType ){
+    public boolean sendMailWithToken(Person person, Event event, Boolean mailType) {
         try {
             Session session = Session.getInstance(this.setProperties(), new Authenticator() {
                 @Override
@@ -64,33 +60,33 @@ public class MailService {
             mailToken.setPerson(person);
             mailTokenRepository.save(mailToken);
 
-            String subject="%s";
+            String subject = "%s";
             String content;
-            if(mailType){
+            if (mailType) {
                 subject = "Rejestracja na wydarzenie \"%s\"";
                 content = "%s";
-            }
-            else{
+            } else {
                 subject = "Informacje o wydarzeniu \"%s\"";
-                content ="%s";
+                content = "%s";
             }
-            String link = urlPrefix+"events/participation?token=" + mailToken.getToken().toString();
+            String link = urlPrefix + "events/participation?token=" + mailToken.getToken().toString();
 
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(email));
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(person.getEmail()));
             message.setSubject(String.format(subject, event.getName()));
             MimeBodyPart mimeBodyPart = new MimeBodyPart();
-            mimeBodyPart.setContent(String.format(content,link), "text/html; charset=utf-8");
+            mimeBodyPart.setContent(String.format(content, link), "text/html; charset=utf-8");
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(mimeBodyPart);
             message.setContent(multipart);
             Transport.send(message);
-            return  true;
+            return true;
         } catch (MessagingException e) {
             return false;
         }
     }
+
     public Properties setProperties() {
 
         Properties prop = new Properties();

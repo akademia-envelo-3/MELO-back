@@ -12,11 +12,12 @@ import java.util.Set;
 public interface PollToDisplayOnListDtoMapper {
 
     Poll convert(PollToDisplayOnListDto poll);
+
     @InheritInverseConfiguration
     @Mapping(target = "pollId", source = "id")
     PollToDisplayOnListDto convert(Poll poll);
 
-//    Set<Poll> convert(Set<PollToDisplayOnListDto> poll);
+    //    Set<Poll> convert(Set<PollToDisplayOnListDto> poll);
 //    @InheritInverseConfiguration
     Set<PollToDisplayOnListDto> convert(Set<Poll> poll);
 

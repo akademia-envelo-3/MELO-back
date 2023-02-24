@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-
 import java.security.Principal;
 import java.util.List;
 
@@ -38,7 +37,7 @@ public class HashtagController {
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
     @GetMapping("/statistic")
-    public ResponseEntity<?> showHashtagsStatistic(){
+    public ResponseEntity<?> showHashtagsStatistic() {
         return hashtagService.listHashtagStatistic();
     }
 }

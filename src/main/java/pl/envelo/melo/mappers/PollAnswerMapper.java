@@ -11,6 +11,7 @@ import java.util.Set;
 public interface PollAnswerMapper extends EntityMapper<PollAnswerDto, PollAnswer> {
 
     Set<PollAnswer> toEntity(Set<PollAnswerDto> pollAnswer);
+
     @InheritInverseConfiguration
     Set<PollAnswerDto> toDto(Set<PollAnswer> pollAnswer);
 }
