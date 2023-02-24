@@ -56,6 +56,7 @@ import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
+import pl.envelo.melo.exceptions.EventNotFoundException;
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 import pl.envelo.melo.validators.HashtagValidator;
@@ -719,37 +720,37 @@ public class EventService {
     @Transactional
     public ResponseEntity<?> deleteEvent(int eventId, Principal principal) {
         authorizationService.inflateUser(principal);
-        Optional<Event> event = eventRepository.findById(eventId);//TODO Exeption
+        Event event = eventRepository.findById(eventId).orElseThrow(EventNotFoundException::new);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
-        if(!event.get().getOrganizer().equals(employee)){
+        if(!event.getOrganizer().equals(employee)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only owner can delete event");
         }
-        employee.getJoinedEvents().remove(event.get());
-        employeeService.removeFromOwnedEvents(employee.getId(),event.get());
-        if(event.get().getStartTime().compareTo(LocalDateTime.now())<=0){
+        employee.getJoinedEvents().remove(event);
+        employeeService.removeFromOwnedEvents(employee.getId(),event);
+        if(event.getStartTime().compareTo(LocalDateTime.now())<=0){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Past events cannot be deleted");
         }
-        for (Hashtag h: event.get().getHashtags()) {
+        for (Hashtag h: event.getHashtags()) {
             hashtagService.decrementHashtagGlobalCount(h.getId());
         }
-        for(Person p: event.get().getMembers()){
+        for(Person p: event.getMembers()){
             if(employeeRepository.findByUserPerson(p).isPresent()){
-                employeeService.removeFromJoinedEvents(employeeRepository.findByUserPerson(p).get().getId(),event.get());
+                employeeService.removeFromJoinedEvents(employeeRepository.findByUserPerson(p).get().getId(),event);
             }
         }
-        Optional<List<MailToken>> tokens = mailTokenRepository.findAllByEvent(event.get());
+        Optional<List<MailToken>> tokens = mailTokenRepository.findAllByEvent(event);
         if(tokens.isPresent()){
             for (MailToken token: tokens.get()) {
                 mailTokenRepository.delete(token);
             }
         }
-        Optional<List<Notification>> notifications = notificationRepository.findAllByEvent(event.get());
+        Optional<List<Notification>> notifications = notificationRepository.findAllByEvent(event);
         if(notifications.isPresent()){
             for (Notification notification: notifications.get()) {
                 notification.setEvent(null);
             }
         }
-        eventRepository.delete(event.get());
+        eventRepository.delete(event);
         if(eventRepository.existsById(eventId))
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Event still exist");
         //TODO Maybe notification
