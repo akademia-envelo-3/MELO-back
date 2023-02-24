@@ -355,12 +355,18 @@ public class EventService {
             event.setOrganizer(newOrganizer);
             employeeService.addToOwnedEvents(newOrganizer.getId(), event);
             employeeService.addToJoinedEvents(newOrganizer.getId(), event);
-            event
-                    .getMembers()
-                    .add(newOrganizer.getUser().getPerson());
+            event.getMembers().add(newOrganizer.getUser().getPerson());
+
+            EventNotificationDto eventNotificationDto = new EventNotificationDto();
+            eventNotificationDto.setEventId(eventId);
+            eventNotificationDto.setType(NotificationType.EVENT_ORGANIZER_UPDATED);
+            eventNotificationDto.setContent("Nowym organizatorem wydarzenia \"" + event.getName() + "\" jest " + employee.getFirstName() + " " + employee.getLastName() + ".");
+
+            notificationService.insertEventMembersNotification(eventNotificationDto, false);
             return changeEventOrganizerSuccessMessage(eventId, newOrganizer);
         }
     }
+
 
     private ResponseEntity<?> changeEventOrganizerSuccessMessage(int eventId, Employee newOrganizer) {
         return ResponseEntity.status(200).body("The organizer of the event with id "
@@ -403,16 +409,12 @@ public class EventService {
             if (!Objects.isNull(updates.get("startTime")) || !Objects.isNull(updates.get("endTime"))) {
                 Optional<?> updateDates = eventUpdater.updateDate(event, updates.get("startTime"), updates.get("endTime"));
                 if (updateDates.get() instanceof Boolean) {
-                    for (Person p : event.getMembers()) {
-                        Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
-                        if (e.isPresent()) {
-                            EventNotificationDto eventNotificationDto = new EventNotificationDto();
-                            eventNotificationDto.setContent("Czas wydarzenia się zmienił na: " + event.getStartTime() + "-" + event.getEndTime());
-                            eventNotificationDto.setEventId(event.getId());
-                            eventNotificationDto.setType(NotificationType.EVENT_DATE_CHANGED);
-                            notificationService.insertEventNotification(eventNotificationDto);
-                        }
-                    }
+                    EventNotificationDto eventNotificationDto = new EventNotificationDto();
+                    eventNotificationDto.setContent("Czas wydarzenia \"" + event.getName() + "\" został zmieniony. "
+                            + "Rozpoczęcie wydarzenia: " + event.getStartTime() + " Zakończenie wydarzenia: " + event.getEndTime());
+                    eventNotificationDto.setEventId(event.getId());
+                    eventNotificationDto.setType(NotificationType.EVENT_DATE_CHANGED);
+                    notificationService.insertEventMembersNotification(eventNotificationDto, false);
                 } else if (updateDates.get() instanceof Map) {
                     return ResponseEntity.status(404).body(updateDates.get());
                 }
@@ -443,16 +445,11 @@ public class EventService {
             }
             if (!Objects.isNull(updates.get("location"))) {
                 if (eventUpdater.updateLocation(event, updates.get("location"))) {
-                    for (Person p : event.getMembers()) {
-                        Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
-                        if (e.isPresent()) {
-                            EventNotificationDto eventNotificationDto = new EventNotificationDto();
-                            eventNotificationDto.setContent("Lokalizacja wydareznia się zmieniłą");
-                            eventNotificationDto.setEventId(event.getId());
-                            eventNotificationDto.setType(NotificationType.EVENT_LOCATION_CHANGED);
-                            notificationService.insertEventNotification(eventNotificationDto);
-                        }
-                    }
+                    EventNotificationDto eventNotificationDto = new EventNotificationDto();
+                    eventNotificationDto.setContent("Lokalizacja wydareznia się zmieniłą");
+                    eventNotificationDto.setEventId(event.getId());
+                    eventNotificationDto.setType(NotificationType.EVENT_LOCATION_CHANGED);
+                    notificationService.insertEventMembersNotification(eventNotificationDto, false);
                 } else {
                     return ResponseEntity.status(404).body("Location of new event is the same as old");
                 }
@@ -527,19 +524,14 @@ public class EventService {
             }
         }
         if (general_change) {
-            for (Person p : event.getMembers()) {
-                Optional<Employee> e = employeeRepository.findByUserPerson(p);//tą pętle można wyrzucić do insert notification
-                if (e.isPresent()) {
-                    EventNotificationDto eventNotificationDto = new EventNotificationDto();
-                    eventNotificationDto.setEventId(event.getId());
-                    eventNotificationDto.setType(NotificationType.EVENT_UPDATED);
-                    eventNotificationDto.setContent("Wydarzenie " + event.getName() + "został zmieniony");
-
-                    eventNotificationDto.setEmployeeId(e.get().getId());
-                    notificationService.insertEventNotification(eventNotificationDto);
-                }
-            }
+            EventNotificationDto eventNotificationDto = new EventNotificationDto();
+            eventNotificationDto.setEventId(event.getId());
+            eventNotificationDto.setType(NotificationType.EVENT_UPDATED);
+            eventNotificationDto.setContent("Wydarzenie " + event.getName() + " zostało zmienione");
+            notificationService.insertEventMembersNotification(eventNotificationDto, false);
         }
+//        eventNotificationHandler.editNotification(event, newEventDto);
+//        eventUpdater.update(event, newEventDto);
         return ResponseEntity.ok(eventDetailsMapper.convert(eventRepository.save(event)));
     }
 
@@ -708,49 +700,44 @@ public class EventService {
         EventNotificationDto eventNotificationDto = new EventNotificationDto();
         eventNotificationDto.setEventId(event.getId());
         eventNotificationDto.setType(notificationType);
-
-        for (Employee employee : event.getInvited()) {
-            System.out.println("Wysyłam powiadomienie " + notificationType + " do Employee id=" + employee.getId());
-            eventNotificationDto.setEmployeeId(employee.getId());
-            notificationService.insertEventNotification(eventNotificationDto);
-        }
+        eventNotificationDto.setContent("Masz nowe zaproszenie do wydarzenia \"" + event.getName() + "\".");
+        notificationService.insertEventInvitedNotification(eventNotificationDto);
     }
 
     @Transactional
     public ResponseEntity<?> deleteEvent(int eventId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Event event = eventRepository.findById(eventId).orElseThrow(EventNotFoundException::new);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
-        if(!event.getOrganizer().equals(employee)){
+        if (!event.getOrganizer().equals(employee)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only owner can delete event");
         }
         employee.getJoinedEvents().remove(event);
-        employeeService.removeFromOwnedEvents(employee.getId(),event);
-        if(event.getStartTime().compareTo(LocalDateTime.now())<=0){
+        employeeService.removeFromOwnedEvents(employee.getId(), event);
+        if (event.getStartTime().compareTo(LocalDateTime.now()) <= 0) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Past events cannot be deleted");
         }
-        for (Hashtag h: event.getHashtags()) {
+        for (Hashtag h : event.getHashtags()) {
             hashtagService.decrementHashtagGlobalCount(h.getId());
         }
-        for(Person p: event.getMembers()){
-            if(employeeRepository.findByUserPerson(p).isPresent()){
-                employeeService.removeFromJoinedEvents(employeeRepository.findByUserPerson(p).get().getId(),event);
+        for (Person p : event.getMembers()) {
+            if (employeeRepository.findByUserPerson(p).isPresent()) {
+                employeeService.removeFromJoinedEvents(employeeRepository.findByUserPerson(p).get().getId(), event);
             }
         }
         Optional<List<MailToken>> tokens = mailTokenRepository.findAllByEvent(event);
-        if(tokens.isPresent()){
-            for (MailToken token: tokens.get()) {
+        if (tokens.isPresent()) {
+            for (MailToken token : tokens.get()) {
                 mailTokenRepository.delete(token);
             }
         }
         Optional<List<Notification>> notifications = notificationRepository.findAllByEvent(event);
-        if(notifications.isPresent()){
-            for (Notification notification: notifications.get()) {
+        if (notifications.isPresent()) {
+            for (Notification notification : notifications.get()) {
                 notification.setEvent(null);
             }
         }
         eventRepository.delete(event);
-        if(eventRepository.existsById(eventId))
+        if (eventRepository.existsById(eventId))
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Event still exist");
         //TODO Maybe notification
         return ResponseEntity.ok("Event was deleted");

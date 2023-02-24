@@ -47,7 +47,7 @@ public class CategoryRequestController {
     @PatchMapping("/{id}")
     public ResponseEntity<?> acceptCategoryRequest(@PathVariable("id") int categoryRequestId, @RequestParam("accept") boolean accept, @RequestParam(required = false, name = "message") String message) {
         if (accept)
-            return categoryRequestService.setCategoryRequestAsAccepted(categoryRequestId);
+            return categoryRequestService.setCategoryRequestAsAccepted(categoryRequestId, message);
         return categoryRequestService.setCategoryRequestAsDeclined(categoryRequestId, message);
     }
 }
