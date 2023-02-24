@@ -10,6 +10,7 @@ import pl.envelo.melo.authorization.admin.AdminRepository;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.employee.EmployeeService;
+import pl.envelo.melo.domain.notification.Notification;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
@@ -253,6 +254,17 @@ public class UnitService {
         UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
         unitNotificationDto.setUnitId(unit.getId());
         unitNotificationDto.setNotificationType(notificationType);
+        switch(notificationType) {
+            case UNIT_NAME_UPDATED :
+                unitNotificationDto.setContent("Nazwa koła została zmieniona na \""+unit.getName()+"\".");
+                break;
+            case UNIT_DESCRIPTION_UPDATED :
+                unitNotificationDto.setContent("Opis koła \""+unit.getName()+"\" został zmieniony.");
+                break;
+            case UNIT_UPDATED:
+                unitNotificationDto.setContent("Koło \""+unit.getName()+"\" zostało zaktualizowane.");
+                break;
+        }
         notificationService.insertUnitMembersNotification(unitNotificationDto);
     }
 

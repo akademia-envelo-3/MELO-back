@@ -16,8 +16,8 @@ public class NotificationDto {
     private int id;
     @Size(max = 255, message = "\"content\" : must not be longer than 255 characters")
     private String content;
-    private String eventName;
-    private String unitName;
+    private Integer eventId;
+    private Integer unitId;
     @NotNull(message = "\"notificationType\" : must not be null")
     private NotificationType notificationType;
     private LocalDateTime timestamp;
