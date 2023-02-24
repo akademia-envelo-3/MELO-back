@@ -17,5 +17,8 @@ public class PollConst {
     public static final String POLL_NOT_FOUND = "Poll with id %d was not found";
     public static final String POLL_OPTIONS_NOT_UNIQUE = "Poll options cannot be the same";
     public static final String POLL_ANSWER_NOT_ASSOCIATED_WITH_POLL = "Poll Answer is not associated with this Poll";
+    public static final String ALREADY_VOTED = "Employee already voted in this Poll.";
+    public static final String NO_ANSWER_SELECTED = "PollAnswer must have at least one value.";
+    public static final String TOO_MANY_ANSWERS_SELECTED = "This Poll is not multichoice, you can only put 1 PollAnswer.";
 
 }

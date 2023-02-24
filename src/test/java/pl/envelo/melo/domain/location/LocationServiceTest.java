@@ -12,7 +12,8 @@ import pl.envelo.melo.utils.H2Utils;
 import javax.sql.DataSource;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Transactional
 @SpringBootTest
@@ -25,15 +26,16 @@ public class LocationServiceTest {
 
     @Autowired
     private DataSource dataSource;
+
     @BeforeEach
-    void setUp(){
+    void setUp() {
         H2Utils.clearDb(dataSource);
     }
 
     @Test
-    void getOrInsertLocationTest(){
+    void getOrInsertLocationTest() {
 
-        assertEquals(Optional.empty(),locationRepository.findById(1L));
+        assertEquals(Optional.empty(), locationRepository.findById(1L));
 
         LocationDto locationDto = new LocationDto();
         locationDto.setCity("Warszawa");
@@ -42,16 +44,16 @@ public class LocationServiceTest {
         locationDto.setApartmentNumber("12");
         locationDto.setPostalCode("01-666");
 
-        assertEquals(Optional.empty(),locationRepository.findByCity("Warszawa"));
+        assertEquals(Optional.empty(), locationRepository.findByCity("Warszawa"));
 
         Location location = locationService.insertOrGetLocation(locationDto);
 
-        assertEquals(location.getCity(),locationDto.getCity());
-        assertEquals(location.getStreetName(),locationDto.getStreetName());
-        assertEquals(location.getCity(),locationRepository.findByCity("Warszawa").get().getCity());
-        assertEquals(location.getStreetName(),locationRepository.findByCity("Warszawa").get().getStreetName());
+        assertEquals(location.getCity(), locationDto.getCity());
+        assertEquals(location.getStreetName(), locationDto.getStreetName());
+        assertEquals(location.getCity(), locationRepository.findByCity("Warszawa").get().getCity());
+        assertEquals(location.getStreetName(), locationRepository.findByCity("Warszawa").get().getStreetName());
         assertTrue(locationRepository.findById(1L).get().equals(location));
-        assertEquals(Optional.empty(),locationRepository.findById(2L));
+        assertEquals(Optional.empty(), locationRepository.findById(2L));
 
     }
 }

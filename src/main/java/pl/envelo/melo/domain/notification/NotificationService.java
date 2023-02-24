@@ -54,7 +54,6 @@ public class NotificationService {
     }
 
     public ResponseEntity<List<NotificationDto>> listAllNotification(Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         if (Objects.nonNull(employee)) {
             if (Objects.isNull(employee.getNotificationsBox())) {

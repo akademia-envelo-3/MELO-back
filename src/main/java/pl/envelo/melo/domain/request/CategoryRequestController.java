@@ -1,8 +1,6 @@
 package pl.envelo.melo.domain.request;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.envelo.melo.domain.category.CategoryDto;
 import pl.envelo.melo.domain.category.CategoryService;
 import pl.envelo.melo.domain.notification.NotificationService;
-import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
 import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
 
 import java.security.Principal;
@@ -38,6 +35,7 @@ public class CategoryRequestController {
     public ResponseEntity<?> addNewCategoryRequest(@RequestBody @Valid CategoryDto categoryDto, Principal principal) {
         return categoryRequestService.insertNewCategoryRequest(categoryDto, principal);
     }
+
     @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
     @GetMapping("")
     public ResponseEntity<List<CategoryRequestToDisplayOnListDto>> showAllCategoryRequests(@RequestParam("resolved") boolean resolved) {

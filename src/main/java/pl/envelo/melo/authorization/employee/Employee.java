@@ -9,7 +9,6 @@ import lombok.Setter;
 import pl.envelo.melo.authorization.user.User;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.notification.Notification;
-import pl.envelo.melo.domain.poll.PollAnswer;
 import pl.envelo.melo.domain.unit.Unit;
 
 import java.util.Objects;
@@ -38,12 +37,15 @@ public class Employee {
     private User user;
     @OneToMany
     private Set<Notification> notificationsBox;
-    public String getFirstName(){
+
+    public String getFirstName() {
         return user.getPerson().getFirstName();
     }
-    public String getLastName(){
+
+    public String getLastName() {
         return user.getPerson().getLastName();
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

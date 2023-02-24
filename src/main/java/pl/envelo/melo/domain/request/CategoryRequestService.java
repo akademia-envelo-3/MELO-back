@@ -17,7 +17,7 @@ import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
 import pl.envelo.melo.exceptions.CategoryAlreadyExistsException;
 import pl.envelo.melo.exceptions.CategoryRequestAlreadyExistsException;
 import pl.envelo.melo.exceptions.CategoryRequestAlreadyResolvedException;
-import pl.envelo.melo.exceptions.ResourceNotFoundException;
+import pl.envelo.melo.exceptions.CategoryNotFoundException;
 import pl.envelo.melo.mappers.CategoryRequestMapper;
 
 import java.security.Principal;
@@ -50,7 +50,7 @@ public class CategoryRequestService {
             throw new CategoryRequestAlreadyExistsException();
 
         CategoryRequest categoryRequest = new CategoryRequest();
-        authorizationService.inflateUser(principal);
+        authorizationService.createUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).get();
         categoryRequest.setEmployee(employee);
         categoryRequest.setCategoryName(categoryDto.getName().toLowerCase().trim());
@@ -84,7 +84,7 @@ public class CategoryRequestService {
 
     private CategoryRequest setCategoryRequestAsResolved(int categoryRequestId) {
         CategoryRequest categoryRequest = categoryRequestRepository.findById(categoryRequestId).orElseThrow(() -> {
-            throw new ResourceNotFoundException("Category request not found");
+            throw new CategoryNotFoundException();
         });
         if (categoryRequest.isResolved())
             throw new CategoryRequestAlreadyResolvedException();
