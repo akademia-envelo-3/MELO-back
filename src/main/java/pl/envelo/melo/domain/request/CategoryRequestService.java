@@ -44,7 +44,9 @@ public class CategoryRequestService {
         if (category != null && category.getName().equals(categoryDto.getName()) && !category.isHidden())
             throw new CategoryAlreadyExistsException();
         CategoryRequest categoryRequestInDatabase = categoryRequestRepository.findByCategoryName(categoryDto.getName());
-        if (categoryRequestInDatabase != null && categoryRequestInDatabase.getCategoryName().equals(categoryDto.getName()))
+        if (categoryRequestInDatabase != null
+                && categoryRequestInDatabase.getCategoryName().equals(categoryDto.getName())
+                && !categoryRequestInDatabase.isResolved())
             throw new CategoryRequestAlreadyExistsException();
 
         CategoryRequest categoryRequest = new CategoryRequest();
