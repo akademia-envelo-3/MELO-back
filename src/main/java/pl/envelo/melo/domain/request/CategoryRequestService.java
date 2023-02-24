@@ -15,9 +15,9 @@ import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
 import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
 import pl.envelo.melo.exceptions.CategoryAlreadyExistsException;
+import pl.envelo.melo.exceptions.CategoryNotFoundException;
 import pl.envelo.melo.exceptions.CategoryRequestAlreadyExistsException;
 import pl.envelo.melo.exceptions.CategoryRequestAlreadyResolvedException;
-import pl.envelo.melo.exceptions.CategoryNotFoundException;
 import pl.envelo.melo.mappers.CategoryRequestMapper;
 
 import java.security.Principal;
@@ -96,6 +96,7 @@ public class CategoryRequestService {
     private void sendCategoryRequestNotification(CategoryRequest categoryRequest, String message, NotificationType notificationType) {
         RequestNotificationDto requestNotificationDto = new RequestNotificationDto();
         requestNotificationDto.setEmployeeId(categoryRequest.getEmployee().getId());
+
         if (notificationType.equals(NotificationType.CATEGORY_REQUEST_ACCEPTED)) {
             requestNotificationDto.setReason("Twoja propozycja kategorii \""
                     + categoryRequest.getCategoryName() + "\" została zatwierdzona.");
@@ -106,6 +107,7 @@ public class CategoryRequestService {
         }
         if (message != null)
             requestNotificationDto.setReason(requestNotificationDto.getReason() + " Komentarz: \"" + message + "\"");
+
         requestNotificationDto.setNotificationType(notificationType);
         notificationService.insertRequestNotification(requestNotificationDto);
     }

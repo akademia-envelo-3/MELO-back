@@ -17,5 +17,4 @@ public interface RequestNotificationMapper extends EntityMapper<RequestNotificat
         notification.setNotificationType(requestNotificationDto.getNotificationType());
         notification.setTimestamp(LocalDateTime.now());
     }
-
 }

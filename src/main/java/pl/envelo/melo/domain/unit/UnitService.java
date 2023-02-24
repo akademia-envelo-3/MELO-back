@@ -87,6 +87,8 @@ public class UnitService {
             return employeeNotFound(newEmployeeId);
         } else if (unit.get().getOwner().getId() != oldOwner.getId()) {
             return ResponseEntity.status(400).body(EventConst.UNAUTHORIZED_EMPLOYEE);
+        } else if (newEmployeeId == oldOwner.getId()) {
+            return ResponseEntity.status(400).body("You can't assign ownership to yourself.");
         } else {
             employeeService.removeFromOwnedUnits(oldOwner.getId(), unit.get());
             unit.get().setOwner(newOwner.get());
@@ -118,7 +120,7 @@ public class UnitService {
         if (unit.isEmpty() || nextOwner.isEmpty())
             return ResponseEntity.status(404).body(ONE_OF_THE_ENTITIES_NOT_FOUND);
         if (unit.get().getOwner().getId() == nextOwnerId)
-            return ResponseEntity.ok().build();
+            return ResponseEntity.status(400).body("This employee is already an owner.");
         Employee currentOwner = unit.get().getOwner();
         unit.get().setOwner(nextOwner.get());
         employeeService.removeFromOwnedUnits(currentOwner.getId(), unit.get());
@@ -147,7 +149,7 @@ public class UnitService {
             unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_REVOKED);
         else
             unitNotificationDto.setNotificationType(NotificationType.UNIT_OWNERSHIP_GRANTED);
-        notificationService.insertUnitNotification(unitNotificationDto);
+        notificationService.insertUnitOwnerChangeNotification(unitNotificationDto);
     }
 
 
@@ -264,12 +266,18 @@ public class UnitService {
         UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
         unitNotificationDto.setUnitId(unit.getId());
         unitNotificationDto.setNotificationType(notificationType);
-
-        for (Employee employee : unit.getMembers()) {
-            // System.out.println("Wysyłam powiadomienie "+notificationType+" do Employee id="+employee.getId());
-            unitNotificationDto.setEmployeeId(employee.getId());
-            notificationService.insertUnitNotification(unitNotificationDto);
+        switch (notificationType) {
+            case UNIT_NAME_UPDATED:
+                unitNotificationDto.setContent("Nazwa koła została zmieniona na \"" + unit.getName() + "\".");
+                break;
+            case UNIT_DESCRIPTION_UPDATED:
+                unitNotificationDto.setContent("Opis koła \"" + unit.getName() + "\" został zmieniony.");
+                break;
+            case UNIT_UPDATED:
+                unitNotificationDto.setContent("Koło \"" + unit.getName() + "\" zostało zaktualizowane.");
+                break;
         }
+        notificationService.insertUnitMembersNotification(unitNotificationDto);
     }
 
 }
