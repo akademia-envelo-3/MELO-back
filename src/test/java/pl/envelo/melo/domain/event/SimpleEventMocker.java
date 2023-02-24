@@ -3,6 +3,13 @@ package pl.envelo.melo.domain.event;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.mockito.InjectMocks;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import pl.envelo.melo.authorization.AppUser;
+import pl.envelo.melo.authorization.admin.Admin;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.authorization.person.Person;
@@ -10,17 +17,20 @@ import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.user.User;
 import pl.envelo.melo.authorization.user.UserRepository;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SimpleEventMocker {
-    private EmployeeRepository employeeRepository;
-    private EventRepository eventRepository;
-    private PersonRepository personRepository;
-    private UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
+    private final EventRepository eventRepository;
+    private final PersonRepository personRepository;
+    private final UserRepository userRepository;
+    @Value("${melo.admin-role}")
+    private String adminRole;
+    @Value("${melo.employee-role}")
+    private String employeeRole;
     public Event mockEvent(LocalDateTime localDateTime, EventType eventType, Employee... employees) {
         Event event = new Event();
         event.setDescription("testdesc");
@@ -61,10 +71,34 @@ public class SimpleEventMocker {
 
         User user = new User();
         user.setPerson(personRepository.save(person));
-
+        user.setId(UUID.randomUUID());
         Employee employee = new Employee();
         employee.setUser(userRepository.save(user));
 
         return employeeRepository.save(employee);
+    }
+    public Principal getToken(AppUser appUser){
+        JwtAuthenticationToken token = Mockito.mock(JwtAuthenticationToken.class);
+        if(appUser instanceof Employee employee){
+            Mockito.when(token.getTokenAttributes()).thenReturn(
+                    Map.of("sub", employee.getUser().getId().toString(),
+                            "email", employee.getUser().getPerson().getEmail(),
+                            "given_name",employee.getFirstName(),
+                            "family_name",employee.getLastName(),
+                            "roles", List.of("Employee")
+                    )
+            );
+        }
+        if(appUser instanceof Admin admin){
+            Mockito.when(token.getTokenAttributes()).thenReturn(
+                    Map.of("sub", admin.getUser().getId().toString(),
+                            "email", admin.getUser().getPerson().getEmail(),
+                            "given_name",admin.getUser().getPerson().getFirstName(),
+                            "family_name",admin.getUser().getPerson().getLastName(),
+                            "roles", List.of("Admin")
+                    )
+            );
+        }
+        return token;
     }
 }

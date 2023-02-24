@@ -1,7 +1,5 @@
 package pl.envelo.melo.utils;
 
-import org.h2.jdbc.JdbcSQLSyntaxErrorException;
-
 import javax.sql.DataSource;
 import javax.xml.crypto.Data;
 import java.sql.Connection;

@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.envelo.melo.authorization.AppUser;
 import pl.envelo.melo.authorization.user.User;
 import pl.envelo.melo.domain.request.CategoryRequest;
 
@@ -20,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "admins")
-public class Admin {
+public class Admin implements AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;

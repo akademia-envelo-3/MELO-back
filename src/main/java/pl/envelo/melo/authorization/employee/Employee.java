@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.envelo.melo.authorization.AppUser;
 import pl.envelo.melo.authorization.user.User;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.notification.Notification;
@@ -21,7 +22,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "employees")
-public class Employee {
+public class Employee implements AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
