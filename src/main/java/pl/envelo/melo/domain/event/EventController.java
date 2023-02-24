@@ -308,4 +308,10 @@ public class EventController {
     public ResponseEntity<?> disjoinEvent(@PathVariable("eventId") int eventId, Principal principal) {
         return eventService.removeEmployeeFromEvent(eventId, principal);
     }
+
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
+    @DeleteMapping("/{eventId}/")
+    public ResponseEntity<?> deleteEvent(@PathVariable("eventId") int eventId, Principal principal){
+        return eventService.deleteEvent(eventId, principal);
+    }
 }

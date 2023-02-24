@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,8 @@ import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationRepository;
 import pl.envelo.melo.domain.location.LocationService;
+import pl.envelo.melo.domain.notification.Notification;
+import pl.envelo.melo.domain.notification.NotificationRepository;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
@@ -58,6 +61,7 @@ import pl.envelo.melo.domain.unit.UnitConst;
 import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
+import pl.envelo.melo.exceptions.EventNotFoundException;
 import pl.envelo.melo.mappers.*;
 import pl.envelo.melo.validators.EventValidator;
 import pl.envelo.melo.validators.HashtagValidator;
@@ -92,6 +96,7 @@ public class EventService {
     private final CommentRepository commentRepository;
     private final PersonRepository personRepository;
     private final MailTokenRepository mailTokenRepository;
+    private final NotificationRepository notificationRepository;
     //Mappers
     private EventDetailsMapper eventDetailsMapper;
     private final PollToDisplayOnListDtoMapper pollToDisplayOnListDtoMapper;
@@ -727,6 +732,47 @@ public class EventService {
             eventNotificationDto.setEmployeeId(employee.getId());
             notificationService.insertEventNotification(eventNotificationDto);
         }
+    }
+
+    @Transactional
+    public ResponseEntity<?> deleteEvent(int eventId, Principal principal) {
+        authorizationService.inflateUser(principal);
+        Event event = eventRepository.findById(eventId).orElseThrow(EventNotFoundException::new);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
+        if(!event.getOrganizer().equals(employee)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only owner can delete event");
+        }
+        employee.getJoinedEvents().remove(event);
+        employeeService.removeFromOwnedEvents(employee.getId(),event);
+        if(event.getStartTime().compareTo(LocalDateTime.now())<=0){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Past events cannot be deleted");
+        }
+        for (Hashtag h: event.getHashtags()) {
+            hashtagService.decrementHashtagGlobalCount(h.getId());
+        }
+        for(Person p: event.getMembers()){
+            if(employeeRepository.findByUserPerson(p).isPresent()){
+                employeeService.removeFromJoinedEvents(employeeRepository.findByUserPerson(p).get().getId(),event);
+            }
+        }
+        Optional<List<MailToken>> tokens = mailTokenRepository.findAllByEvent(event);
+        if(tokens.isPresent()){
+            for (MailToken token: tokens.get()) {
+                mailTokenRepository.delete(token);
+            }
+        }
+        Optional<List<Notification>> notifications = notificationRepository.findAllByEvent(event);
+        if(notifications.isPresent()){
+            for (Notification notification: notifications.get()) {
+                notification.setEvent(null);
+            }
+        }
+        eventRepository.delete(event);
+        if(eventRepository.existsById(eventId))
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Event still exist");
+        //TODO Maybe notification
+        return ResponseEntity.ok("Event was deleted");
+
     }
 }
 
