@@ -9,7 +9,7 @@ import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.user.UserRepository;
 import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.event.SimpleEventGenerator;
-import pl.envelo.melo.utils.H2Utils;
+import pl.envelo.melo.utils.SQLUtils;
 
 import javax.sql.DataSource;
 
@@ -30,7 +30,7 @@ public abstract class EventContextTest {
 
     @BeforeEach
     void setUp() {
-        H2Utils.clearDb(dataSource);
+        SQLUtils.clearDb(dataSource);
         if (simpleEventGenerator == null)
             simpleEventGenerator = new SimpleEventGenerator(employeeRepository, eventRepository, personRepository, userRepository);
     }

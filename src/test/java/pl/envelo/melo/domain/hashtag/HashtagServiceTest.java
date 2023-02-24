@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.envelo.melo.mappers.HashtagMapper;
-import pl.envelo.melo.utils.H2Utils;
+import pl.envelo.melo.utils.SQLUtils;
 
 import javax.sql.DataSource;
 
@@ -28,7 +28,7 @@ class HashtagServiceTest {
 
     @BeforeEach
     void setUp() {
-        H2Utils.clearDb(dataSource);
+        SQLUtils.clearDb(dataSource);
     }
 
     @Test
