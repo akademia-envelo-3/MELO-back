@@ -1,19 +1,14 @@
 package pl.envelo.melo.domain.category;
 
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import pl.envelo.melo.authorization.AuthFailed;
-import pl.envelo.melo.authorization.AuthSucceded;
 import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.admin.Admin;
 import pl.envelo.melo.authorization.admin.AdminRepository;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
-import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.mappers.CategoryMapper;
 
 import java.security.Principal;
@@ -69,7 +64,6 @@ public class CategoryService {
     }
 
     public ResponseEntity<?> getCategory(int id, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         Admin admin = adminRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         Optional<Category> categoryOptional = categoryRepository.findById(id);
@@ -77,20 +71,19 @@ public class CategoryService {
             return ResponseEntity.status(404).body(CategoryConst.CATEGORY_NOT_FOUND);
         if (Objects.nonNull(admin))
             return ResponseEntity.ok(categoryOptional.get());
-        if(Objects.nonNull(employee) && !categoryOptional.get().isHidden())
+        if (Objects.nonNull(employee) && !categoryOptional.get().isHidden())
             return ResponseEntity.ok(categoryOptional.get());
         return ResponseEntity.status(403).build();
     }
 
     public ResponseEntity<List<Category>> listAllCategory(Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         Admin admin = adminRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         List<Category> listOfCategories = categoryRepository.findAll();
         if (Objects.nonNull(admin))
             return ResponseEntity.ok(listOfCategories.stream().toList());
-        if(Objects.nonNull(employee))
-           return ResponseEntity.ok(listOfCategories.stream().filter(category -> !category.isHidden()).toList());
+        if (Objects.nonNull(employee))
+            return ResponseEntity.ok(listOfCategories.stream().filter(category -> !category.isHidden()).toList());
         return ResponseEntity.status(403).build();
     }
 

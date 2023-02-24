@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.envelo.melo.domain.notification.dto.NotificationDto;
-import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.security.Principal;
 import java.util.List;
@@ -41,6 +40,7 @@ public class NotificationController {
     public ResponseEntity<List<NotificationDto>> showNewNotifications(int employeeId) {
         return null;
     }
+
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("{id}/checked")
     public ResponseEntity<?> checkNotification(@PathVariable("id") int notificationId, Principal principal) {

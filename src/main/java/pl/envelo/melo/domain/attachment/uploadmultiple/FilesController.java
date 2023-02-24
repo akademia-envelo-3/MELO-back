@@ -1,8 +1,4 @@
 package pl.envelo.melo.domain.attachment.uploadmultiple;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -11,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,9 +15,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import pl.envelo.melo.domain.attachment.AttachmentConst;
 import pl.envelo.melo.domain.attachment.MimeTypes;
-import pl.envelo.melo.domain.attachment.uploadmultiple.FileInfo;
-import pl.envelo.melo.domain.attachment.uploadmultiple.ResponseMessage;
-import pl.envelo.melo.domain.attachment.uploadmultiple.FilesStorageService;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static pl.envelo.melo.domain.attachment.MimeTypes.MIME_APPLICATION_OCTET_STREAM;
 
@@ -32,6 +29,7 @@ public class FilesController {
 
     @Autowired
     FilesStorageService storageService;
+
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping("/upload")
     public ResponseEntity<ResponseMessage> uploadFiles(@RequestParam("files") MultipartFile[] files) {
@@ -51,6 +49,7 @@ public class FilesController {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(message));
         }
     }
+
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("/files")
     public ResponseEntity<List<FileInfo>> getListFiles() {
@@ -64,6 +63,7 @@ public class FilesController {
 
         return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
     }
+
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("/files/{filename:.+}")
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
@@ -72,7 +72,7 @@ public class FilesController {
         String extension = filename.substring(filename.lastIndexOf(".") + 1);
         String mimeFound = MimeTypes.getMimeType(extension);
 
-        if(mimeFound.equals(MIME_APPLICATION_OCTET_STREAM)) {
+        if (mimeFound.equals(MIME_APPLICATION_OCTET_STREAM)) {
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,
                             "attachment; filename=" + filename).body(file);

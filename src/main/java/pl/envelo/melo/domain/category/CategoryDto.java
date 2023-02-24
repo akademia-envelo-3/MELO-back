@@ -1,11 +1,9 @@
 package pl.envelo.melo.domain.category;
 
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
 
 @AllArgsConstructor
 @Data

@@ -1,7 +1,9 @@
 package pl.envelo.melo.domain.request.dto;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 import pl.envelo.melo.domain.category.CategoryConst;
 

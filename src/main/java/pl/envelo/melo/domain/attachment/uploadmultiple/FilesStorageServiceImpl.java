@@ -1,13 +1,4 @@
 package pl.envelo.melo.domain.attachment.uploadmultiple;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -17,12 +8,21 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import pl.envelo.melo.domain.attachment.AttachmentConst;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
+import java.util.stream.Stream;
+
 @Service
 public class FilesStorageServiceImpl implements FilesStorageService {
-    public FilesStorageServiceImpl(){
+    public FilesStorageServiceImpl() {
         this.deleteAll();
         this.init();
     }
+
     private final Path root = Paths.get("uploads");
 
     @Override

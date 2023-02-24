@@ -1,36 +1,17 @@
 package pl.envelo.melo.domain.attachment;
 
-import jakarta.activation.MimeType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
-import pl.envelo.melo.domain.attachment.uploadmultiple.FileInfo;
-import pl.envelo.melo.domain.attachment.uploadmultiple.FilesController;
 import pl.envelo.melo.domain.attachment.uploadmultiple.FilesStorageService;
-import pl.envelo.melo.domain.attachment.uploadmultiple.ResponseMessage;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static pl.envelo.melo.domain.attachment.AttachmentConst.*;
-import static pl.envelo.melo.domain.attachment.MimeTypes.*;
 
 
 @RequiredArgsConstructor
@@ -72,7 +53,7 @@ public class AttachmentService {
     public Attachment uploadFileAndSaveAsAttachment(MultipartFile attachment) {
         //String uploadedFileName = attachment.getOriginalFilename();
         AttachmentType attachmentType = validateAttachmentType(attachment);
-        if(Objects.isNull(attachmentType)) {
+        if (Objects.isNull(attachmentType)) {
             return null;
         }
 
@@ -90,7 +71,7 @@ public class AttachmentService {
 
         /// Waliduję i ustawiam typ załącznika
         AttachmentType attachmentTyp = validateAttachmentType(attachment);
-        if(Objects.isNull(attachmentTyp)) {
+        if (Objects.isNull(attachmentTyp)) {
             return null;
         }
 
@@ -101,6 +82,7 @@ public class AttachmentService {
 
         return attachmentFromDb;
     }
+
     public AttachmentType validateAttachmentType(MultipartFile uploadedAttachment) {
 
         /// W miarę czasu pokombinować z MIMETypes. Rozwiązanie tymczasowe.
@@ -162,7 +144,6 @@ public class AttachmentService {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 */
-
 
 
     public ResponseEntity<AttachmentDto> insertNewAttachment(AttachmentDto attachmentDto) {

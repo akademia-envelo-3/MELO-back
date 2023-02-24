@@ -1,7 +1,6 @@
 package pl.envelo.melo.domain.notification;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.envelo.melo.authorization.AuthorizationService;
@@ -13,12 +12,6 @@ import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
 import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
 import pl.envelo.melo.exceptions.NotificationNotFoundException;
-
-import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import pl.envelo.melo.mappers.NotificationMapper;
 
 import java.security.Principal;
@@ -45,7 +38,6 @@ public class NotificationService {
     }
 
     public ResponseEntity<List<NotificationDto>> listAllNotification(Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         if (Objects.nonNull(employee)) {
             if (Objects.isNull(employee.getNotificationsBox())) {

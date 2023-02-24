@@ -1,9 +1,8 @@
 package pl.envelo.melo.domain.event;
 
 import jakarta.persistence.*;
-import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.*;
-
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +17,6 @@ import pl.envelo.melo.domain.location.Location;
 import pl.envelo.melo.domain.poll.Poll;
 import pl.envelo.melo.domain.unit.Unit;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -54,6 +52,7 @@ public class Event {
     private EventType type;
     @ManyToMany(cascade = CascadeType.PERSIST)
     private Set<Person> members;
+    @Enumerated(EnumType.STRING)
     private PeriodicType periodicType;
     @ManyToMany(cascade = CascadeType.PERSIST)
     private Set<Employee> invited;
@@ -65,7 +64,7 @@ public class Event {
     @ManyToOne
     @Enumerated
     private Category category;
-    @OneToMany(cascade=CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     private Set<Attachment> attachments;
     @OneToOne(cascade=CascadeType.ALL)
     private Attachment mainPhoto;

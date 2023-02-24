@@ -10,13 +10,11 @@ import pl.envelo.melo.authorization.AuthorizationService;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
-import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.comment.dto.CommentDto;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
-import pl.envelo.melo.mappers.CommentMapper;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -30,19 +28,16 @@ public class CommentService {
 
 
     private CommentRepository commentRepository;
-    private AttachmentRepository attachmentRepository;
-    private CommentMapper commentMapper;
     private EventRepository eventRepository;
     private EmployeeRepository employeeRepository;
     private AttachmentService attachmentService;
     private AuthorizationService authorizationService;
+
     @Transactional
     public ResponseEntity<?> insertNewComment(int eventId, CommentDto commentToSave, MultipartFile[] multipartFiles, Principal principal) {
-        String userIdFromJWT = "1";   ////Zaciągnij mordo z UserDetailsDto
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         /// Obsługa błędu - brak czegokolwiek - i kontentu i atachmentu
-        if(Objects.isNull(commentToSave) && Objects.isNull(multipartFiles)) {
+        if (Objects.isNull(commentToSave) && Objects.isNull(multipartFiles)) {
             return ResponseEntity.badRequest().body(CommentConst.COMMENT_EMPTY);
         }
 
@@ -50,7 +45,7 @@ public class CommentService {
         Comment mappedComment = new Comment();
 
         /// Inicjalizuję pustą listę w encji na załączniki
-        if(mappedComment.getAttachments() == null) {
+        if (mappedComment.getAttachments() == null) {
             mappedComment.setAttachments(new ArrayList<>());
         }
 
@@ -68,7 +63,7 @@ public class CommentService {
             mappedComment.setTimestamp(LocalDateTime.now());
             mappedComment.setContent(commentToSave.getContent());
 
-            if(!Objects.isNull(multipartFiles)) {
+            if (!Objects.isNull(multipartFiles)) {
                 for (MultipartFile multipartFile : multipartFiles) {
 
                     Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
@@ -76,7 +71,7 @@ public class CommentService {
                         return ResponseEntity.badRequest()
                                 .body(CommentConst.ILLEGAL_ATTACHMENT_FORMAT);
                     }
-                    if(Objects.isNull(mappedComment.getAttachments())) {
+                    if (Objects.isNull(mappedComment.getAttachments())) {
                         mappedComment.setAttachments(new ArrayList<>());
                     }
                     mappedComment.getAttachments().add(attachmentFromServer);

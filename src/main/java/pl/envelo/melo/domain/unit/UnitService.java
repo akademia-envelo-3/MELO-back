@@ -66,7 +66,6 @@ public class UnitService {
     }
 
     public ResponseEntity<?> changeOwnership(int newEmployeeId, int unitId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee oldOwner = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         Admin admin = adminRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         if (Objects.nonNull(admin))
@@ -153,7 +152,6 @@ public class UnitService {
 
 
     public ResponseEntity<?> addEmployee(int unitId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Optional<Unit> unit = unitRepository.findById(unitId);
         if (unit.isPresent()) {
@@ -175,7 +173,6 @@ public class UnitService {
     }
 
     public ResponseEntity<?> quitUnit(int unitId, Principal principal) {
-        authorizationService.inflateUser(principal);
         Optional<Unit> unit = unitRepository.findById(unitId);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
 
@@ -203,7 +200,6 @@ public class UnitService {
     }
 
     public ResponseEntity<?> insertNewUnit(UnitNewDto unitNewDto, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Unit unit = unitMapper.toEntity(unitNewDto);
         unit.setName(unit.getName().replaceAll("( +)", " ").trim().toLowerCase());
@@ -224,7 +220,6 @@ public class UnitService {
     }
 
     public ResponseEntity<?> updateUnit(int unitId, UnitNewDto unitNewDto, Principal principal) {
-        authorizationService.inflateUser(principal);
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         Unit unit;
         if (unitRepository.findById(unitId).isPresent()) {

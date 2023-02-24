@@ -12,11 +12,11 @@ import pl.envelo.melo.utils.H2Utils;
 
 import javax.sql.DataSource;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @Transactional
-class HashtagServiceTest{
+class HashtagServiceTest {
     @Autowired
     HashtagRepository hashtagRepository;
     @Autowired
@@ -25,10 +25,12 @@ class HashtagServiceTest{
     HashtagMapper hashtagMapper;
     @Autowired
     DataSource dataSource;
+
     @BeforeEach
-    void setUp(){
+    void setUp() {
         H2Utils.clearDb(dataSource);
     }
+
     @Test
     void incrementHashtagGlobalCount() {
         Hashtag hashtag = new Hashtag();
@@ -42,7 +44,7 @@ class HashtagServiceTest{
         assertEquals(HttpStatus.OK, testhashtag.getStatusCode());
         Hashtag hashtag1 = (Hashtag) testhashtag.getBody();
         //Right value
-        assertEquals(2,hashtag1.getGlobalUsageCount());
+        assertEquals(2, hashtag1.getGlobalUsageCount());
         //Incorrect request
         assertEquals(HttpStatus.valueOf(404), hashtagService.incrementHashtagGlobalCount(200).getStatusCode());
 

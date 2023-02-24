@@ -1,11 +1,9 @@
 package pl.envelo.melo.domain.unit.dto;
 
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import pl.envelo.melo.domain.unit.Unit;
 import pl.envelo.melo.domain.unit.UnitConst;
 
 import static pl.envelo.melo.domain.unit.UnitConst.INVALID_UNIT_DESCRIPTION_LENGTH;
