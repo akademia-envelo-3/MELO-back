@@ -222,11 +222,15 @@ public class EventService {
         event.setMembers(members);
         event.setStartTime(newEventDto.getStartTime());
         event.setEndTime(newEventDto.getEndTime());
+        if(!Objects.isNull(newEventDto.getMemberLimit())) {
+            event.setMemberLimit(newEventDto.getMemberLimit());
+        }
         event.setType(newEventDto.getEventType());
         if (event.getType().name().startsWith("LIMITED"))
             event.setMemberLimit(newEventDto.getMemberLimit());
         else
             event.setMemberLimit(null);
+
         event.setPeriodicType(newEventDto.getPeriodicType());
 
 
