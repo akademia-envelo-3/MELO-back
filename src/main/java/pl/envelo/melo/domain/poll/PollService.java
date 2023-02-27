@@ -89,6 +89,7 @@ public class PollService {
 
         for (PollAnswer pollAnswer : poll.getPollAnswers()) {
             pollAnswer.setPoll(poll);
+            pollAnswerRepository.save(pollAnswer);
         }
 
         event.getPolls().add(poll);

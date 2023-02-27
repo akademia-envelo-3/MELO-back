@@ -5,13 +5,15 @@ import org.mapstruct.Mapper;
 import pl.envelo.melo.domain.poll.PollAnswer;
 import pl.envelo.melo.domain.poll.dto.PollAnswerDto;
 
+import java.util.List;
 import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface PollAnswerMapper extends EntityMapper<PollAnswerDto, PollAnswer> {
 
-    Set<PollAnswer> toEntity(Set<PollAnswerDto> pollAnswer);
+
+    List<PollAnswer> toEntity(List<PollAnswerDto> pollAnswer);
 
     @InheritInverseConfiguration
-    Set<PollAnswerDto> toDto(Set<PollAnswer> pollAnswer);
+    List<PollAnswerDto> toDto(List<PollAnswer> pollAnswer);
 }
