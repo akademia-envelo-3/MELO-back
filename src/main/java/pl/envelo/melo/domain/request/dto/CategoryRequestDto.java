@@ -18,6 +18,4 @@ public class CategoryRequestDto {
     @NotNull
     private int employeeId;
     private boolean isResolved;
-
-
 }

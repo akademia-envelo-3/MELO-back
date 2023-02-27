@@ -9,8 +9,51 @@ services:
             - postgres
             - keycloak
         restart: always
+        environment:
+            server.servlet.context-path: /api
+            spring.jpa.show-sql: true
+            spring.datasource.url: jdbc:postgresql://postgresdb:5432/
+            spring.datasource.driverClassName: org.postgresql.Driver
+            spring.datasource.username: sa
+            spring.datasource.password: sa
+            spring.jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect
+            spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+            spring.jpa.hibernate.ddl-auto: create
+            springdoc.api-docs.path: /api-docs
+            spring.banner.location: banner.txt
+            spring.servlet.multipart.max-file-size: 1024KB
+            spring.servlet.multipart.max-request-size: 10240KB
+            mail.host: sandbox.smtp.mailtrap.io
+            mail.port: 25
+            mail.username: b9c1f0aa30dbb2
+            mail.passwd: 7ecc3ee348a130
+            mail.starttls: true
+            mail.address: test@test.pl
+            mail.urlprefix: http://localhost:8080/api/v1/
+            spring.security.oauth2.resourceserver.jwt.issuer-uri: http://keycloak:8081/realms/melorealm
+            melo.client-id: melo-client
+            melo.employee-role: Employee
+            melo.admin-role: Admin
+            melo.api.version: v1
+            melo.events.path: /events
         ports:
             - 8080:8080
+        networks:
+            - mynetwork
+    pgadmin:
+        container_name: pgadmin
+        image: dpage/pgadmin4
+        restart: always
+        volumes: 
+            - pgadmin-data:/var/lib/pgadmin
+        depends_on: 
+            - postgres
+        environment: 
+            PGADMIN_DEFAULT_EMAIL: admin@admin.com
+            PGADMIN_DEFAULT_PASSWORD: sa
+            PGADMIN_LISTEN_PORT: 8082
+        ports:
+            - 8082:8082
         networks:
             - mynetwork
     postgres:
@@ -44,3 +87,6 @@ services:
 networks:
     mynetwork:
         driver: bridge
+volumes:
+  local_pgdata:
+  pgadmin-data:

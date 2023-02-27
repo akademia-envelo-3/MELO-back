@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pl.envelo.melo.domain.poll.PollConst;
 
+import java.util.List;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -19,5 +20,6 @@ public class PollResultDto {
     @Size(min = PollConst.MIN_OPTION_COUNT, max = PollConst.MAX_OPTION_COUNT
             , message = "Poll must not have less than " + PollConst.MIN_OPTION_COUNT +
             " and more than " + PollConst.MAX_OPTION_COUNT)
-    private Set<PollAnswerResultDto> pollAnswers;
+    private List<PollAnswerResultDto> pollAnswers;
+
 }

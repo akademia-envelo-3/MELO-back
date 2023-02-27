@@ -48,5 +48,4 @@ public class NewEventDto {
     private LocationDto location;
     private Integer categoryId;
     private Theme theme;
-
 }
