@@ -11,7 +11,9 @@ import java.util.Set;
 @Mapper(componentModel = "spring")
 public interface PollAnswerMapper extends EntityMapper<PollAnswerDto, PollAnswer> {
 
+
     List<PollAnswer> toEntity(List<PollAnswerDto> pollAnswer);
+
     @InheritInverseConfiguration
     List<PollAnswerDto> toDto(List<PollAnswer> pollAnswer);
 }

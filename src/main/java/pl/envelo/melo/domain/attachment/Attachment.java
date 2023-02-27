@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.URL;
 
 @Entity
 @Getter
@@ -26,5 +25,6 @@ public class Attachment {
     @Column(nullable = false)
     private String attachmentUrl;
     @NotNull
+    @Enumerated(EnumType.STRING)
     private AttachmentType attachmentType;
 }

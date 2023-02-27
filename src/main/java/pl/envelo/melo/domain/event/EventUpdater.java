@@ -29,6 +29,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static pl.envelo.melo.domain.event.EventConst.*;
+
 @Component
 @AllArgsConstructor
 public class EventUpdater {
@@ -45,20 +47,6 @@ public class EventUpdater {
     LocationService locationService;
     AttachmentService attachmentService;
 
-//    public void update(Event event, NewEventDto newEventDto) {
-//        updateName(event, newEventDto);
-//        updateDescription(event, newEventDto);
-//        updateDate(event, newEventDto);
-//        updateUnitsAndInvitedMembers(event, newEventDto);
-//        updatePeriodic(event, newEventDto);
-//        updateHashtags(event, newEventDto);
-//        updateMemberLimit(event, newEventDto);
-//        updateOrganizer(event, newEventDto);
-//        //updateAttachments(event, newEventDto);
-//        updateCategory(event, newEventDto);
-//        updateLocation(event, newEventDto);
-//        //updateMainPhoto(event, newEventDto);
-//    }
 
     public boolean updateName(Event event, String name) {
         if (event.getName().toLowerCase().trim().equals(name)) {
@@ -102,42 +90,42 @@ public class EventUpdater {
 
         Map<String, String> errors = new HashMap<>();
         if (event.getStartTime().compareTo(LocalDateTime.now()) <= 0) {
-            errors.put("forbidden error", "You cannot edit archived event");
+            errors.put(FORBIDDEN_ACTION, ARCHIVED_EVENT_EDIT_ATTEMPT);
         }
         if (startTime == null && endTime != null) {
             if (endTime.compareTo(LocalDateTime.now()) <= 0) {
-                errors.put("forbidden error", "You cannot set past date");
+                errors.put(FORBIDDEN_ACTION, PAST_TIME);
             }
             if (event.getEndTime().equals(endTime)) {
-                errors.put("endTime error", "New EndTime is the same as old.");
+                errors.put(INVALID_END_TIME, END_TIME_SAME_AS_OLD);
             } else if (event.getStartTime().compareTo(endTime) >= 0) {
-                errors.put("endTime error", "You must set endTime to be after startTime");
+                errors.put(INVALID_END_TIME, END_TIME_AFTER_START_TIME);
             } else {
                 event.setEndTime(endTime);
             }
         } else if (startTime != null && endTime == null) {
             if (startTime.compareTo(LocalDateTime.now()) <= 0) {
-                errors.put("forbidden error", "You cannot set past date");
+                errors.put(FORBIDDEN_ACTION, PAST_TIME);
             }
             if (event.getStartTime().equals(startTime)) {
-                errors.put("startTime error", "New StartTime is the same as old.");
+                errors.put(INVALID_START_TIME, START_TIME_SAME_AS_OLD);
             } else if (event.getEndTime().compareTo(startTime) <= 0) {
-                errors.put("startTime error", "You must set startTime to be before endTime");
+                errors.put(INVALID_START_TIME, START_TIME_BEFORE_END_TIME);
             } else {
                 event.setStartTime(startTime);
             }
         } else if (startTime != null && endTime != null) {
             if (endTime.compareTo(LocalDateTime.now()) <= 0 || startTime.compareTo(LocalDateTime.now()) <= 0) {
-                errors.put("forbidden error", "You cannot set past date");
+                errors.put(FORBIDDEN_ACTION, PAST_TIME);
             }
             if (event.getEndTime().equals(endTime)) {
-                errors.put("endTime error", "New EndTime is the same as old.");
+                errors.put(INVALID_END_TIME, END_TIME_SAME_AS_OLD);
             }
             if (event.getStartTime().equals(startTime)) {
-                errors.put("startTime error", "New StartTime is the same as old.");
+                errors.put(INVALID_START_TIME, START_TIME_SAME_AS_OLD);
             }
             if (startTime.compareTo(endTime) >= 0) {
-                errors.put("endTime error", "You must set endTime to be after startTime");
+                errors.put(INVALID_END_TIME, END_TIME_AFTER_START_TIME);
             } else {
                 event.setEndTime(endTime);
                 event.setStartTime(startTime);
@@ -228,7 +216,7 @@ public class EventUpdater {
             for (HashtagDto e : hashtags) {
                 if (currHashtags.contains(e.getContent())) {
                     Optional<Hashtag> hashtagOpt = hashtagRepository.findByContent(e.getContent());
-                    if(hashtagOpt.isPresent()&&!hashtagsInNameAndDescription.contains(hashtagMapper.toDto(hashtagOpt.get()))) {
+                    if (hashtagOpt.isPresent() && !hashtagsInNameAndDescription.contains(hashtagMapper.toDto(hashtagOpt.get()))) {
                         Hashtag hashtag = hashtagOpt.get();
                         event.getHashtags().remove(hashtag);
                         if (!hashtagService.decrementHashtagGlobalCount(hashtag.getId())) {
@@ -304,35 +292,6 @@ public class EventUpdater {
         }
     }
 
-
-   /* void updateAttachments(Event event, NewEventDto newEventDto) {
-        if (newEventDto.getAttachments() == null) {
-            if (event.getAttachments() != null || event.getAttachments().size() != 0) {
-                event.getAttachments().clear();
-            }
-        }
-        if (event.getAttachments() != null && newEventDto.getAttachments() != null) {
-            Set<String> attachmentUrl = event.getAttachments().stream().map(Attachment::getAttachmentUrl).collect(Collectors.toSet());
-            newEventDto.getAttachments().forEach(e -> {
-                if (!attachmentUrl.contains(e.getAttachmentUrl())) {
-                    Attachment attachment = attachmentMapper.toEntity(e);
-                    event.getAttachments().add(attachmentRepository.save(attachment));
-                }
-            });
-            attachmentUrl.forEach(e -> {
-                Set<String> newAttachments = newEventDto.getAttachments().stream().map(AttachmentDto::getAttachmentUrl).collect(Collectors.toSet());
-                if (!newAttachments.contains(e)) {
-                    event.getAttachments().forEach(attachment -> {
-                        if (attachment.getAttachmentUrl().equals(e)) {
-                            event.getAttachments().remove(attachment);
-                            attachmentRepository.deleteById(attachment.getId());
-                        }
-                    });
-                }
-            });
-        }
-    }*/
-
     public boolean updateCategory(Event event, int categoryId) {
         if (categoryId != event.getCategory().getId())
             if (categoryRepository.existsById(categoryId))
@@ -361,10 +320,6 @@ public class EventUpdater {
         }
     }
 
-
-    /*void updateMainPhoto(Event event, NewEventDto newEventDto) {
-        event.setMainPhoto(attachmentService.insertOrGetAttachment(newEventDto.getMainPhoto()));
-    }*/
     public boolean updateTheme(Event event, Object newTheme) {
         Theme theme = Theme.valueOf(newTheme.toString());
         if (theme.equals(event.getTheme())) {
@@ -380,7 +335,7 @@ public class EventUpdater {
             ArrayList<Integer> invitedMembers = (ArrayList<Integer>) listOfMembers;
             Set<Integer> eventInvitedMembers = event.getInvited().stream().map(Employee::getId).collect(Collectors.toSet());
             for (Integer id : invitedMembers) {
-                if(employeeRepository.existsById(id)) {
+                if (employeeRepository.existsById(id)) {
                     if (!eventInvitedMembers.contains(id)) {
                         event.getInvited().add(employeeRepository.getReferenceById(id));
                         //TODO notification?
@@ -412,7 +367,7 @@ public class EventUpdater {
     }
 
     public boolean removeCategory(Event event, int categoryId) {
-        if(event.getCategory()==null) return false;
+        if (event.getCategory() == null) return false;
         if (categoryId == event.getCategory().getId()) {
             event.setCategory(null);
             return true;
@@ -440,38 +395,38 @@ public class EventUpdater {
     @Transactional
     public boolean addAttachments(Event event, MultipartFile[] additionalAttachments) {
 
-            /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
-            for (MultipartFile multipartFile : additionalAttachments) {
-                AttachmentType attachmentType = attachmentService.validateAttachmentType(multipartFile);
-                if (Objects.isNull(attachmentType)) {
-                    return false;
-                }
+        /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
+        for (MultipartFile multipartFile : additionalAttachments) {
+            AttachmentType attachmentType = attachmentService.validateAttachmentType(multipartFile);
+            if (Objects.isNull(attachmentType)) {
+                return false;
             }
-            for (MultipartFile multipartFile : additionalAttachments) {
-                Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
-                if (attachmentFromServer == null) {
-                    return false;
-                }
-                if (Objects.isNull(event.getAttachments())) {
-                    event.setAttachments(new HashSet<>());
-                }
-                event.getAttachments().add(attachmentFromServer);
+        }
+        for (MultipartFile multipartFile : additionalAttachments) {
+            Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
+            if (attachmentFromServer == null) {
+                return false;
             }
+            if (Objects.isNull(event.getAttachments())) {
+                event.setAttachments(new HashSet<>());
+            }
+            event.getAttachments().add(attachmentFromServer);
+        }
         return true;
     }
 
     public boolean removeMainPhoto(Event event, Object mainPhoto) {
-        if(event.getMainPhoto()==null)
+        if (event.getMainPhoto() == null)
             return false;
-        try{
+        try {
             String id = (String) mainPhoto;
-            if(Objects.equals(event.getMainPhoto().getName(), id)){
+            if (Objects.equals(event.getMainPhoto().getName(), id)) {
                 event.setMainPhoto(null);
                 attachmentRepository.delete(attachmentRepository.findByName(id));
                 return true;
             }
             return false;
-        }catch (ClassCastException e) {
+        } catch (ClassCastException e) {
             return false;
         }
     }

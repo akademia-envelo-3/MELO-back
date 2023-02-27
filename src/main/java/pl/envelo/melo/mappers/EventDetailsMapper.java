@@ -1,24 +1,27 @@
 package pl.envelo.melo.mappers;
 
-import org.mapstruct.*;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.poll.Poll;
-import pl.envelo.melo.domain.poll.dto.PollDto;
-import pl.envelo.melo.domain.poll.dto.PollQuestionDto;
 import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring", uses = {HashtagMapper.class, AttachmentMapper.class, EmployeeMapper.class,
-                                            LocationMapper.class, CategoryMapper.class, PollAnswerMapper.class})
+        LocationMapper.class, CategoryMapper.class, PollAnswerMapper.class})
 public interface EventDetailsMapper {
 
     EventDetailsDto convert(Event event);
 
-   //todo fixme bruh
+    //todo fixme bruh
 
     @AfterMapping
     default void update(Event event, @MappingTarget EventDetailsDto eventDetailsDto) {
@@ -35,16 +38,16 @@ public interface EventDetailsMapper {
         }
 
         eventDetailsDto.setConfirmedMembers(confirmedMembers);
-        
-       Set<PollToDisplayOnListDto> pollDtoList = new HashSet<>();
-       Set<Poll> pollSet = event.getPolls();
+
+        Set<PollToDisplayOnListDto> pollDtoList = new HashSet<>();
+        Set<Poll> pollSet = event.getPolls();
         for (Poll poll : pollSet) {
 
-           PollToDisplayOnListDto pollToDisplayOnListDto = new PollToDisplayOnListDto();
-           pollToDisplayOnListDto.setPollId(poll.getId());
-           pollToDisplayOnListDto.setPollQuestion(poll.getPollQuestion());
+            PollToDisplayOnListDto pollToDisplayOnListDto = new PollToDisplayOnListDto();
+            pollToDisplayOnListDto.setPollId(poll.getId());
+            pollToDisplayOnListDto.setPollQuestion(poll.getPollQuestion());
 
-           pollToDisplayOnListDto.setFilled(false); // fixme
+            pollToDisplayOnListDto.setFilled(false); // fixme
 
             pollDtoList.add(pollToDisplayOnListDto);
         }
