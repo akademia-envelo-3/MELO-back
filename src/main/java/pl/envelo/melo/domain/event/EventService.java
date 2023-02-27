@@ -743,5 +743,40 @@ public class EventService {
         return ResponseEntity.ok("Event was deleted");
 
     }
+
+    public Event createEventFromExisting(Event event, LocalDateTime oldEventStartDate){
+        Event newCyclicEvent = new Event();
+        if (event!=null) {
+            newCyclicEvent.setName(event.getName());
+            newCyclicEvent.setDescription(event.getDescription());
+            newCyclicEvent.setStartTime(getNewEvenStartDate(event.getPeriodicType(),oldEventStartDate));
+            newCyclicEvent.setEndTime(newCyclicEvent.getStartTime().plusHours(3));
+            newCyclicEvent.setOrganizer(event.getOrganizer());
+            newCyclicEvent.setType(event.getType());
+            newCyclicEvent.setMembers(event.getMembers());
+            newCyclicEvent.setPeriodicType(event.getPeriodicType());
+            newCyclicEvent.setInvited(event.getInvited());
+            newCyclicEvent.setUnit(event.getUnit());
+            newCyclicEvent.setHashtags(event.getHashtags());
+            newCyclicEvent.setMemberLimit(event.getMemberLimit());
+            newCyclicEvent.setCategory(event.getCategory());
+            newCyclicEvent.setAttachments(event.getAttachments());
+            newCyclicEvent.setMainPhoto(event.getMainPhoto());
+            newCyclicEvent.setLocation(event.getLocation());
+            newCyclicEvent.setTheme(event.getTheme());
+        }
+        return newCyclicEvent;
+    }
+
+    private LocalDateTime getNewEvenStartDate(PeriodicType periodicType, LocalDateTime oldEventStartDate) {
+        LocalDateTime newEventStartDate = null;
+        if (periodicType.equals(PeriodicType.ONE_WEEK))
+           newEventStartDate = oldEventStartDate.plusDays(7);
+        else if (periodicType.equals(PeriodicType.TWO_WEEKS))
+            newEventStartDate = oldEventStartDate.plusDays(14);
+        else if (periodicType.equals(PeriodicType.ONE_MONTH))
+           newEventStartDate = oldEventStartDate.plusMonths(1);
+        return newEventStartDate;
+    }
 }
 
