@@ -4,7 +4,6 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
-import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.notification.Notification;
 import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
@@ -13,7 +12,6 @@ import java.time.LocalDateTime;
 
 @Mapper(componentModel = "spring", uses = EventRepository.class)
 public interface EventNotificationMapper {
-
 
 
     Notification toEntity(EventNotificationDto eventNotificationDto, @Context EventRepository eventRepository);

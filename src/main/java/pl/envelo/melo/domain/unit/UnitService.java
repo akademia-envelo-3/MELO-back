@@ -266,15 +266,15 @@ public class UnitService {
         UnitNotificationDto unitNotificationDto = new UnitNotificationDto();
         unitNotificationDto.setUnitId(unit.getId());
         unitNotificationDto.setNotificationType(notificationType);
-        switch(notificationType) {
-            case UNIT_NAME_UPDATED :
-                unitNotificationDto.setContent("Nazwa koła została zmieniona na \""+unit.getName()+"\".");
+        switch (notificationType) {
+            case UNIT_NAME_UPDATED:
+                unitNotificationDto.setContent("Nazwa koła została zmieniona na \"" + unit.getName() + "\".");
                 break;
-            case UNIT_DESCRIPTION_UPDATED :
-                unitNotificationDto.setContent("Opis koła \""+unit.getName()+"\" został zmieniony.");
+            case UNIT_DESCRIPTION_UPDATED:
+                unitNotificationDto.setContent("Opis koła \"" + unit.getName() + "\" został zmieniony.");
                 break;
             case UNIT_UPDATED:
-                unitNotificationDto.setContent("Koło \""+unit.getName()+"\" zostało zaktualizowane.");
+                unitNotificationDto.setContent("Koło \"" + unit.getName() + "\" zostało zaktualizowane.");
                 break;
         }
         notificationService.insertUnitMembersNotification(unitNotificationDto);
