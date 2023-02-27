@@ -9,17 +9,17 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.envelo.melo.domain.notification.dto.NotificationDto;
-import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.security.Principal;
 import java.util.List;
 
-@AllArgsConstructor
 @RestController
-@RequestMapping("v1/notifications")
+@RequestMapping("/v1/notifications")
+@AllArgsConstructor
 public class NotificationController {
     private NotificationService notificationService;
 
@@ -41,7 +41,9 @@ public class NotificationController {
         return null;
     }
 
-    public ResponseEntity<?> checkNotification(int notificationId) {
-        return null;
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
+    @GetMapping("{id}/checked")
+    public ResponseEntity<?> checkNotification(@PathVariable("id") int notificationId, Principal principal) {
+        return notificationService.setNotificationAsChecked(notificationId, principal);
     }
 }

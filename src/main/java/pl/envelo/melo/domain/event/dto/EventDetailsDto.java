@@ -10,8 +10,6 @@ import pl.envelo.melo.domain.event.EventType;
 import pl.envelo.melo.domain.event.PeriodicType;
 import pl.envelo.melo.domain.event.Theme;
 import pl.envelo.melo.domain.location.dto.LocationDto;
-import pl.envelo.melo.domain.poll.dto.PollDto;
-import pl.envelo.melo.domain.poll.dto.PollQuestionDto;
 import pl.envelo.melo.domain.poll.dto.PollToDisplayOnListDto;
 
 import java.time.LocalDateTime;

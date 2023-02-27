@@ -11,13 +11,14 @@ import java.util.Objects;
 @Mapper(componentModel = "spring", uses = {EmployeeMapper.class, EventMapper.class})
 public interface UnitMapper extends EntityMapper<UnitNewDto, Unit> {
     default Unit map(Integer unitId) {
-        if(Objects.isNull(unitId))
+        if (Objects.isNull(unitId))
             return null;
         Unit unit = new Unit();
         //fixme add UnitMapper
         unit.setId(unitId);
         return unit;
     }
+
     @Mapping(source = "id", target = "unitId")
     UnitToDisplayOnListDto convert(Unit unit);
 

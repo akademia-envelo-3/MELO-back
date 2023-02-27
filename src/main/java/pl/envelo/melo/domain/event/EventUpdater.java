@@ -1,13 +1,15 @@
 package pl.envelo.melo.domain.event;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.domain.attachment.Attachment;
 import pl.envelo.melo.domain.attachment.AttachmentRepository;
 import pl.envelo.melo.domain.attachment.AttachmentService;
-import pl.envelo.melo.domain.attachment.dto.AttachmentDto;
+import pl.envelo.melo.domain.attachment.AttachmentType;
 import pl.envelo.melo.domain.category.CategoryRepository;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.hashtag.Hashtag;
@@ -15,16 +17,21 @@ import pl.envelo.melo.domain.hashtag.HashtagDto;
 import pl.envelo.melo.domain.hashtag.HashtagRepository;
 import pl.envelo.melo.domain.hashtag.HashtagService;
 import pl.envelo.melo.domain.location.LocationService;
-import pl.envelo.melo.domain.unit.Unit;
+import pl.envelo.melo.domain.location.dto.LocationDto;
 import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.mappers.AttachmentMapper;
 import pl.envelo.melo.mappers.HashtagMapper;
 import pl.envelo.melo.mappers.LocationMapper;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.time.DateTimeException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static pl.envelo.melo.domain.event.EventConst.*;
 
 @Component
 @AllArgsConstructor
@@ -36,87 +43,242 @@ public class EventUpdater {
     UnitRepository unitRepository;
 
     AttachmentMapper attachmentMapper;
+    LocationMapper locationMapper;
     CategoryRepository categoryRepository;
     AttachmentRepository attachmentRepository;
     LocationService locationService;
     AttachmentService attachmentService;
 
-    public void update(Event event, NewEventDto newEventDto) {
-        updateName(event, newEventDto);
-        updateDescription(event, newEventDto);
-        updateDate(event, newEventDto);
-        updateUnitsAndInvitedMembers(event, newEventDto);
-        updatePeriodic(event, newEventDto);
-        updateHashtags(event, newEventDto);
-        if(Objects.isNull(newEventDto.getMemberLimit())) {
-            updateMemberLimit(event, newEventDto);
+    public boolean updateName(Event event, String name) {
+        if (event.getName().toLowerCase().trim().equals(name)) {
+            return false;
         }
-        updateOrganizer(event, newEventDto);
-        //updateAttachments(event, newEventDto);
-        updateCategory(event, newEventDto);
-        updateLocation(event, newEventDto);
-        //updateMainPhoto(event, newEventDto);
+        event.setName(name);
+        return true;
     }
 
-    void updateDate(Event event, NewEventDto newEventDto) {
-        event.setStartTime(newEventDto.getStartTime());
-        event.setEndTime(newEventDto.getEndTime());
+    public boolean updateDescription(Event event, String description) {
+        if (event.getDescription().equals(description.trim())) {
+            return false;
+        }
+        event.setDescription(description.trim());
+        return true;
     }
 
-    void updatePeriodic(Event event, NewEventDto newEventDto) {
-        event.setPeriodicType(newEventDto.getPeriodicType());
+    public Optional<?> updateDate(Event event, Object startTimeObject, Object endTimeObject) {
+        LocalDateTime startTime;
+        LocalDateTime endTime;
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        if (startTimeObject == null) {
+            startTime = null;
+        } else {
+            try {
+                startTime = LocalDateTime.parse(startTimeObject.toString().replace("T", " "), format);
+            } catch (DateTimeException e) {
+                return Optional.of(e);
+            }
+
+        }
+        if (endTimeObject == null) {
+            endTime = null;
+        } else {
+            try {
+                endTime = LocalDateTime.parse(endTimeObject.toString().replace("T", " "), format);
+            } catch (DateTimeException e) {
+                return Optional.of(e);
+            }
+        }
+
+        Map<String, String> errors = new HashMap<>();
+        if (event.getStartTime().compareTo(LocalDateTime.now()) <= 0) {
+            errors.put(FORBIDDEN_ACTION, ARCHIVED_EVENT_EDIT_ATTEMPT);
+        }
+        if (startTime == null && endTime != null) {
+            if (endTime.compareTo(LocalDateTime.now()) <= 0) {
+                errors.put(FORBIDDEN_ACTION, PAST_TIME);
+            }
+            if (event.getEndTime().equals(endTime)) {
+                errors.put(INVALID_END_TIME, END_TIME_SAME_AS_OLD);
+            } else if (event.getStartTime().compareTo(endTime) >= 0) {
+                errors.put(INVALID_END_TIME, END_TIME_AFTER_START_TIME);
+            } else {
+                event.setEndTime(endTime);
+            }
+        } else if (startTime != null && endTime == null) {
+            if (startTime.compareTo(LocalDateTime.now()) <= 0) {
+                errors.put(FORBIDDEN_ACTION, PAST_TIME);
+            }
+            if (event.getStartTime().equals(startTime)) {
+                errors.put(INVALID_START_TIME, START_TIME_SAME_AS_OLD);
+            } else if (event.getEndTime().compareTo(startTime) <= 0) {
+                errors.put(INVALID_START_TIME, START_TIME_BEFORE_END_TIME);
+            } else {
+                event.setStartTime(startTime);
+            }
+        } else if (startTime != null && endTime != null) {
+            if (endTime.compareTo(LocalDateTime.now()) <= 0 || startTime.compareTo(LocalDateTime.now()) <= 0) {
+                errors.put(FORBIDDEN_ACTION, PAST_TIME);
+            }
+            if (event.getEndTime().equals(endTime)) {
+                errors.put(INVALID_END_TIME, END_TIME_SAME_AS_OLD);
+            }
+            if (event.getStartTime().equals(startTime)) {
+                errors.put(INVALID_START_TIME, START_TIME_SAME_AS_OLD);
+            }
+            if (startTime.compareTo(endTime) >= 0) {
+                errors.put(INVALID_END_TIME, END_TIME_AFTER_START_TIME);
+            } else {
+                event.setEndTime(endTime);
+                event.setStartTime(startTime);
+            }
+        }
+        if (errors.isEmpty()) {
+            return Optional.of(true);
+        } else return Optional.of(errors);
     }
 
-    void updateHashtags(Event event, NewEventDto newEventDto) {
-        if (event.getHashtags() == null) {
-            if (newEventDto.getHashtags() != null) {
+    public boolean updatePeriodic(Event event, Object newPeriodicType) {
+        PeriodicType periodicType = PeriodicType.valueOf(newPeriodicType.toString());
+        if (event.getPeriodicType() != null && event.getPeriodicType().equals(periodicType)) {
+            return false;
+        } else {
+            if (event.getPeriodicType() == null) {
+                if (event.getUnit() != null && periodicType != PeriodicType.NONE) {
+                    event.setPeriodicType(periodicType);
+                    return true;
+                } else if (periodicType == PeriodicType.NONE) {
+                    event.setPeriodicType(periodicType);
+                    return true;
+                } else return false;
+            } else if (event.getPeriodicType().equals(PeriodicType.NONE)) {
+                if (event.getUnit() != null) {
+                    event.setPeriodicType(periodicType);
+                    //TODO wywołać metodę która "stworzy" cykilczność wydarzenia
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                event.setPeriodicType(periodicType);
+                //TODO odpowiednio ustawić cykliczność sąsienich powiązanych eventów
+                return true;
+            }
+        }
+    }
+
+
+    @Transactional
+    public boolean addHashtags(Event event, Object objectHashtags) {
+        Set<HashtagDto> hashtags;
+        try {
+            ArrayList<Object> objectArrayList = (ArrayList<Object>) objectHashtags;
+            hashtags = new HashSet<>();
+            for (Object o : objectArrayList) {
+                HashtagDto hash = new HashtagDto();
+                hash.setContent(String.valueOf(((Map<String, String>) o).get("content")).toLowerCase());
+                hashtags.add(hash);
+            }
+            if (event.getHashtags() != null) {
                 Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convertToString).collect(Collectors.toSet());
-                newEventDto.getHashtags().forEach(e -> {
-                    if (!currHashtags.contains(e)) {
-                        Optional<Hashtag> hashtag = hashtagRepository.findByContent(e.getContent());
-                        if (hashtag.isPresent()) {
-                            hashtagService.incrementHashtagGlobalCount(hashtag.get().getId());
-                            event.getHashtags().add(hashtag.get());
-                        } else {
-                            HashtagDto hashtagDto = new HashtagDto();
-                            hashtagDto.setContent(e.getContent());
-                            hashtagService.insertNewHashtag(hashtagDto);
-                            event.getHashtags().add(hashtagRepository.findByContent(e.getContent()).get());
+                for (HashtagDto e : hashtags) {
+                    if (!currHashtags.contains(e.getContent())) {
+                        HashtagDto hashtag = new HashtagDto();
+                        hashtag.setContent(e.getContent());
+                        Hashtag insertHash = hashtagService.insertNewHashtag(hashtag);
+                        event.getHashtags().add(insertHash);
+                    }
+                }
+            } else {
+                for (HashtagDto e : hashtags) {
+                    HashtagDto hashtag = new HashtagDto();
+                    hashtag.setContent(e.getContent());
+                    Hashtag insertHash = hashtagService.insertNewHashtag(hashtag);
+                    event.getHashtags().add(insertHash);
+
+                }
+            }
+            return true;
+        } catch (ClassCastException e) {
+            return false;
+        }
+    }
+
+    @Transactional
+    public boolean removeHashtags(Event event, Object objectHashtags, Set<HashtagDto> hashtagsInNameAndDescription) {
+        try {
+            ArrayList<Object> objectArrayList = (ArrayList<Object>) objectHashtags;
+            Set<HashtagDto> hashtags = new HashSet<>();
+            for (Object o : objectArrayList) {
+                HashtagDto hash = new HashtagDto();
+                hash.setContent(String.valueOf(((Map<String, String>) o).get("content")).toLowerCase());
+                hashtags.add(hash);
+            }
+            Set<String> currHashtags = event.getHashtags().stream().map(hashtagMapper::convertToString).collect(Collectors.toSet());
+            for (HashtagDto e : hashtags) {
+                if (currHashtags.contains(e.getContent())) {
+                    Optional<Hashtag> hashtagOpt = hashtagRepository.findByContent(e.getContent());
+                    if (hashtagOpt.isPresent() && !hashtagsInNameAndDescription.contains(hashtagMapper.toDto(hashtagOpt.get()))) {
+                        Hashtag hashtag = hashtagOpt.get();
+                        event.getHashtags().remove(hashtag);
+                        if (!hashtagService.decrementHashtagGlobalCount(hashtag.getId())) {
+                            return false;
                         }
                     }
-                });
-                event.getHashtags().forEach(e -> {
-                    if (!newEventDto.getHashtags().contains(e.getContent())) {
-                        event.getHashtags().remove(e);
-                        hashtagService.decrementHashtagGlobalCount(e.getId());
-                    }
-                });
+                }
             }
+            return true;
+        } catch (ClassCastException e) {
+            return false;
+        }
+
+    }
+
+    @Transactional
+    public void updateHashtags(Event event, Set<HashtagDto> hashtagDtos, Set<HashtagDto> oldHashtagDtos) {
+        if (oldHashtagDtos != null) {
+            Set<String> currHashtags = oldHashtagDtos.stream().map(HashtagDto::getContent).collect(Collectors.toSet());
+            Set<Hashtag> eventHashtags = new HashSet<>(event.getHashtags());
+            hashtagDtos.forEach(e -> {
+                if (!currHashtags.contains(e.getContent())) {
+                    HashtagDto hashtag = new HashtagDto();
+                    hashtag.setContent(e.getContent());
+                    Hashtag insertHash = hashtagService.insertNewHashtag(hashtag);
+                    event.getHashtags().add(insertHash);
+                }
+            });
+            Set<String> currNewHashtags = hashtagDtos.stream().map(HashtagDto::getContent).collect(Collectors.toSet());
+            eventHashtags.forEach(e -> {
+                if (!currNewHashtags.contains(e.getContent())) {
+                    event.getHashtags().remove(e);
+                    hashtagService.decrementHashtagGlobalCount(e.getId());
+                }
+            });
+
         } else {
-            if (newEventDto.getHashtags() != null) {
-                newEventDto.getHashtags().forEach(h -> {
-                    Optional<Hashtag> hashtag = hashtagRepository.findByContent(h.getContent());
-                    if (hashtag.isPresent()) {
-                        hashtagService.incrementHashtagGlobalCount(hashtag.get().getId());
-                        event.getHashtags().add(hashtag.get());
-                    } else {
-                        HashtagDto hashtagDto = new HashtagDto();
-                        hashtagDto.setContent(h.getContent());
-                        hashtagService.insertNewHashtag(hashtagDto);
-                        event.getHashtags().add(hashtagRepository.findByContent(h.getContent()).get());
-                    }
-                });
-            }
+            hashtagDtos.forEach(e -> {
+                HashtagDto hashtag = new HashtagDto();
+                hashtag.setContent(e.getContent());
+                Hashtag insertHash = hashtagService.insertNewHashtag(hashtag);
+                event.getHashtags().add(insertHash);
+            });
         }
     }
 
-    void updateOrganizer(Event event, NewEventDto newEventDto) {
+    public boolean updateMemberLimit(Event event, int newMemberLimit) {
+        if (newMemberLimit > 1 && event.getMembers().size() <= newMemberLimit) {
+            event.setMemberLimit((long) newMemberLimit);
+            return true;
+        } else
+            return false;
+    }
+
+    public void updateOrganizer(Event event, NewEventDto newEventDto) {
         Employee organizer = employeeRepository.getReferenceById(newEventDto.getOrganizerId());
         event.setOrganizer(organizer);
         event.getMembers().add(organizer.getUser().getPerson());
     }
 
-    void updateUnitsAndInvitedMembers(Event event, NewEventDto newEventDto) {
+    public void updateUnitsAndInvitedMembers(Event event, NewEventDto newEventDto) {
         if (newEventDto.getInvitedMembers() != null) {
             for (Integer i : newEventDto.getInvitedMembers()) {
                 event.getInvited().add(employeeRepository.getReferenceById(i));
@@ -131,69 +293,157 @@ public class EventUpdater {
         }
     }
 
+    public boolean updateCategory(Event event, int categoryId) {
+        if (categoryId != event.getCategory().getId())
+            if (categoryRepository.existsById(categoryId))
+                if (!categoryRepository.getReferenceById(categoryId).isHidden()) {
+                    event.setCategory(categoryRepository.getReferenceById(categoryId));
+                    return true;
+                }
+        return false;
+    }
 
-   /* void updateAttachments(Event event, NewEventDto newEventDto) {
-        if (newEventDto.getAttachments() == null) {
-            if (event.getAttachments() != null || event.getAttachments().size() != 0) {
-                event.getAttachments().clear();
+
+    public boolean updateLocation(Event event, Object newLocation) {
+        Map<String, String> mapLocation = (Map<String, String>) newLocation;
+        LocationDto location = new LocationDto();
+        location.setStreetName(mapLocation.get("streetName"));
+        location.setStreetNumber(mapLocation.get("streetNumber"));
+        location.setApartmentNumber(mapLocation.get("apartmentNumber"));
+        location.setPostalCode(mapLocation.get("postalCode"));
+        location.setCity(mapLocation.get("city"));
+        System.out.println(location.getCity());
+        if (event.getLocation().equals(locationMapper.convert(location)))
+            return false;
+        else {
+            event.setLocation(locationService.insertOrGetLocation(location));
+            return true;
+        }
+    }
+
+    public boolean updateTheme(Event event, Object newTheme) {
+        Theme theme = Theme.valueOf(newTheme.toString());
+        if (theme.equals(event.getTheme())) {
+            return false;
+        }
+        event.setTheme(theme);
+        return true;
+    }
+
+    @Transactional
+    public Optional<?> addInvitedMembers(Event event, Object listOfMembers) {
+        try {
+            ArrayList<Integer> invitedMembers = (ArrayList<Integer>) listOfMembers;
+            Set<Integer> eventInvitedMembers = event.getInvited().stream().map(Employee::getId).collect(Collectors.toSet());
+            for (Integer id : invitedMembers) {
+                if (employeeRepository.existsById(id)) {
+                    if (!eventInvitedMembers.contains(id)) {
+                        event.getInvited().add(employeeRepository.getReferenceById(id));
+                        //TODO notification?
+                    }
+                }
+                return Optional.of("Add to invited: Employee does not exist");
+            }
+            return Optional.of(true);
+        } catch (ClassCastException e) {
+            return Optional.of("Error: Employee cast exception");
+        }
+    }
+
+    @Transactional
+    public boolean removeInvitedMembers(Event event, Object listOfMembers) {
+        try {
+
+            ArrayList<Integer> invitedMembers = (ArrayList<Integer>) listOfMembers;
+            Set<Integer> eventInvitedMembers = event.getInvited().stream().map(Employee::getId).collect(Collectors.toSet());
+            for (Integer id : invitedMembers) {
+                if (eventInvitedMembers.contains(id)) {
+                    event.getInvited().remove(employeeRepository.getReferenceById(id));
+                }
+            }
+            return true;
+        } catch (ClassCastException e) {
+            return false;
+        }
+    }
+
+    public boolean removeCategory(Event event, int categoryId) {
+        if (event.getCategory() == null) return false;
+        if (categoryId == event.getCategory().getId()) {
+            event.setCategory(null);
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
+    public boolean removeAttachments(Event event, Object listAttachment) {
+        try {
+            ArrayList<String> attachments = (ArrayList<String>) listAttachment;
+            Set<String> eventAttachments = event.getAttachments().stream().map(Attachment::getName).collect(Collectors.toSet());
+            for (String i : attachments) {
+                if (eventAttachments.contains(i)) {
+                    event.getAttachments().remove(attachmentRepository.findByName(i));
+                    attachmentRepository.delete(attachmentRepository.findByName(i));
+                }
+            }
+            return true;
+        } catch (ClassCastException e) {
+            return false;
+        }
+    }
+
+    @Transactional
+    public boolean addAttachments(Event event, MultipartFile[] additionalAttachments) {
+
+        /// Wysyłam, przetwarzam kolejne załączniki i dodaję do eventu.
+        for (MultipartFile multipartFile : additionalAttachments) {
+            AttachmentType attachmentType = attachmentService.validateAttachmentType(multipartFile);
+            if (Objects.isNull(attachmentType)) {
+                return false;
             }
         }
-        if (event.getAttachments() != null && newEventDto.getAttachments() != null) {
-            Set<String> attachmentUrl = event.getAttachments().stream().map(Attachment::getAttachmentUrl).collect(Collectors.toSet());
-            newEventDto.getAttachments().forEach(e -> {
-                if (!attachmentUrl.contains(e.getAttachmentUrl())) {
-                    Attachment attachment = attachmentMapper.toEntity(e);
-                    event.getAttachments().add(attachmentRepository.save(attachment));
-                }
-            });
-            attachmentUrl.forEach(e -> {
-                Set<String> newAttachments = newEventDto.getAttachments().stream().map(AttachmentDto::getAttachmentUrl).collect(Collectors.toSet());
-                if (!newAttachments.contains(e)) {
-                    event.getAttachments().forEach(attachment -> {
-                        if (attachment.getAttachmentUrl().equals(e)) {
-                            event.getAttachments().remove(attachment);
-                            attachmentRepository.deleteById(attachment.getId());
-                        }
-                    });
-                }
-            });
+        for (MultipartFile multipartFile : additionalAttachments) {
+            Attachment attachmentFromServer = attachmentService.uploadFileAndSaveAsAttachment(multipartFile);
+            if (attachmentFromServer == null) {
+                return false;
+            }
+            if (Objects.isNull(event.getAttachments())) {
+                event.setAttachments(new HashSet<>());
+            }
+            event.getAttachments().add(attachmentFromServer);
         }
-    }*/
-
-    void updateCategory(Event event, NewEventDto newEventDto) {
-        if (newEventDto.getCategoryId() != null) {
-            if (categoryRepository.existsById(newEventDto.getCategoryId()))
-                if (!categoryRepository.getReferenceById(newEventDto.getCategoryId()).isHidden())
-                    event.setCategory(categoryRepository.getReferenceById(newEventDto.getCategoryId()));
-                else
-                    event.setCategory(null);
-        } else
-            event.setCategory(null);
+        return true;
     }
 
-    void updateName(Event event, NewEventDto newEventDto) {
-        event.setName(newEventDto.getName());
+    public boolean removeMainPhoto(Event event, Object mainPhoto) {
+        if (event.getMainPhoto() == null)
+            return false;
+        try {
+            String id = (String) mainPhoto;
+            if (Objects.equals(event.getMainPhoto().getName(), id)) {
+                event.setMainPhoto(null);
+                attachmentRepository.delete(attachmentRepository.findByName(id));
+                return true;
+            }
+            return false;
+        } catch (ClassCastException e) {
+            return false;
+        }
     }
 
-    void updateDescription(Event event, NewEventDto newEventDto) {
-        event.setDescription(newEventDto.getDescription());
+    public boolean addMainPhoto(Event event, MultipartFile mainPhoto) {
+        Attachment mainPhotoFromServer = attachmentService.uploadFileAndSaveAsAttachment(mainPhoto);
+        if (mainPhotoFromServer == null) {
+            return false;
+        }
+        if (mainPhotoFromServer.getAttachmentType() != AttachmentType.PHOTO) {
+            return false;
+        }
+        event.setMainPhoto(mainPhotoFromServer);
+        return true;
     }
 
-    void updateLocation(Event event, NewEventDto newEventDto) {
-        if(newEventDto.getLocation()!=null)
-            event.setLocation(locationService.insertOrGetLocation(newEventDto.getLocation()));
-        else
-            event.setLocation(null);
-    }
 
-    void updateMemberLimit(Event event, NewEventDto newEventDto) {
-        if(newEventDto.getMemberLimit()>1)
-            event.setMemberLimit((long) newEventDto.getMemberLimit());
-        else
-            event.setMemberLimit(null);
-    }
-
-    /*void updateMainPhoto(Event event, NewEventDto newEventDto) {
-        event.setMainPhoto(attachmentService.insertOrGetAttachment(newEventDto.getMainPhoto()));
-    }*/
 }
+

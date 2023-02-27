@@ -1,0 +1,1 @@
+mvn package -f pom.xml && docker-compose build && docker-compose up

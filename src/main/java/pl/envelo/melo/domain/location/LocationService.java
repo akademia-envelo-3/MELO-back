@@ -14,20 +14,20 @@ public class LocationService {
 
     @Autowired
     LocationRepository locationRepository;
+
     public Location insertOrGetLocation(LocationDto locationDto) {
 
         if (locationDto.getStreetName().trim().equals("")
                 && locationDto.getStreetNumber().trim().equals("")
                 && locationDto.getApartmentNumber().trim().equals("")
                 && locationDto.getPostalCode().trim().equals("")
-                && locationDto.getCity().trim().equals("")){
+                && locationDto.getCity().trim().equals("")) {
             return null;
-        } else if(locationDto.getStreetName().trim().equals("")
+        } else if (locationDto.getStreetName().trim().equals("")
                 || locationDto.getStreetNumber().trim().equals("")
                 || locationDto.getPostalCode().trim().equals("")
-                || locationDto.getCity().trim().equals("")){
-            throw new LocationBadRequestException("Location fields (street name, number, postal code, city)" +
-                                                    " must be filled in, or all must be left blank");
+                || locationDto.getCity().trim().equals("")) {
+            throw new LocationBadRequestException(LocationConst.MISSING_LOCATION_DATA);
         }
 
         Location newLocation = new Location();
@@ -41,7 +41,7 @@ public class LocationService {
                 && newLocation.getStreetNumber().equals("")
                 && newLocation.getApartmentNumber().equals("")
                 && newLocation.getPostalCode().equals("")
-                && newLocation.getCity().equals("")){
+                && newLocation.getCity().equals("")) {
             return null;
         }
 
@@ -59,9 +59,5 @@ public class LocationService {
         locationRepository.save(newLocation);
         return newLocation;
 
-    }
-
-    public LocationDto getLocation(long id) {
-        return null;
     }
 }

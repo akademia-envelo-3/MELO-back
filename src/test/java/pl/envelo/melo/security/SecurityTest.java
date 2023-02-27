@@ -3,7 +3,6 @@ package pl.envelo.melo.security;
 import jakarta.transaction.Transactional;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,9 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import pl.envelo.melo.authorization.AuthFailed;
-import pl.envelo.melo.authorization.AuthStatus;
 import pl.envelo.melo.authorization.AuthSucceded;
 import pl.envelo.melo.authorization.AuthorizationService;
 
@@ -27,9 +24,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -68,50 +66,54 @@ public class SecurityTest {
 
     @Test
     void rolesTest() throws Exception {
-        mockMvc.perform(get("/test/security").header("Authorization", "Bearer " + getToken(superAdminLogin,superAdminPassword))
+        mockMvc.perform(get("/test/security").header("Authorization", "Bearer " + getToken(superAdminLogin, superAdminPassword))
                 ).andExpect(status().is(200))
                 .andExpect(jsonPath("$[0].authority", is(employeeRole)))
                 .andExpect(jsonPath("$[1].authority", is(adminRole)));
-        mockMvc.perform(get("/test/security").header("Authorization", "Bearer " + getToken(adminLogin,adminPassword))
+        mockMvc.perform(get("/test/security").header("Authorization", "Bearer " + getToken(adminLogin, adminPassword))
                 ).andExpect(status().is(200))
                 .andExpect(jsonPath("$[0].authority", is(adminRole)));
-        mockMvc.perform(get("/test/security").header("Authorization", "Bearer " + getToken(employeeLogin,employeePassword))
+        mockMvc.perform(get("/test/security").header("Authorization", "Bearer " + getToken(employeeLogin, employeePassword))
                 ).andExpect(status().is(200))
                 .andExpect(jsonPath("$[0].authority", is(employeeRole)));
-        mockMvc.perform(get("/test/security").header("Authorization", "Bearer " + getToken(noRolesUserLogin,noRolesUserPassword))
+        mockMvc.perform(get("/test/security").header("Authorization", "Bearer " + getToken(noRolesUserLogin, noRolesUserPassword))
                 ).andExpect(status().is(200))
                 .andExpect(jsonPath("$[0].authority").doesNotExist());
     }
+
     @Transactional
     @Test
-    void userTest() throws Exception{
-        mockMvc.perform(get("/test/security/auth").header("Authorization", "Bearer " + getToken(superAdminLogin,superAdminPassword))
+    void userTest() throws Exception {
+        mockMvc.perform(get("/test/security/auth").header("Authorization", "Bearer " + getToken(superAdminLogin, superAdminPassword))
                 ).andExpect(status().is(200))
                 .andExpect(jsonPath("$", is(AuthSucceded.ADMIN_AND_EMPLOYEE_CREATED.name())));
-        mockMvc.perform(get("/test/security/auth").header("Authorization", "Bearer " + getToken(superAdminLogin,superAdminPassword))
+        mockMvc.perform(get("/test/security/auth").header("Authorization", "Bearer " + getToken(superAdminLogin, superAdminPassword))
                 ).andExpect(status().is(200))
                 .andExpect(jsonPath("$", is(AuthSucceded.USER_EXISTS.name())));
-        mockMvc.perform(get("/test/security/auth").header("Authorization", "Bearer " + getToken(adminLogin,adminPassword))
+        mockMvc.perform(get("/test/security/auth").header("Authorization", "Bearer " + getToken(adminLogin, adminPassword))
                 ).andExpect(status().is(200))
                 .andExpect(jsonPath("$", is(AuthSucceded.ADMIN_CREATED.name())));
-        mockMvc.perform(get("/test/security/auth").header("Authorization", "Bearer " + getToken(employeeLogin,employeePassword))
+        mockMvc.perform(get("/test/security/auth").header("Authorization", "Bearer " + getToken(employeeLogin, employeePassword))
                 ).andExpect(status().is(200))
                 .andExpect(jsonPath("$", is(AuthSucceded.EMPLOYEE_CREATED.name())));
-        mockMvc.perform(get("/test/security/auth").header("Authorization", "Bearer " + getToken(noRolesUserLogin,noRolesUserPassword))
+        mockMvc.perform(get("/test/security/auth").header("Authorization", "Bearer " + getToken(noRolesUserLogin, noRolesUserPassword))
                 ).andExpect(status().is(200))
                 .andExpect(jsonPath("$", is(AuthFailed.PRINCIPAL_NOT_ALLOWED.name())));
     }
+
     @Test
-    void userMailTest() throws Exception{
-        mockMvc.perform(get("/test/security/mail").header("Authorization", "Bearer " + getToken(superAdminLogin,superAdminPassword))
-                ).andExpect(status().is(200));
-    }
-    @Test
-    void userUUIDTest() throws Exception{
-        mockMvc.perform(get("/test/security/uuid").header("Authorization", "Bearer " + getToken(superAdminLogin,superAdminPassword))
+    void userMailTest() throws Exception {
+        mockMvc.perform(get("/test/security/mail").header("Authorization", "Bearer " + getToken(superAdminLogin, superAdminPassword))
         ).andExpect(status().is(200));
     }
-    private String getToken(String username, String password){
+
+    @Test
+    void userUUIDTest() throws Exception {
+        mockMvc.perform(get("/test/security/uuid").header("Authorization", "Bearer " + getToken(superAdminLogin, superAdminPassword))
+        ).andExpect(status().is(200));
+    }
+
+    private String getToken(String username, String password) {
         HttpClient httpClient = HttpClient.newHttpClient();
         String params = Map.of(
                         "client_id", clientId,
@@ -132,7 +134,7 @@ public class SecurityTest {
         try {
             HttpResponse<?> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             return (new JSONObject(response.body().toString())).getString("access_token");
-        }catch (IOException | InterruptedException | JSONException e){
+        } catch (IOException | InterruptedException | JSONException e) {
             return "";
         }
     }

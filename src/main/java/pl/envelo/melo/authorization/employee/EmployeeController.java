@@ -4,45 +4,38 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import pl.envelo.melo.authorization.AuthSucceded;
-import pl.envelo.melo.authorization.AuthorizationService;
+import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.authorization.employee.dto.EmployeeDto;
-import pl.envelo.melo.domain.event.Event;
+import pl.envelo.melo.authorization.employee.dto.EmployeeListDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 
 import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("v1/users/")
+@RequestMapping("v1/users")
 public class EmployeeController {
     private final EmployeeService employeeService;
-    private final AuthorizationService authorizationService;
 
-    public ResponseEntity<List<EmployeeDto>> getEmployees() {
-        return null;
+    @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
+    @GetMapping()
+    public ResponseEntity<Set<EmployeeListDto>> getEmployees(@RequestParam(value = "search", required = false) String q) {
+        return employeeService.getEmployees(q);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<EmployeeDto> getEmployee(@PathVariable("id") int id, Principal principal) {
         return employeeService.getEmployee(id, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
-    @GetMapping("{id}/owned-events")
+    @GetMapping("/{id}/owned-events")
     public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(@PathVariable("id") int id, Principal principal) {
         return (ResponseEntity<Set<EventToDisplayOnListDto>>) employeeService.getSetOfOwnedEvents(id, principal);
     }
