@@ -19,6 +19,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("v1/users")
+@CrossOrigin("${melo.cors-origin}")
 public class EmployeeController {
     private final EmployeeService employeeService;
 
