@@ -4,9 +4,7 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
-import pl.envelo.melo.domain.event.EventRepository;
 import pl.envelo.melo.domain.notification.Notification;
-import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
 import pl.envelo.melo.domain.notification.dto.UnitNotificationDto;
 import pl.envelo.melo.domain.unit.UnitRepository;
 
@@ -19,7 +17,7 @@ public interface UnitNotificationMapper {
 
     @AfterMapping
     default void updateResult(UnitNotificationDto unitNotificationDto, @MappingTarget Notification notification, @Context UnitRepository unitRepository) {
-        notification.setContent("");
+        notification.setContent(unitNotificationDto.getContent());
         notification.setNotificationType(unitNotificationDto.getNotificationType());
         notification.setTimestamp(LocalDateTime.now());
         notification.setUnit(unitRepository.findById(unitNotificationDto.getUnitId()).get());

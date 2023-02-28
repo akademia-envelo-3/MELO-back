@@ -104,6 +104,15 @@ public class EventService {
     private AuthorizationService authorizationService;
 
     public ResponseEntity<?> getEvent(int id, Principal principal) {
+        if(Objects.isNull(principal)){
+            Event event = eventRepository.findById(id).orElseThrow(EventNotFoundException::new);
+            if(event.getType().name().contains("EXTERNAL")) {
+                EventDetailsDto eventDetailsDto = eventDetailsMapper.convert(event);
+                eventDetailsDto.setPolls(null);
+                return ResponseEntity.ok(eventDetailsDto);
+            }
+            return ResponseEntity.status(403).build();
+        }
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElse(null);
         if (eventRepository.existsById(id)) {
             Event event = eventRepository.findById(id).get();

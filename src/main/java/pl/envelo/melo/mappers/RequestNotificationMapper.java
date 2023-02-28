@@ -4,7 +4,6 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import pl.envelo.melo.domain.notification.Notification;
-import pl.envelo.melo.domain.notification.dto.EventNotificationDto;
 import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
 
 import java.time.LocalDateTime;
@@ -18,5 +17,4 @@ public interface RequestNotificationMapper extends EntityMapper<RequestNotificat
         notification.setNotificationType(requestNotificationDto.getNotificationType());
         notification.setTimestamp(LocalDateTime.now());
     }
-
 }
