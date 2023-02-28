@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.category;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import pl.envelo.melo.authorization.admin.Admin;
 import pl.envelo.melo.authorization.admin.AdminRepository;
 import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
+import pl.envelo.melo.exceptions.CategoryAlreadyExistsException;
 import pl.envelo.melo.mappers.CategoryMapper;
 
 import java.security.Principal;
@@ -18,6 +20,7 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class CategoryService {
     @Autowired
     private final CategoryRepository categoryRepository;
@@ -44,7 +47,7 @@ public class CategoryService {
                 ResponseEntity<?> categoryWithSwappedStatus = changeStatusCategory(findByName(category.getName()).getId());
                 return ResponseEntity.status(200).body(categoryWithSwappedStatus.getBody());
             } else {
-                return ResponseEntity.status(404).body(CategoryConst.CATEGORY_ALREADY_VISIBLE);
+                throw new CategoryAlreadyExistsException();
             }
         }
         category.setHidden(false);

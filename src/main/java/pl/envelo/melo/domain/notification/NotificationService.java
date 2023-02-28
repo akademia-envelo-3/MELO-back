@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.notification;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,17 +30,19 @@ import java.util.*;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class NotificationService {
 
     @Autowired
     private final NotificationRepository notificationRepository;
+    private final AuthorizationService authorizationService;
     private final EmployeeRepository employeeRepository;
+    private final NotificationMapper notificationMapper;
+    private final RequestNotificationMapper requestNotificationMapper;
+
     private final EventRepository eventRepository;
     private final UnitRepository unitRepository;
-    private final AuthorizationService authorizationService;
-    private final NotificationMapper notificationMapper;
 
-    private final RequestNotificationMapper requestNotificationMapper;
     private final EventNotificationMapper eventNotificationMapper;
     private final UnitNotificationMapper unitNotificationMapper;
 

@@ -16,6 +16,7 @@ import static pl.envelo.melo.domain.attachment.AttachmentConst.*;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class AttachmentService {
 
     @Autowired

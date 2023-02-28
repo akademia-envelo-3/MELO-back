@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.location;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class LocationService {
 
     @Autowired

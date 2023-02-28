@@ -15,10 +15,10 @@ public interface NotificationMapper extends EntityMapper<NotificationDto, Notifi
     @AfterMapping
     default void update(Notification notification, @MappingTarget NotificationDto notificationDto) {
 
-        if(Objects.nonNull(notification.getEvent())) {
+        if (Objects.nonNull(notification.getEvent())) {
             notificationDto.setEventId(notification.getEvent().getId());
         }
-        if(Objects.nonNull(notification.getUnit())) {
+        if (Objects.nonNull(notification.getUnit())) {
             notificationDto.setUnitId(notification.getUnit().getId());
         }
     }

@@ -1,5 +1,6 @@
 package pl.envelo.melo.authorization;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,6 +22,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class AuthorizationService {
     final UserRepository userRepository;
     final EmployeeRepository employeeRepository;

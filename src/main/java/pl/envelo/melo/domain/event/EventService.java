@@ -68,6 +68,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class EventService {
     //Services
     private final HashtagService hashtagService;
