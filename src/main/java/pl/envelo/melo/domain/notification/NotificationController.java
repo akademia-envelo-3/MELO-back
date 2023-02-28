@@ -42,6 +42,10 @@ public class NotificationController {
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
+    @Operation(summary = "Set notification as checked",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successfully set notification as checked")
+            })
     @GetMapping("{id}/checked")
     public ResponseEntity<?> checkNotification(@PathVariable("id") int notificationId, Principal principal) {
         return notificationService.setNotificationAsChecked(notificationId, principal);

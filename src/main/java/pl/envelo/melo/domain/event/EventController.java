@@ -29,8 +29,10 @@ import org.springframework.web.multipart.MultipartFile;
 import pl.envelo.melo.authorization.employee.dto.EmployeeNameDto;
 import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.dto.AddGuestToEventDto;
+import pl.envelo.melo.domain.comment.Comment;
 import pl.envelo.melo.domain.comment.CommentService;
 import pl.envelo.melo.domain.comment.dto.CommentDto;
+import pl.envelo.melo.domain.event.dto.EventDetailsDto;
 import pl.envelo.melo.domain.event.dto.EventToDisplayOnListDto;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.event.utils.PagingHeaders;
@@ -61,6 +63,13 @@ public class EventController {
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Retrieve list of events",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Shows list of events", content = {
+                            @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = EventToDisplayOnListDto.class)))
+                    })
+            })
     public ResponseEntity<List<EventToDisplayOnListDto>> get(
             @And({
                     @Spec(path = "name", params = "name", spec = Like.class),
@@ -93,6 +102,15 @@ public class EventController {
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PatchMapping(value = "/{eventId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Edit event",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Event successfully edited", content = {
+                            @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = EventDetailsDto.class))),
+                    }),
+                    @ApiResponse(responseCode = "400", description = "Event ID does not exist"),
+                    @ApiResponse(responseCode = "404", description = "Validation errors, attempt to send the same values that are already in database")
+            })
     public ResponseEntity<?> editEvent(@PathVariable("eventId") int id,
                                        @RequestPart(value = "update") @Parameter(schema = @Schema(type = "string", format = "binary")) Map<String, Map<String, Object>> update,
                                        @RequestPart(value = "mainPhoto", required = false) MultipartFile mainPhoto,
@@ -103,13 +121,27 @@ public class EventController {
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}/edit-form")
+    @Operation(summary = "Retrieve form to edit event",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Retrieve form successfully", content = {
+                            @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = NewEventDto.class))),
+                    }),
+                    @ApiResponse(responseCode = "403", description = "Event with given ID does not exist")
+            })
     public ResponseEntity<?> editForm(@RequestParam("id") int id, Principal principal) {
         return eventService.editEventForm(id, principal);
     }
 
-    //    @GetMapping()
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
     @GetMapping("/{id}")
+    @Operation(summary = "Get details of single event",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Event details retrieved successfully", content = {
+                            @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = EventDetailsDto.class))),
+                    })
+            })
     public ResponseEntity<?> getEvent(@PathVariable("id") int id, Principal principal) {
         return eventService.getEvent(id, principal);
     }
@@ -129,13 +161,28 @@ public class EventController {
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @Transactional
     @PatchMapping("/{id}/organizer")
-    @Operation(summary = "Change event organizer from current to another")
+    @Operation(summary = "Change event organizer from current to another",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Event organizer changed successfully"),
+                    @ApiResponse(responseCode = "400", description = "Employee with given ID is organizer already"),
+                    @ApiResponse(responseCode = "401", description = "Employee does not have permission to change event organizer"),
+                    @ApiResponse(responseCode = "404", description = "Event with given ID does not exist"),
+            })
     public ResponseEntity<?> changeEventOrganizer(@PathVariable("id") int eventId, @RequestParam("newOrganizerId") int newOrganizerId, Principal principal) {
         return eventService.changeEventOrganizer(eventId, newOrganizerId, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Add new event",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Event created successfully", content = {
+                            @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = EventDetailsDto.class))),
+                    }),
+                    @ApiResponse(responseCode = "401", description = "Bad request, validation errors"),
+                    @ApiResponse(responseCode = "404", description = "One of entity connected to event does not exist (Category, Unit)"),
+            })
     //@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(encoding = @Encoding(name = "eventData", contentType = "application/json")))
     //W razie problemów na froncie, pokombinować z enkodowaniem. v2.0 Swaggera, nie wspiera, więc poniższe rozwiązanie wymaga w Swaggerze, uploadu JSON w formie
     //pliku .json. W PostMan można wysłać zarówno plik jak i json "tekstowy" z parametrem Content-Type application/json.
@@ -156,6 +203,14 @@ public class EventController {
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @PostMapping(value = "/{id}/comments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Add new comment to event",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Comment added successfully", content = {
+                            @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = Comment.class))),
+                    }),
+                    @ApiResponse(responseCode = "401", description = "Bad request, validation errors - bad attachment format"),
+            })
     public ResponseEntity<?> addCommentToEvent(@PathVariable("id") int id,
                                                @RequestPart(value = "commentData", required = false)
                                                @Parameter(schema = @Schema(type = "string", format = "binary")) CommentDto commentDto,
@@ -290,14 +345,22 @@ public class EventController {
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @Transactional
     @PatchMapping("/{eventId}/members")
-    @Operation(summary = "Remove employee from event")
+    @Operation(summary = "Remove employee from event",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Comment added successfully"),
+                    @ApiResponse(responseCode = "403", description = "Organizer attempt to leave event"),
+            })
     public ResponseEntity<?> disjoinEvent(@PathVariable("eventId") int eventId, Principal principal) {
         return eventService.removeEmployeeFromEvent(eventId, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @DeleteMapping("/{eventId}/")
-    public ResponseEntity<?> deleteEvent(@PathVariable("eventId") int eventId, Principal principal){
+    @Operation(summary = "Delete event",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Event successfully deleted")
+            })
+    public ResponseEntity<?> deleteEvent(@PathVariable("eventId") int eventId, Principal principal) {
         return eventService.deleteEvent(eventId, principal);
     }
 }
