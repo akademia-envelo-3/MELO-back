@@ -17,7 +17,9 @@ import pl.envelo.melo.domain.location.Location;
 import pl.envelo.melo.domain.poll.Poll;
 import pl.envelo.melo.domain.unit.Unit;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -76,5 +78,6 @@ public class Event {
     private Location location;
     @Column(nullable = false)
     private Theme theme;
-
+    @OneToOne
+    private Event nextEvent;
 }
