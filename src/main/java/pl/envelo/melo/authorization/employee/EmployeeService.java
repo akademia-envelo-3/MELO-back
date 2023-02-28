@@ -1,6 +1,7 @@
 package pl.envelo.melo.authorization.employee;
 
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class EmployeeService {
     private EmployeeRepository employeeRepository;
     private final EventMapper eventMapper;
