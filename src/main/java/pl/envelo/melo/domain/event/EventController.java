@@ -300,4 +300,10 @@ public class EventController {
     public ResponseEntity<?> deleteEvent(@PathVariable("eventId") int eventId, Principal principal){
         return eventService.deleteEvent(eventId, principal);
     }
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
+    @GetMapping("/{eventId}/comments/{commentId}")
+    public ResponseEntity<?> getComment(@PathVariable("eventId") int eventId, @PathVariable("commentId") int commentId){
+        return commentService.getComment(eventId, commentId);
+    }
+
 }
