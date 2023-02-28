@@ -11,6 +11,7 @@ import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.notification.Notification;
 import pl.envelo.melo.domain.unit.Unit;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 
@@ -20,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "employees")
-public class Employee {
+public class Employee implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;

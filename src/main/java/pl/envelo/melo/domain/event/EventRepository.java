@@ -18,4 +18,6 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
     Page<Event> findAll(Specification<Event> spec, Pageable pageable);
 
     List<Event> findAll(Specification<Event> spec, Sort sort);
+
+    List<Event> findByPeriodicTypeNotAndNextEventIsNullAndUnitIsNotNull(PeriodicType none);
 }

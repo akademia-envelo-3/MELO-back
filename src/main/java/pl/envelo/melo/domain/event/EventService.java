@@ -275,7 +275,7 @@ public class EventService {
             event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
         }
 
-        Set<Hashtag> hashtags = new HashSet<>();
+
 
         Set<HashtagDto> hashtagDtoFromTitleAndDescription = findHashtagFromEvent(newEventDto.getName(), newEventDto.getDescription());
         if (newEventDto.getHashtags() != null) {
@@ -289,11 +289,6 @@ public class EventService {
         Map<String, String> validationHashtagResults = hashtagValidator.validateHashtagFromForm(hashtagDtoFromTitleAndDescription);
         if (validationHashtagResults.size() != 0) {
             return ResponseEntity.badRequest().body(validationHashtagResults);
-        }
-
-        for (HashtagDto hashtagDto : hashtagDtoFromTitleAndDescription) {
-            hashtagDto.setContent(hashtagDto.getContent().toLowerCase());
-            hashtags.add(hashtagService.insertNewHashtag(hashtagDto));
         }
 
         Set<Employee> invitedCopyMembers = new HashSet<>();
@@ -328,9 +323,18 @@ public class EventService {
                 return ResponseEntity.status(404).body(UnitConst.UNIT_NOT_AVAILABLE);
             }
         }
+        Set<Hashtag> hashtags = new HashSet<>();
+        for (HashtagDto hashtagDto : hashtagDtoFromTitleAndDescription) {
+            hashtagDto.setContent(hashtagDto.getContent().toLowerCase());
+            hashtags.add(hashtagService.insertNewHashtag(hashtagDto));
+        }
         event.setInvited(invitedCopyMembers);
         event.setHashtags(hashtags);
+
         eventRepository.save(event);
+        if (!event.getPeriodicType().equals(PeriodicType.NONE) && event.getUnit() != null) {
+            createEventFromExisting(event, event.getStartTime());
+        }
         employeeService.addToJoinedEvents(employee.getId(), event);
         employeeService.addToOwnedEvents(employee.getId(), event);
         sendEventInvitationNotification(event, NotificationType.INVITE);
@@ -371,7 +375,6 @@ public class EventService {
             return changeEventOrganizerSuccessMessage(eventId, newOrganizer);
         }
     }
-
 
     private ResponseEntity<?> changeEventOrganizerSuccessMessage(int eventId, Employee newOrganizer) {
         return ResponseEntity.status(200).body("The organizer of the event with id "
@@ -432,6 +435,17 @@ public class EventService {
                     return ResponseEntity.status(404).body("Periodic type of new event is the same as old");
                 }
             }
+
+            if (!event.getPeriodicType().equals(PeriodicType.NONE)
+                    && event.getUnit()!=null && event.getNextEvent() == null) {
+                createEventFromExisting(event, event.getStartTime());
+            } else if (event.getPeriodicType().equals(PeriodicType.NONE) && event.getNextEvent()!=null) {
+                int idCyclicEvent = event.getNextEvent().getId();
+                event.setNextEvent(null);
+                eventRepository.save(event);
+                deleteEvent(idCyclicEvent,principal);
+            }
+
             if (!Objects.isNull(updates.get("memberLimit"))) {
                 if (event.getType().toString().startsWith("LIMITED")) {
                     if (eventUpdater.updateMemberLimit(event, Integer.parseInt(updates.get("memberLimit").toString()))) {
@@ -749,26 +763,42 @@ public class EventService {
 
     }
 
+    @Transactional
     public Event createEventFromExisting(Event event, LocalDateTime oldEventStartDate){
         Event newCyclicEvent = new Event();
+
         if (event!=null) {
+            if (event.getHashtags()!=null) {
+                newCyclicEvent.setHashtags(new HashSet<>(event.getHashtags()));
+            }
             newCyclicEvent.setName(event.getName());
             newCyclicEvent.setDescription(event.getDescription());
             newCyclicEvent.setStartTime(getNewEvenStartDate(event.getPeriodicType(),oldEventStartDate));
             newCyclicEvent.setEndTime(newCyclicEvent.getStartTime().plusHours(3));
             newCyclicEvent.setOrganizer(event.getOrganizer());
             newCyclicEvent.setType(event.getType());
-            newCyclicEvent.setMembers(event.getMembers());
+            if (event.getMembers()!=null) {
+                newCyclicEvent.setMembers(new HashSet<>(event.getMembers()));
+            }
             newCyclicEvent.setPeriodicType(event.getPeriodicType());
-            newCyclicEvent.setInvited(event.getInvited());
+            if (event.getInvited()!=null) {
+                newCyclicEvent.setInvited(new HashSet<>(event.getInvited()));
+            }
             newCyclicEvent.setUnit(event.getUnit());
-            newCyclicEvent.setHashtags(event.getHashtags());
+            for (Hashtag hashtag : newCyclicEvent.getHashtags()) {
+                hashtagService.insertNewHashtag(hashtagMapper.toDto(hashtag));
+            }
             newCyclicEvent.setMemberLimit(event.getMemberLimit());
             newCyclicEvent.setCategory(event.getCategory());
-            newCyclicEvent.setAttachments(event.getAttachments());
+            if (event.getAttachments()!=null) {
+                newCyclicEvent.setAttachments(new HashSet<>(event.getAttachments()));
+            }
             newCyclicEvent.setMainPhoto(event.getMainPhoto());
             newCyclicEvent.setLocation(event.getLocation());
             newCyclicEvent.setTheme(event.getTheme());
+            eventRepository.save(newCyclicEvent);
+            event.setNextEvent(newCyclicEvent);
+        //    eventRepository.save(event);
         }
         return newCyclicEvent;
     }
