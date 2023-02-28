@@ -23,6 +23,7 @@ public class EventCreator {
     @Scheduled(fixedDelayString = "${melo.fixed-delay}", timeUnit = TimeUnit.SECONDS) //TODO change to 12h
     public void createEvent() {
         LocalDateTime currentTime = LocalDateTime.now();
+        System.out.println(currentTime);
         List<Event> cycleEventList = eventRepository.findByPeriodicTypeNotAndNextEventIsNullAndUnitIsNotNull(PeriodicType.NONE);
         for (Event event : cycleEventList) {
             if (event.getStartTime().compareTo(currentTime) < 0) {

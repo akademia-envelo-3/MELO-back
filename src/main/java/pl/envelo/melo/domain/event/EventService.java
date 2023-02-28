@@ -275,8 +275,6 @@ public class EventService {
             event.setMainPhoto(null); //todo swap with attachmentMainPhoto method
         }
 
-
-
         Set<HashtagDto> hashtagDtoFromTitleAndDescription = findHashtagFromEvent(newEventDto.getName(), newEventDto.getDescription());
         if (newEventDto.getHashtags() != null) {
             Map<String, String> validationIsHidden = hashtagValidator.validateIsHidden(newEventDto.getHashtags());
@@ -323,6 +321,11 @@ public class EventService {
                 return ResponseEntity.status(404).body(UnitConst.UNIT_NOT_AVAILABLE);
             }
         }
+
+        if (!event.getPeriodicType().equals(PeriodicType.NONE) && event.getUnit() == null) {
+            return ResponseEntity.status(400).body("You cant add cyclic event without unit");
+        }
+        
         Set<Hashtag> hashtags = new HashSet<>();
         for (HashtagDto hashtagDto : hashtagDtoFromTitleAndDescription) {
             hashtagDto.setContent(hashtagDto.getContent().toLowerCase());
@@ -798,7 +801,7 @@ public class EventService {
             newCyclicEvent.setTheme(event.getTheme());
             eventRepository.save(newCyclicEvent);
             event.setNextEvent(newCyclicEvent);
-        //    eventRepository.save(event);
+            eventRepository.save(event);
         }
         return newCyclicEvent;
     }
