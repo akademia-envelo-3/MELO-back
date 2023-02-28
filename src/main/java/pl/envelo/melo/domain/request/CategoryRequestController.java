@@ -23,7 +23,7 @@ import java.util.List;
 @RequestMapping("/v1/categoryrequests")
 @RestController
 @AllArgsConstructor
-@CrossOrigin("${melo.cors-origin}")
+@CrossOrigin(origins = "${melo.cors-origin}")
 public class CategoryRequestController {
 
     private final CategoryRequestService categoryRequestService;

@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @Tag(name = "Category Controller")
 @RequestMapping("category")
-@CrossOrigin("${melo.cors-origin}")
+@CrossOrigin(origins = "${melo.cors-origin}")
 public class CategoryController {
     private final CategoryService categoryService;
 

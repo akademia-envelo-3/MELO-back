@@ -36,6 +36,7 @@ services:
             melo.admin-role: Admin
             melo.api.version: v1
             melo.events.path: /events
+            melo.cors-origin: http://localhost:4200
         ports:
             - 8080:8080
         networks:

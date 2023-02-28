@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import static pl.envelo.melo.domain.attachment.MimeTypes.MIME_APPLICATION_OCTET_STREAM;
 
 @Controller
-@CrossOrigin("${melo.cors-origin}")
+@CrossOrigin(origins = "${melo.cors-origin}")
 public class FilesController {
 
     @Autowired

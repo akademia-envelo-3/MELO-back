@@ -51,7 +51,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Tag(name = "Event Controller")
 @RequestMapping("/v1/events")
-@CrossOrigin("${melo.cors-origin}")
+@CrossOrigin(origins = "${melo.cors-origin}")
 public class EventController {
 
     private final EventService eventService;
