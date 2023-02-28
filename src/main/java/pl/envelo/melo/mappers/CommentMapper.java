@@ -17,13 +17,15 @@ public interface CommentMapper {
 
     @InheritInverseConfiguration
     Comment convert(CommentDto commentDto);
+
     @Mapping(source = "author.user.person.firstName", target = "firstName")
     @Mapping(source = "author.user.person.lastName", target = "lastName")
     @Mapping(ignore = true, target = "attachments")
     CommentToDisplayDto convertToDisplayDto(Comment comment);
+
     @AfterMapping
-    default void update(@MappingTarget CommentToDisplayDto commentToDisplayDto, Comment comment){
-        if(Objects.nonNull(comment.getAttachments()))
+    default void update(@MappingTarget CommentToDisplayDto commentToDisplayDto, Comment comment) {
+        if (Objects.nonNull(comment.getAttachments()))
             commentToDisplayDto.setAttachments(comment.getAttachments().stream().map(Attachment::getAttachmentUrl).collect(Collectors.toList()));
     }
 }

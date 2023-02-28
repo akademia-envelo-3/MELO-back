@@ -1,7 +1,6 @@
 package pl.envelo.melo.authorization.employee;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +40,6 @@ class EmployeeControllerTest extends EventContextTest {
         Set<EventToDisplayOnListDto> events = (Set<EventToDisplayOnListDto>) responseEntity.getBody();
         assertEquals(1, events.size());//Test name
         assertEquals("Test name", events.stream().findFirst().get().getName());
-        assertEquals(HttpStatus.valueOf(403), employeeController.getOwnedEvents(2,token).getStatusCode());
+        assertEquals(HttpStatus.valueOf(403), employeeController.getOwnedEvents(2, token).getStatusCode());
     }
 }

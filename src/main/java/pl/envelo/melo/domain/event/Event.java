@@ -66,11 +66,11 @@ public class Event {
     private Category category;
     @OneToMany(cascade = CascadeType.ALL)
     private Set<Attachment> attachments;
-    @OneToOne(cascade=CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     private Attachment mainPhoto;
-    @OneToMany(cascade=CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Comment> comments;
-    @OneToMany(cascade=CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     private Set<Poll> polls;
     @ManyToOne(cascade = CascadeType.PERSIST)
     private Location location;

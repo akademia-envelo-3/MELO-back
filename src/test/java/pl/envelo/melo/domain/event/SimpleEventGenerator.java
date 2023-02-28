@@ -1,8 +1,6 @@
 package pl.envelo.melo.domain.event;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -29,6 +27,7 @@ public class SimpleEventGenerator {
     private String adminRole;
     @Value("${melo.employee-role}")
     private String employeeRole;
+
     public Event mockEvent(LocalDateTime localDateTime, EventType eventType, Employee... employees) {
         Event event = new Event();
         event.setDescription("testdesc");
@@ -75,24 +74,25 @@ public class SimpleEventGenerator {
 
         return employeeRepository.save(employee);
     }
-    public Principal getToken(AppUser appUser){
+
+    public Principal getToken(AppUser appUser) {
         JwtAuthenticationToken token = Mockito.mock(JwtAuthenticationToken.class);
-        if(appUser instanceof Employee employee){
+        if (appUser instanceof Employee employee) {
             Mockito.when(token.getTokenAttributes()).thenReturn(
                     Map.of("sub", employee.getUser().getId().toString(),
                             "email", employee.getUser().getPerson().getEmail(),
-                            "given_name",employee.getFirstName(),
-                            "family_name",employee.getLastName(),
+                            "given_name", employee.getFirstName(),
+                            "family_name", employee.getLastName(),
                             "roles", List.of("Employee")
                     )
             );
         }
-        if(appUser instanceof Admin admin){
+        if (appUser instanceof Admin admin) {
             Mockito.when(token.getTokenAttributes()).thenReturn(
                     Map.of("sub", admin.getUser().getId().toString(),
                             "email", admin.getUser().getPerson().getEmail(),
-                            "given_name",admin.getUser().getPerson().getFirstName(),
-                            "family_name",admin.getUser().getPerson().getLastName(),
+                            "given_name", admin.getUser().getPerson().getFirstName(),
+                            "family_name", admin.getUser().getPerson().getLastName(),
                             "roles", List.of("Admin")
                     )
             );

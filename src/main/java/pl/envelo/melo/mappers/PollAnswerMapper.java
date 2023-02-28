@@ -6,7 +6,6 @@ import pl.envelo.melo.domain.poll.PollAnswer;
 import pl.envelo.melo.domain.poll.dto.PollAnswerDto;
 
 import java.util.List;
-import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface PollAnswerMapper extends EntityMapper<PollAnswerDto, PollAnswer> {
