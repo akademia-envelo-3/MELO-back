@@ -1,12 +1,9 @@
 package pl.envelo.melo.authorization.employee;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import pl.envelo.melo.EventContextTest;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventType;
@@ -19,7 +16,6 @@ import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,7 +33,7 @@ class EmployeeServiceTest extends EventContextTest {
         //Testy
         ResponseEntity<?> responseEntity;
         //assertEquals(HttpStatus.UNAUTHORIZED, employeeService.getSetOfOwnedEvents(1, null).getStatusCode());
-        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5),EventType.LIMITED_PUBLIC_INTERNAL);
+        Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusDays(5), EventType.LIMITED_PUBLIC_INTERNAL);
         event.setName("Test name");
         event.getOrganizer().setOwnedEvents(new HashSet<>());
         event.getOrganizer().setJoinedEvents(new HashSet<>());
@@ -61,9 +57,9 @@ class EmployeeServiceTest extends EventContextTest {
         Event event = simpleEventGenerator.mockEvent(LocalDateTime.now().plusMonths(1).plusDays(2), EventType.UNLIMITED_EXTERNAL, employee);
         employeeService.addToOwnedEvents(employee.getId(), event1);
         Principal token = simpleEventGenerator.getToken(employee);
-        int len = employeeService.getEmployee(employee.getId(),token).getBody().getOwnedEvents().size();
+        int len = employeeService.getEmployee(employee.getId(), token).getBody().getOwnedEvents().size();
         employeeService.addToOwnedEvents(employee.getId(), event);
-        assertEquals(len + 1, employeeService.getEmployee(employee.getId(),token).getBody().getOwnedEvents().size());
+        assertEquals(len + 1, employeeService.getEmployee(employee.getId(), token).getBody().getOwnedEvents().size());
 
     }
 
@@ -232,13 +228,13 @@ class EmployeeServiceTest extends EventContextTest {
         joinedUnits.add(unit);
         employee.setJoinedUnits(joinedUnits);
 
-        assertEquals(HttpStatus.OK, employeeService.getListOfJoinedUnits(employee.getId(),token).getStatusCode());
+        assertEquals(HttpStatus.OK, employeeService.getListOfJoinedUnits(employee.getId(), token).getStatusCode());
 
         ResponseEntity<?> responseEntity = employeeService.getListOfJoinedUnits(employee.getId(), token);
         Set<UnitToDisplayOnListDto> unitToDisplayOnList = (Set<UnitToDisplayOnListDto>) responseEntity.getBody();
-        assertEquals(1,unitToDisplayOnList.size());
-        assertEquals(unitName,unitToDisplayOnList.stream().findFirst().get().getName());
-        assertNotEquals(nextUnit,unitToDisplayOnList.stream().findFirst().get().getName());
+        assertEquals(1, unitToDisplayOnList.size());
+        assertEquals(unitName, unitToDisplayOnList.stream().findFirst().get().getName());
+        assertNotEquals(nextUnit, unitToDisplayOnList.stream().findFirst().get().getName());
         assertEquals(HttpStatus.valueOf(403), employeeService.getSetOfOwnedEvents(4, token).getStatusCode());
 
         joinedUnits.add(nextUnit);
@@ -280,7 +276,7 @@ class EmployeeServiceTest extends EventContextTest {
         ResponseEntity<?> entity = employeeService.getListOfCreatedUnits(employee1.getId(), simpleEventGenerator.getToken(employee1));
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         assertTrue(entity.getBody() instanceof Set<?>);
-        assertEquals(2, ((Set<?>)entity.getBody()).size());
+        assertEquals(2, ((Set<?>) entity.getBody()).size());
         ResponseEntity<?> entity2 = employeeService.getListOfCreatedUnits(employee2.getId(), simpleEventGenerator.getToken(employee2));
         assertEquals(HttpStatus.OK, entity2.getStatusCode());
         assertTrue(entity2.getBody() instanceof Set<?>);

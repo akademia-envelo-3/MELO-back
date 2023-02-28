@@ -15,7 +15,6 @@ import pl.envelo.melo.authorization.person.Person;
 import pl.envelo.melo.authorization.person.PersonRepository;
 import pl.envelo.melo.authorization.user.User;
 import pl.envelo.melo.authorization.user.UserRepository;
-import pl.envelo.melo.exceptions.AppUserNotFoundException;
 
 import java.security.Principal;
 import java.util.Collection;
@@ -39,7 +38,7 @@ public class AuthorizationService {
     private static final int ADMIN_AND_EMPLOYEE_CREATED = 4;
 
     public AuthStatus createUser(Principal principal) {
-        if(Objects.isNull(principal))
+        if (Objects.isNull(principal))
             throw new NullPointerException();
         JwtAuthenticationToken tokenPrincipal = (JwtAuthenticationToken) principal;
         UUID principalId = UUID.fromString(tokenPrincipal.getTokenAttributes().get("sub").toString());
