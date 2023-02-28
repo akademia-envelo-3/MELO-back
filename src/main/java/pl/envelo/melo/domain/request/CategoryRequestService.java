@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import pl.envelo.melo.authorization.AuthorizationService;
+import pl.envelo.melo.authorization.employee.Employee;
 import pl.envelo.melo.authorization.employee.EmployeeRepository;
 import pl.envelo.melo.domain.category.Category;
 import pl.envelo.melo.domain.category.CategoryDto;
@@ -12,12 +14,14 @@ import pl.envelo.melo.domain.category.CategoryService;
 import pl.envelo.melo.domain.notification.NotificationService;
 import pl.envelo.melo.domain.notification.NotificationType;
 import pl.envelo.melo.domain.notification.dto.RequestNotificationDto;
-import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
 import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
+import pl.envelo.melo.exceptions.CategoryAlreadyExistsException;
 import pl.envelo.melo.exceptions.CategoryNotFoundException;
+import pl.envelo.melo.exceptions.CategoryRequestAlreadyExistsException;
 import pl.envelo.melo.exceptions.CategoryRequestAlreadyResolvedException;
 import pl.envelo.melo.mappers.CategoryRequestMapper;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -32,11 +36,27 @@ public class CategoryRequestService {
     private final CategoryService categoryService;
     private final EmployeeRepository employeeRepository;
     private final NotificationService notificationService;
+    private final AuthorizationService authorizationService;
 
     private final CategoryRequestMapper categoryRequestMapper;
 
-    public ResponseEntity<CategoryRequest> insertNewCategoryRequest(CategoryRequestDto categoryRequestDto) {
-        return null;
+    public ResponseEntity<?> insertNewCategoryRequest(CategoryDto categoryDto, Principal principal) {
+        categoryDto.setName(categoryDto.getName().toLowerCase().replaceAll("\\s+", " ").trim());
+        Category category = categoryRepository.findByName(categoryDto.getName());
+        if (category != null && category.getName().equals(categoryDto.getName()) && !category.isHidden())
+            throw new CategoryAlreadyExistsException();
+        CategoryRequest categoryRequestInDatabase = categoryRequestRepository.findByCategoryName(categoryDto.getName());
+        if (categoryRequestInDatabase != null
+                && categoryRequestInDatabase.getCategoryName().equals(categoryDto.getName())
+                && !categoryRequestInDatabase.isResolved())
+            throw new CategoryRequestAlreadyExistsException();
+
+        CategoryRequest categoryRequest = new CategoryRequest();
+        authorizationService.createUser(principal);
+        Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).get();
+        categoryRequest.setEmployee(employee);
+        categoryRequest.setCategoryName(categoryDto.getName().toLowerCase().trim());
+        return ResponseEntity.ok(categoryRequestMapper.toDto(categoryRequestRepository.save(categoryRequest)));
     }
 
     public ResponseEntity<List<CategoryRequestToDisplayOnListDto>> listCategoryRequests(boolean resolved) {
@@ -53,7 +73,7 @@ public class CategoryRequestService {
         if (Objects.isNull(category) || category.isHidden())
             sendCategoryRequestNotification(categoryRequest, message, NotificationType.CATEGORY_REQUEST_ACCEPTED);
         if (Objects.isNull(category))
-            return categoryService.insertNewCategory(new CategoryDto(categoryRequest.getCategoryName()));
+            return categoryService.insertNewCategory(new CategoryDto(categoryRequest.getCategoryName().toLowerCase().replaceAll("\\s+", " ").trim()));
         if (category.isHidden())
             return categoryService.changeStatusCategory(category.getId());
         return ResponseEntity.ok().build();
@@ -78,16 +98,18 @@ public class CategoryRequestService {
     private void sendCategoryRequestNotification(CategoryRequest categoryRequest, String message, NotificationType notificationType) {
         RequestNotificationDto requestNotificationDto = new RequestNotificationDto();
         requestNotificationDto.setEmployeeId(categoryRequest.getEmployee().getId());
-        if(notificationType.equals(NotificationType.CATEGORY_REQUEST_ACCEPTED)) {
+
+        if (notificationType.equals(NotificationType.CATEGORY_REQUEST_ACCEPTED)) {
             requestNotificationDto.setReason("Twoja propozycja kategorii \""
-                    +categoryRequest.getCategoryName()+"\" została zatwierdzona.");
+                    + categoryRequest.getCategoryName() + "\" została zatwierdzona.");
         }
-        if(notificationType.equals(NotificationType.CATEGORY_REQUEST_REJECTED)) {
+        if (notificationType.equals(NotificationType.CATEGORY_REQUEST_REJECTED)) {
             requestNotificationDto.setReason("Twoja propozycja kategorii \""
-                    +categoryRequest.getCategoryName()+"\" została odrzucona.");
+                    + categoryRequest.getCategoryName() + "\" została odrzucona.");
         }
-        if(!message.isEmpty())
-            requestNotificationDto.setReason(requestNotificationDto.getReason()+" Komentarz: "+message);
+        if (message != null)
+            requestNotificationDto.setReason(requestNotificationDto.getReason() + " Komentarz: \"" + message + "\"");
+
         requestNotificationDto.setNotificationType(notificationType);
         notificationService.insertRequestNotification(requestNotificationDto);
     }

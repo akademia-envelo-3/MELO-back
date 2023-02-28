@@ -3,8 +3,6 @@ package pl.envelo.melo.domain.event;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import pl.envelo.melo.authorization.employee.EmployeeRepository;
-import pl.envelo.melo.authorization.user.UserRepository;
 import pl.envelo.melo.domain.event.dto.NewEventDto;
 import pl.envelo.melo.domain.location.LocationService;
 import pl.envelo.melo.domain.notification.NotificationService;
