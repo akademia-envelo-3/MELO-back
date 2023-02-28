@@ -101,4 +101,10 @@ public class CommentService {
             return ResponseEntity.ok(commentMapper.convertToDisplayDto(comment));
         return ResponseEntity.status(404).body("Comment with desired is not present in this event");
     }
+
+    public ResponseEntity<?> getComments(int eventId){
+       return ResponseEntity.of(Optional.of(eventRepository.findById(eventId).orElseThrow(EventNotFoundException::new).getComments().stream().map(commentMapper::convertToDisplayDto)));
+    }
+
+
 }
