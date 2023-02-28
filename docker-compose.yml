@@ -36,6 +36,7 @@ services:
             melo.admin-role: Admin
             melo.api.version: v1
             melo.events.path: /events
+            TZ: "Europe/Warsaw"
         ports:
             - 8080:8080
         networks:
@@ -52,6 +53,7 @@ services:
             PGADMIN_DEFAULT_EMAIL: admin@admin.com
             PGADMIN_DEFAULT_PASSWORD: sa
             PGADMIN_LISTEN_PORT: 8082
+            TZ: "Europe/Warsaw"
         ports:
             - 8082:8082
         networks:
@@ -78,6 +80,7 @@ services:
             KEYCLOAK_ADMIN_PASSWORD: admin
             KC_HTTP_PORT: 8081
             KC_HOSTNAME: keycloak
+            TZ: "Europe/Warsaw"
         command: 
             start-dev --import-realm
         ports:
