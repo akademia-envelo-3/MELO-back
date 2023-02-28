@@ -24,6 +24,7 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class CommentService {
 
 
@@ -33,7 +34,7 @@ public class CommentService {
     private AttachmentService attachmentService;
     private AuthorizationService authorizationService;
 
-    @Transactional
+    //@Transactional
     public ResponseEntity<?> insertNewComment(int eventId, CommentDto commentToSave, MultipartFile[] multipartFiles, Principal principal) {
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         /// Obsługa błędu - brak czegokolwiek - i kontentu i atachmentu

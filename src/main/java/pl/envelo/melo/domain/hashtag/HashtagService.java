@@ -1,5 +1,6 @@
 package pl.envelo.melo.domain.hashtag;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
     private final EmployeeRepository employeeRepository;
