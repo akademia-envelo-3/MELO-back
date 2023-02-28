@@ -7,7 +7,6 @@ import lombok.Setter;
 import pl.envelo.melo.domain.poll.PollConst;
 
 import java.util.List;
-import java.util.Set;
 
 @NoArgsConstructor
 @Setter

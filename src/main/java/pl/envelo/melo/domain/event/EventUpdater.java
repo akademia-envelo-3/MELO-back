@@ -22,9 +22,7 @@ import pl.envelo.melo.domain.unit.UnitRepository;
 import pl.envelo.melo.mappers.AttachmentMapper;
 import pl.envelo.melo.mappers.HashtagMapper;
 import pl.envelo.melo.mappers.LocationMapper;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

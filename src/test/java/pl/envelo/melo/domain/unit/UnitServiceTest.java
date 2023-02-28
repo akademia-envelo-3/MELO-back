@@ -83,7 +83,7 @@ class UnitServiceTest extends EventContextTest {
         unitRepository.save(unit);
 
 
-        ResponseEntity<?> response = unitService.changeOwnershipByEmployee(employee.getId(),unit.getId(), owner);
+        ResponseEntity<?> response = unitService.changeOwnershipByEmployee(employee.getId(), unit.getId(), owner);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, unit.getMembers().size());
@@ -92,9 +92,8 @@ class UnitServiceTest extends EventContextTest {
         assertTrue(owner.getJoinedUnits().contains(unit));
 
 
-        response = unitService.changeOwnershipByEmployee(owner.getId(),unit.getId(), owner);
-        assertEquals(HttpStatus.BAD_REQUEST,response.getStatusCode());
-
+        response = unitService.changeOwnershipByEmployee(owner.getId(), unit.getId(), owner);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
 
     }
@@ -118,12 +117,12 @@ class UnitServiceTest extends EventContextTest {
         assertTrue(response.getBody() instanceof Boolean);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(unit.getMembers().contains(owner));
-        assertEquals(1,unit.getMembers().size());
+        assertEquals(1, unit.getMembers().size());
         ResponseEntity<?> response2 = unitService.addEmployee(unit.getId(), simpleEventGenerator.getToken(employee));
         assertTrue(response2.getBody() instanceof Boolean);
         assertEquals(HttpStatus.OK, response2.getStatusCode());
         assertTrue(unit.getMembers().contains(employee));
-        assertEquals(2,unit.getMembers().size());
+        assertEquals(2, unit.getMembers().size());
         ResponseEntity<?> response3 = unitService.addEmployee(unit.getId(), simpleEventGenerator.getToken(employee));
         assertEquals(HttpStatus.valueOf(400), response3.getStatusCode());
 

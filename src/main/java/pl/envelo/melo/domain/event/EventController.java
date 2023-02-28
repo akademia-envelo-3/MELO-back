@@ -242,15 +242,17 @@ public class EventController {
     public ResponseEntity<?> addGuestToEvent(@Valid @RequestBody AddGuestToEventDto addGuestToEventDto, @PathVariable("id") int eventId) {
         return eventService.sendConfirmationMail(eventId, addGuestToEventDto);
     }
+
     @GetMapping("/{id}/external")
     @Operation(summary = "Endpoint which allows non authenticated user to display an external event",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Event details", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EventDetailsDto.class))),
                     @ApiResponse(responseCode = "404", description = "External event with desired id does not exist.<br/>")
             })
-    public ResponseEntity<?> getEventForNotAuthenticatedUser(@PathVariable("id")int eventId){
+    public ResponseEntity<?> getEventForNotAuthenticatedUser(@PathVariable("id") int eventId) {
         return eventService.getEvent(eventId, null);
     }
+
     @GetMapping("/participation")
     @Operation(summary = "Adding or removing guest from event.",
             responses = {
@@ -307,13 +309,20 @@ public class EventController {
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @DeleteMapping("/{eventId}/")
-    public ResponseEntity<?> deleteEvent(@PathVariable("eventId") int eventId, Principal principal){
+    public ResponseEntity<?> deleteEvent(@PathVariable("eventId") int eventId, Principal principal) {
         return eventService.deleteEvent(eventId, principal);
     }
+
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     @GetMapping("/{eventId}/comments/{commentId}")
-    public ResponseEntity<?> getComment(@PathVariable("eventId") int eventId, @PathVariable("commentId") int commentId){
+    public ResponseEntity<?> getComment(@PathVariable("eventId") int eventId, @PathVariable("commentId") int commentId) {
         return commentService.getComment(eventId, commentId);
     }
 
+
+    @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
+    @GetMapping("/{eventId}/comments")
+    public ResponseEntity<?> getComment(@PathVariable("eventId") int eventId) {
+        return commentService.getComments(eventId);
+    }
 }

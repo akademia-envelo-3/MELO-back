@@ -104,9 +104,9 @@ public class EventService {
     private AuthorizationService authorizationService;
 
     public ResponseEntity<?> getEvent(int id, Principal principal) {
-        if(Objects.isNull(principal)){
+        if (Objects.isNull(principal)) {
             Event event = eventRepository.findById(id).orElseThrow(EventNotFoundException::new);
-            if(event.getType().name().contains("EXTERNAL")) {
+            if (event.getType().name().contains("EXTERNAL")) {
                 EventDetailsDto eventDetailsDto = eventDetailsMapper.convert(event);
                 eventDetailsDto.setPolls(null);
                 return ResponseEntity.ok(eventDetailsDto);
@@ -232,7 +232,7 @@ public class EventService {
         event.setMembers(members);
         event.setStartTime(newEventDto.getStartTime());
         event.setEndTime(newEventDto.getEndTime());
-        if(!Objects.isNull(newEventDto.getMemberLimit())) {
+        if (!Objects.isNull(newEventDto.getMemberLimit())) {
             event.setMemberLimit(newEventDto.getMemberLimit());
         }
         event.setType(newEventDto.getEventType());

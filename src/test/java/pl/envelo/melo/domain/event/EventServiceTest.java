@@ -209,7 +209,7 @@ class EventServiceTest extends EventContextTest {
         Principal memberToken = simpleEventGenerator.getToken(member);
         ResponseEntity<?> addedMember = eventService.addEmployeeToEvent(event.getId(), memberToken);
         assertEquals(HttpStatus.OK, addedMember.getStatusCode());
-        assertEquals(2,event.getMembers().size());
+        assertEquals(2, event.getMembers().size());
         addedMember = eventService.addEmployeeToEvent(event.getId(), memberToken);
         assertEquals(HttpStatus.valueOf(400), addedMember.getStatusCode());
         assertEquals("Employee already on list", addedMember.getBody());
