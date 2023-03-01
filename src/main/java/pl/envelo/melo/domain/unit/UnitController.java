@@ -19,6 +19,9 @@ import pl.envelo.melo.domain.unit.dto.UnitToDisplayOnListDto;
 import java.security.Principal;
 import java.util.List;
 
+/**
+ Controller class that handles HTTP requests related to Unit entity. Uses UnitService for business logic.
+ */
 @RequestMapping("/v1/units")
 @RestController
 @Tag(name = "Unit Controller")
