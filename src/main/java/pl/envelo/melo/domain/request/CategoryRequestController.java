@@ -1,6 +1,8 @@
 package pl.envelo.melo.domain.request;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.envelo.melo.domain.category.CategoryDto;
 import pl.envelo.melo.domain.category.CategoryService;
 import pl.envelo.melo.domain.notification.NotificationService;
+import pl.envelo.melo.domain.request.dto.CategoryRequestDto;
 import pl.envelo.melo.domain.request.dto.CategoryRequestToDisplayOnListDto;
 
 import java.security.Principal;
@@ -26,13 +29,28 @@ public class CategoryRequestController {
     private final CategoryService categoryService;
 
     @PostMapping("")
-    @Operation(summary = "Add new category request")
+    @Operation(summary = "Add new category request",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Successfully added new Category Request", content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = CategoryRequestDto.class))
+                    }),
+            })
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
     public ResponseEntity<?> addNewCategoryRequest(@RequestBody @Valid CategoryDto categoryDto, Principal principal) {
         return categoryRequestService.insertNewCategoryRequest(categoryDto, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getAdminRole())")
+    @Operation(summary = "Get list of all category requests",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Shows all category requests with isResolved status given by user", content = {
+                            @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = CategoryRequestToDisplayOnListDto.class))
+                    }),
+            })
     @GetMapping("")
     public ResponseEntity<List<CategoryRequestToDisplayOnListDto>> showAllCategoryRequests(@RequestParam("resolved") boolean resolved) {
         return categoryRequestService.listCategoryRequests(resolved);

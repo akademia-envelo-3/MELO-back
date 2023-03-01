@@ -90,6 +90,7 @@ public class UnitController {
     @Operation(summary = "Remove employee from unit members",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Employee was removed"),
+                    @ApiResponse(responseCode = "400", description = "Attempt to quit unit as a owner"),
                     @ApiResponse(responseCode = "404"),
             })
     public ResponseEntity<?> quitUnit(@PathVariable("unitId") int unitId, Principal principal) {

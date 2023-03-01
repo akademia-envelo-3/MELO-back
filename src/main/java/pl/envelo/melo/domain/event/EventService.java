@@ -460,7 +460,7 @@ public class EventService {
             if (!Objects.isNull(updates.get("location"))) {
                 if (eventUpdater.updateLocation(event, updates.get("location"))) {
                     EventNotificationDto eventNotificationDto = new EventNotificationDto();
-                    eventNotificationDto.setContent("Lokalizacja wydareznia się zmieniłą");
+                    eventNotificationDto.setContent("Lokalizacja wydarzenia się zmieniła");
                     eventNotificationDto.setEventId(event.getId());
                     eventNotificationDto.setType(NotificationType.EVENT_LOCATION_CHANGED);
                     notificationService.insertEventMembersNotification(eventNotificationDto, false);

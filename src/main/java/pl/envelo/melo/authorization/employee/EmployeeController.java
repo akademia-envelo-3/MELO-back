@@ -24,18 +24,42 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @PreAuthorize("hasAnyAuthority(@securityConfiguration.getAdminRole(), @securityConfiguration.getEmployeeRole())")
-    @GetMapping()
+    @Operation(summary = "Retrieve list of employees",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Retrieve list of employees", content =
+                    @Content(mediaType = "application/json", schema = @Schema(
+                            oneOf = {EmployeeListDto.class}
+                    ))
+                    )
+            })
+    @GetMapping("")
     public ResponseEntity<Set<EmployeeListDto>> getEmployees(@RequestParam(value = "search", required = false) String q) {
         return employeeService.getEmployees(q);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
+    @Operation(summary = "Retrieve employee with given ID",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successfully retrieve employee with given ID", content =
+                    @Content(mediaType = "application/json", schema = @Schema(
+                            oneOf = {EmployeeDto.class}
+                    ))
+                    )
+            })
     @GetMapping("/{id}")
     public ResponseEntity<EmployeeDto> getEmployee(@PathVariable("id") int id, Principal principal) {
         return employeeService.getEmployee(id, principal);
     }
 
     @PreAuthorize("hasAuthority(@securityConfiguration.getEmployeeRole())")
+    @Operation(summary = "Get list of owned events",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successfully retrieve list of owned events", content =
+                    @Content(mediaType = "application/json", schema = @Schema(
+                            oneOf = {EmployeeDto.class}
+                    ))
+                    )
+            })
     @GetMapping("/{id}/owned-events")
     public ResponseEntity<Set<EventToDisplayOnListDto>> getOwnedEvents(@PathVariable("id") int id, Principal principal) {
         return (ResponseEntity<Set<EventToDisplayOnListDto>>) employeeService.getSetOfOwnedEvents(id, principal);

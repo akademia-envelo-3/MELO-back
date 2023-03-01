@@ -45,7 +45,7 @@ public class UnitService {
         if (unit.isPresent()) {
             return ResponseEntity.ok(unitDetailsMapper.convert(unit.get()));
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.status(404).body(UNIT_DOES_NOT_EXIST);
     }
 
 
@@ -194,11 +194,11 @@ public class UnitService {
     }
 
     private ResponseEntity<?> unitDoesNotExist(int unitId) {
-        return ResponseEntity.status(404).body("Unit whit Id " + unitId + " does not exist");
+        return ResponseEntity.status(404).body(UNIT_DOES_NOT_EXIST);
     }
 
     private ResponseEntity<?> employeeSuccessfulLeave(int employeeId) {
-        return ResponseEntity.ok("Employee whit Id " + employeeId +
+        return ResponseEntity.ok("Employee with ID " + employeeId +
                 " was correctly removed from the members of the unit");
     }
 
