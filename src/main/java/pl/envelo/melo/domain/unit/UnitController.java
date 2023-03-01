@@ -23,6 +23,7 @@ import java.util.List;
 @RestController
 @Tag(name = "Unit Controller")
 @AllArgsConstructor
+@CrossOrigin(origins = "${melo.cors-origin}")
 public class UnitController {
     private final UnitService unitService;
 

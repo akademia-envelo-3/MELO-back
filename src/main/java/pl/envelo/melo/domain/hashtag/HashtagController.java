@@ -17,6 +17,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/v1/hashtags")
+@CrossOrigin(origins = "${melo.cors-origin}")
 public class HashtagController {
 
     private final HashtagService hashtagService;

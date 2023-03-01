@@ -8,7 +8,7 @@ import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 
-public class H2Utils {
+public class SQLUtils {
     public static void clearDb(DataSource dataSource) {
         try {
             Connection c = dataSource.getConnection();

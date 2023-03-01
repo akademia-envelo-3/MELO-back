@@ -28,6 +28,7 @@ import static pl.envelo.melo.domain.unit.UnitConst.*;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class UnitService {
 
     private final UnitRepository unitRepository;

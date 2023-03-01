@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.envelo.melo.mappers.HashtagMapper;
-import pl.envelo.melo.utils.H2Utils;
+import pl.envelo.melo.utils.SQLUtils;
 
 import javax.sql.DataSource;
 
@@ -28,7 +28,7 @@ class HashtagServiceTest {
 
     @BeforeEach
     void setUp() {
-        H2Utils.clearDb(dataSource);
+        SQLUtils.clearDb(dataSource);
     }
 
     @Test
@@ -49,23 +49,24 @@ class HashtagServiceTest {
         assertEquals(HttpStatus.valueOf(404), hashtagService.incrementHashtagGlobalCount(200).getStatusCode());
 
     }
-//
-//    @Test
-//    void insertNewHashtag() {
-//        Hashtag hashtag = new Hashtag();
-//        hashtag.setId(1);
-//        hashtag.setContent("Coffe");
-//        hashtag.setGlobalUsageCount(1);
-//        hashtagRepository.save(hashtag);
-//  //      ResponseEntity<HashtagDto> responseHashtag = hashtagService.insertNewHashtag(hashtagMapper.toDto(hashtag));
+
+    @Test
+    void insertNewHashtag() {
+        //TODO recreate test
+        Hashtag hashtag = new Hashtag();
+        hashtag.setId(1);
+        hashtag.setContent("Coffe");
+        hashtag.setGlobalUsageCount(1);
+        hashtagRepository.save(hashtag);
+//        ResponseEntity<HashtagDto> responseHashtag = hashtagService.insertNewHashtag(hashtagMapper.toDto(hashtag));
 //        assertEquals(HttpStatus.OK, responseHashtag.getStatusCode());
 //        Hashtag hashtag1 = hashtagMapper.toEntity(responseHashtag.getBody());
 //        assertEquals(2,hashtagRepository.findByContent(responseHashtag.getBody().getContent()).get().getGlobalUsageCount());
 //        HashtagDto hashtagDto = new HashtagDto();
 //        hashtagDto.setContent("Game");
-//    /    responseHashtag = hashtagService.insertNewHashtag(hashtagDto);
+//        responseHashtag = hashtagService.insertNewHashtag(hashtagDto);
 //        assertEquals(HttpStatus.OK, responseHashtag.getStatusCode());
 //        assertTrue(hashtagRepository.existsByContent("Game"));
-//
-//    }
+
+    }
 }

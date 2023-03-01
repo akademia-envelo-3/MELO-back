@@ -14,8 +14,12 @@ import pl.envelo.melo.domain.attachment.AttachmentService;
 import pl.envelo.melo.domain.comment.dto.CommentDto;
 import pl.envelo.melo.domain.event.Event;
 import pl.envelo.melo.domain.event.EventRepository;
+import pl.envelo.melo.exceptions.CommentNotFoundException;
 import pl.envelo.melo.exceptions.EmployeeNotFoundException;
+import pl.envelo.melo.exceptions.EventNotFoundException;
+import pl.envelo.melo.mappers.CommentMapper;
 
+import java.net.URI;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,6 +28,7 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class CommentService {
 
 
@@ -32,8 +37,9 @@ public class CommentService {
     private EmployeeRepository employeeRepository;
     private AttachmentService attachmentService;
     private AuthorizationService authorizationService;
+    private CommentMapper commentMapper;
 
-    @Transactional
+    //@Transactional
     public ResponseEntity<?> insertNewComment(int eventId, CommentDto commentToSave, MultipartFile[] multipartFiles, Principal principal) {
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         /// Obsługa błędu - brak czegokolwiek - i kontentu i atachmentu
@@ -81,10 +87,24 @@ public class CommentService {
             Comment commentFromDb = commentRepository.save(mappedComment);
             tmpEvent.get().getComments().add(commentFromDb);
             eventRepository.save(tmpEvent.get());
-            return ResponseEntity.ok(commentFromDb);
+            return ResponseEntity.created(URI.create("/v1/events/" + eventId + "/comments/" + commentFromDb.getId())).build();
         }
+
 
         /// Taktyczna pięćsetka, żeby nikt nie wiedział co się zepsuło.
         return ResponseEntity.internalServerError().build();
     }
+
+    public ResponseEntity<?> getComment(int eventId, int commentId) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
+        if (eventRepository.findById(eventId).orElseThrow(EventNotFoundException::new).getComments().contains(comment))
+            return ResponseEntity.ok(commentMapper.convertToDisplayDto(comment));
+        return ResponseEntity.status(404).body("Comment with desired is not present in this event");
+    }
+
+    public ResponseEntity<?> getComments(int eventId) {
+        return ResponseEntity.of(Optional.of(eventRepository.findById(eventId).orElseThrow(EventNotFoundException::new).getComments().stream().map(commentMapper::convertToDisplayDto)));
+    }
+
+
 }
