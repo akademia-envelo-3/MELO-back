@@ -26,6 +26,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ This class handles the CRUD operations for CategoryRequest objects and
+ serves as a bridge between the application and the database.
+ It also provides additional functionality related to category requests.
+ */
 @Service
 @AllArgsConstructor
 @Transactional
@@ -40,6 +45,14 @@ public class CategoryRequestService {
 
     private final CategoryRequestMapper categoryRequestMapper;
 
+    /**
+     Inserts a new category request into the system.
+     @param categoryDto A DTO containing information about the category being requested.
+     @param principal The authenticated user making the request.
+     @return A ResponseEntity containing a DTO representation of the newly created category request.
+     @throws CategoryAlreadyExistsException if the category already exists in the system and is not hidden.
+     @throws CategoryRequestAlreadyExistsException if a category request with the same name already exists and is unresolved.
+     */
     public ResponseEntity<?> insertNewCategoryRequest(CategoryDto categoryDto, Principal principal) {
         categoryDto.setName(categoryDto.getName().toLowerCase().replaceAll("\\s+", " ").trim());
         Category category = categoryRepository.findByName(categoryDto.getName());
@@ -59,6 +72,11 @@ public class CategoryRequestService {
         return ResponseEntity.ok(categoryRequestMapper.toDto(categoryRequestRepository.save(categoryRequest)));
     }
 
+    /**
+     * Retrieves a list of CategoryRequestToDisplayOnListDto objects from the database based on whether they have been resolved or not.
+     * @param resolved - a boolean indicating whether to return resolved (true) or unresolved (false) category requests
+     * @return a ResponseEntity containing a List of CategoryRequestToDisplayOnListDto objects
+     */
     public ResponseEntity<List<CategoryRequestToDisplayOnListDto>> listCategoryRequests(boolean resolved) {
         return ResponseEntity.ok(categoryRequestRepository.findAllByIsResolved(resolved).stream().map(categoryRequestMapper::toDisplayOnListDto).collect(Collectors.toList()));
     }
@@ -67,6 +85,12 @@ public class CategoryRequestService {
         return null;
     }
 
+    /**
+     * Sets a CategoryRequest as resolved, creates a Category and sends a notification based on whether the Category already exists or needs to be created.
+     * @param categoryRequestId - the ID of the CategoryRequest to set as resolved
+     * @param message - an optional message to include in the notification
+     * @return a ResponseEntity indicating the success of the operation
+     */
     public ResponseEntity<?> setCategoryRequestAsAccepted(int categoryRequestId, String message) {
         CategoryRequest categoryRequest = setCategoryRequestAsResolved(categoryRequestId);
         Category category = categoryRepository.findByName(categoryRequest.getCategoryName());
@@ -79,39 +103,62 @@ public class CategoryRequestService {
         return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<?> setCategoryRequestAsDeclined(int categoryRequestId, String message) {
-        sendCategoryRequestNotification(setCategoryRequestAsResolved(categoryRequestId), message, NotificationType.CATEGORY_REQUEST_REJECTED);
-        return ResponseEntity.ok().build();
-    }
-
-    private CategoryRequest setCategoryRequestAsResolved(int categoryRequestId) {
-        CategoryRequest categoryRequest = categoryRequestRepository.findById(categoryRequestId).orElseThrow(() -> {
-            throw new CategoryNotFoundException();
-        });
-        if (categoryRequest.isResolved())
-            throw new CategoryRequestAlreadyResolvedException();
-        categoryRequest.setResolved(true);
-        categoryRequestRepository.save(categoryRequest);
-        return categoryRequest;
-    }
-
-    private void sendCategoryRequestNotification(CategoryRequest categoryRequest, String message, NotificationType notificationType) {
-        RequestNotificationDto requestNotificationDto = new RequestNotificationDto();
-        requestNotificationDto.setEmployeeId(categoryRequest.getEmployee().getId());
-
-        if (notificationType.equals(NotificationType.CATEGORY_REQUEST_ACCEPTED)) {
-            requestNotificationDto.setReason("Twoja propozycja kategorii \""
-                    + categoryRequest.getCategoryName() + "\" została zatwierdzona.");
+    /**
+     This method sets a category request as declined, sends a notification to the employee who requested the category,
+     and returns an HTTP response with status 200 OK.
+     @param categoryRequestId an integer representing the ID of the category request to be set as declined
+     @param message a string representing the message to be included in the notification sent to the employee who requested the category, can be null
+     @return ResponseEntity with status 200 OK
+     @throws CategoryNotFoundException if the category request with the given ID does not exist
+     @throws CategoryRequestAlreadyResolvedException if the category request with the given ID is already resolved
+     */
+     public ResponseEntity<?> setCategoryRequestAsDeclined(int categoryRequestId, String message) {
+            sendCategoryRequestNotification(setCategoryRequestAsResolved(categoryRequestId), message, NotificationType.CATEGORY_REQUEST_REJECTED);
+            return ResponseEntity.ok().build();
         }
-        if (notificationType.equals(NotificationType.CATEGORY_REQUEST_REJECTED)) {
-            requestNotificationDto.setReason("Twoja propozycja kategorii \""
-                    + categoryRequest.getCategoryName() + "\" została odrzucona.");
-        }
-        if (message != null)
-            requestNotificationDto.setReason(requestNotificationDto.getReason() + " Komentarz: \"" + message + "\"");
 
-        requestNotificationDto.setNotificationType(notificationType);
-        notificationService.insertRequestNotification(requestNotificationDto);
-    }
+    /**
+     This method sets a category request with the given ID as resolved and returns the resolved category request.
+     @param categoryRequestId an integer representing the ID of the category request to be set as resolved
+     @return the resolved CategoryRequest object
+     @throws CategoryNotFoundException if the category request with the given ID does not exist
+     @throws CategoryRequestAlreadyResolvedException if the category request with the given ID is already resolved
+     */
+     private CategoryRequest setCategoryRequestAsResolved(int categoryRequestId) {
+            CategoryRequest categoryRequest = categoryRequestRepository.findById(categoryRequestId).orElseThrow(() -> {
+                throw new CategoryNotFoundException();
+            });
+            if (categoryRequest.isResolved())
+                throw new CategoryRequestAlreadyResolvedException();
+            categoryRequest.setResolved(true);
+            categoryRequestRepository.save(categoryRequest);
+            return categoryRequest;
+        }
+
+    /**
+     This method sends a notification to the employee who requested the category with the given category request,
+     containing a message and a notification type.
+     @param categoryRequest a CategoryRequest object representing the category request for which the notification is being sent
+     @param message a string representing the message to be included in the notification sent to the employee who requested the category, can be null
+     @param notificationType a NotificationType enum representing the type of notification to be sent
+     */
+     private void sendCategoryRequestNotification(CategoryRequest categoryRequest, String message, NotificationType notificationType) {
+            RequestNotificationDto requestNotificationDto = new RequestNotificationDto();
+            requestNotificationDto.setEmployeeId(categoryRequest.getEmployee().getId());
+
+            if (notificationType.equals(NotificationType.CATEGORY_REQUEST_ACCEPTED)) {
+                requestNotificationDto.setReason("Twoja propozycja kategorii \""
+                        + categoryRequest.getCategoryName() + "\" została zatwierdzona.");
+            }
+            if (notificationType.equals(NotificationType.CATEGORY_REQUEST_REJECTED)) {
+                requestNotificationDto.setReason("Twoja propozycja kategorii \""
+                        + categoryRequest.getCategoryName() + "\" została odrzucona.");
+            }
+            if (message != null)
+                requestNotificationDto.setReason(requestNotificationDto.getReason() + " Komentarz: \"" + message + "\"");
+
+            requestNotificationDto.setNotificationType(notificationType);
+            notificationService.insertRequestNotification(requestNotificationDto);
+        }
 
 }
