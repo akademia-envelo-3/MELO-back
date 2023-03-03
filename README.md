@@ -61,3 +61,5 @@ password: admin
 ###
 
 Configuration of mail server is in file: [application.properties](src/main/resources/application.properties)
+
+melo.cors-origin: http://localhost:4200
