@@ -40,7 +40,14 @@ public class PollService {
     private final EmployeeRepository employeeRepository;
     private final AuthorizationService authorizationService;
 
-
+    /**
+     Inserts a new poll dto into the system and assigns it to the currently logged in employee
+     @param newPollDto DTO object containing the new poll's details
+     @param eventId id of event to which you add poll
+     @param principal the currently logged in user's security context
+     @return a ResponseEntity object containing a newPollDto object representing the newly created poll, or a HTTP error status with an appropriate error message
+     @throws EmployeeNotFoundException if the currently logged in user is not found in the system
+     */
     public ResponseEntity<?> insertNewPoll(NewPollDto newPollDto, int eventId, Principal principal) {
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
 
@@ -99,6 +106,14 @@ public class PollService {
         return ResponseEntity.status(201).body(newPollDto);
     }
 
+    /**
+     Select a poll which belongs to event and logged in employee is in event
+     @param eventId id of event which contain poll
+     @param pollId id of chosen poll
+     @param principal the currently logged in user's security context
+     @return a ResponseEntity object containing a pollDto object representing poll, or a HTTP error status with an appropriate error message
+     @throws EmployeeNotFoundException if the currently logged in user is not found in the system
+     */
     public ResponseEntity<?> getPoll(int eventId, int pollId, Principal principal) {
         Employee employee = employeeRepository.findByUserId(authorizationService.getUUID(principal)).orElseThrow(EmployeeNotFoundException::new);
         int employeeId = employee.getId();
@@ -113,6 +128,13 @@ public class PollService {
         } else return checkPollValidation(eventId, pollId);
     }
 
+    /**
+     This method checks if poll is validate
+     @param eventId id of event which contain poll
+     @param pollId id of chosen poll
+     @return a ResponseEntity object containing a pollDto object representing poll, or a HTTP error status with an appropriate error message
+     @throws EmployeeNotFoundException if the currently logged in user is not found in the system
+     */
     public ResponseEntity<?> checkPollValidation(int eventId, int pollId) {
         if (pollRepository.findById(pollId).isEmpty()) {
             return ResponseEntity.status(404).body(String.format(PollConst.POLL_NOT_FOUND, pollId));
@@ -125,6 +147,11 @@ public class PollService {
         return ResponseEntity.status(200).build();
     }
 
+    /**
+     Select all polls which belongs to event
+     @param eventId id of event which contain polls
+     @return a ResponseEntity object containing a list of poll, or a HTTP error status with an appropriate error message
+     */
     public ResponseEntity<Set<Poll>> listAllPollsForEvent(int eventId) {
         if (eventRepository.findById(eventId).isPresent()) {
             Event event = eventRepository.findById(eventId).get();
